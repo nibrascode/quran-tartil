@@ -18,6 +18,9 @@ npm run build      # static build in dist/
 ## Android
 `npm run build && npx cap add android && npx cap sync android` then build in Android Studio. CI (`.github/workflows/android-debug.yml`) builds a debug APK artifact on every push to main.
 
+### Releases (signed APK + AAB)
+`.github/workflows/android-release.yml` (manual run or a `v*` tag) builds a signed APK and AAB. It needs these repository secrets: `ANDROID_KEYSTORE_BASE64` (base64 of the PKCS12 keystore), `ANDROID_KEY_ALIAS`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_PASSWORD`. The keystore is never committed. Losing it means you can no longer update the app on Google Play (unless you enrolled in Play App Signing): keep an offline backup. Create one with `openssl req -x509 -newkey rsa:4096 -days 10000 -nodes ...` + `openssl pkcs12 -export -name quran ...`.
+
 ## Tartil checker (experimental)
 Menu > Tartil check: pick an ayah of the current page, press Start and recite. Each word turns green (matches), red (a different word was heard or a word was skipped) and the app warns.
 

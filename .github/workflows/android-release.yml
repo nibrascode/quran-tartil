@@ -1,0 +1,50 @@
+name: Android release (signed APK + AAB)
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx cap add android
+      - run: bash scripts/android-setup.sh
+      - run: npx cap sync android
+      - name: Restore keystore
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KS" || { echo "Secret ANDROID_KEYSTORE_BASE64 is missing (see README, Releases)"; exit 1; }
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/release.p12"
+      - name: Configure signing
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          KEYSTORE_PATH: ${{ runner.temp }}/release.p12
+        run: bash scripts/android-sign.sh
+      - name: Build signed APK + AAB
+        working-directory: android
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.p12
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
+      - run: bash scripts/android-verify.sh
+      - name: Verify APK signature
+        run: |
+          AS=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          "$AS" verify --print-certs android/app/build/outputs/apk/release/app-release.apk | head -5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quran-tartil-release
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
