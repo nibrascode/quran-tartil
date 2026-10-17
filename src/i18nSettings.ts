@@ -1,5 +1,6 @@
 // settings / privacy-screen strings
 const sen = {
+ "reciteHold": "Mistake — say the red word again (or restart the ayah)",
  "setReading": "Reading",
  "setApp": "App",
  "setData": "Data",
@@ -55,6 +56,7 @@ const sen = {
  "reciteFail": "Microphone or speech recognition is not available"
 };
 const saz = {
+ "reciteHold": "Səhv — qırmızı sözü yenidən oxuyun (və ya ayəni başdan)",
  "setReading": "Oxu",
  "setApp": "Tətbiq",
  "setData": "Məlumatlar",
@@ -110,6 +112,7 @@ const saz = {
  "reciteFail": "Mikrofon və ya səs tanıma əlçatan deyil"
 };
 const str = {
+ "reciteHold": "Hata — kırmızı kelimeyi tekrar okuyun (veya ayeti baştan)",
  "setReading": "Okuma",
  "setApp": "Uygulama",
  "setData": "Veriler",
@@ -165,6 +168,7 @@ const str = {
  "reciteFail": "Mikrofon veya ses tanıma kullanılamıyor"
 };
 const sar = {
+ "reciteHold": "خطأ — أعد قراءة الكلمة الحمراء (أو ابدأ الآية من أولها)",
  "setReading": "القراءة",
  "setApp": "التطبيق",
  "setData": "البيانات",
@@ -220,6 +224,7 @@ const sar = {
  "reciteFail": "الميكروفون أو التعرف على الكلام غير متاح"
 };
 const sru = {
+ "reciteHold": "Ошибка — повторите красное слово (или начните аят заново)",
  "setReading": "Чтение",
  "setApp": "Приложение",
  "setData": "Данные",

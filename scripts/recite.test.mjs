@@ -35,13 +35,103 @@ test("leftover words flow into the next ayah in one chunk", () => {
   assert.equal(s.cursor, 1);
   assert.deepEqual(s.res.get("1:3").states, ["ok", "pending"]);
 });
-test("a wrong word turns red at the end of the ayah; score drops", () => {
+const W = (t) => t.split(" ");
+test("medium: reveal stops at the wrong word, later words stay hidden, nothing advances", () => {
   const s = new ReciteSession(A, "medium");
-  s.feed("الحمد لله ملك العالمين".split(" "));
+  // wrong 3rd word, reciter keeps going through the ayah and into the next one
+  s.feed(W("الحمد لله ملك العالمين الرحمن الرحيم"));
+  const r = s.res.get("1:2");
+  assert.deepEqual(r.states, ["ok", "ok", "bad", "pending"]);
+  assert.ok(r.held && !r.closed);
+  assert.equal(s.cursor, 0);
+  assert.equal(s.res.get("1:3"), undefined);
+  // more speech that skips the wrong word does not advance
+  s.feed(W("الحمد لله ملك العالمين الرحمن الرحيم العالمين الرحمن الرحيم مالك يوم الدين"));
+  assert.equal(s.cursor, 0);
+  assert.deepEqual(s.res.get("1:2").states, ["ok", "ok", "bad", "pending"]);
+});
+test("re-reciting from the wrong word releases the hold and reveal continues", () => {
+  const s = new ReciteSession(A, "medium");
+  const h = W("الحمد لله ملك العالمين الرحمن");
+  s.feed(h);
+  assert.ok(s.held);
+  const h2 = [...h, "رب", "العالمين"];
+  s.feed(h2);
+  assert.equal(s.cursor, 1);
+  assert.ok(!s.held);
   const r = s.res.get("1:2");
   assert.ok(r.closed);
-  assert.equal(r.states[2], "bad");
-  assert.equal(r.score, 75);
+  assert.deepEqual(r.states, ["ok", "ok", "ok", "ok"]);
+  assert.equal(r.score, 75); // one mistake in four words
+});
+test("restarting the whole ayah also releases the hold", () => {
+  const s = new ReciteSession(A, "medium");
+  const h = W("الحمد لله ملك العالمين الرحمن");
+  s.feed(h);
+  s.feed([...h, ...W("الحمد لله رب العالمين")]);
+  assert.equal(s.cursor, 1);
+  assert.ok(s.res.get("1:2").closed);
+});
+test("a wrong retry keeps the hold (red word stays, nothing after it shows)", () => {
+  const s = new ReciteSession(A, "medium");
+  const h = W("الحمد لله ملك العالمين الرحمن");
+  s.feed(h);
+  s.feed([...h, "ملك", "العالمين", "الرحمن"]);
+  assert.ok(s.held);
+  assert.deepEqual(s.res.get("1:2").states, ["ok", "ok", "bad", "pending"]);
+});
+test("skipped word: held as missing", () => {
+  const s = new ReciteSession(A, "medium");
+  s.feed(W("الحمد لله العالمين الرحمن"));
+  const st = s.res.get("1:2").states;
+  assert.deepEqual([st[0], st[1], st[3]], ["ok", "ok", "pending"]);
+  assert.ok(st[2] === "bad" || st[2] === "missing"); // red either way
+  assert.ok(s.held);
+});
+test("hard: red at once, hold needs a second sighting or a final result for the newest word", () => {
+  const s = new ReciteSession(A, "hard");
+  s.feed(W("الحمد لله ملك"));
+  assert.equal(s.res.get("1:2").states[2], "bad");
+  assert.ok(!s.held); // could still be an interim guess
+  s.feed(W("الحمد لله ملك"), true);
+  assert.ok(s.held);
+  s.feed(W("الحمد لله ملك رب العالمين"));
+  assert.equal(s.cursor, 1);
+});
+test("hard: interim guess that is corrected does not hold", () => {
+  const s = new ReciteSession(A, "hard");
+  s.feed(W("الحمد لله ملك"));
+  s.feed(W("الحمد لله رب"));
+  assert.ok(!s.held);
+  assert.equal(s.res.get("1:2").states[2], "ok");
+});
+test("easy: a wrong word is only flagged after two more words, which stay hidden", () => {
+  const s = new ReciteSession(A, "easy");
+  s.feed(W("الحمد لله ملك"));
+  assert.ok(!s.held);
+  assert.equal(s.res.get("1:2").states[2], "pending");
+  s.feed(W("الحمد لله ملك العالمين"));
+  assert.deepEqual(s.res.get("1:2").states, ["ok", "ok", "bad", "pending"]);
+  assert.ok(s.held);
+});
+test("easy forgives one slip that medium holds on", () => {
+  const e = new ReciteSession(A, "easy");
+  const m = new ReciteSession(A, "medium");
+  const h = W("الحمد لله العالمين الرحمن الرحيم");
+  e.feed(h); m.feed(h);
+  assert.ok(m.held);
+  assert.ok(e.cursor >= 1 || !e.held || e.res.get("1:2").states[2] !== "missing");
+});
+test("a mistake in the 2nd ayah keeps the first closed and scored", () => {
+  const s = new ReciteSession(A, "medium");
+  s.feed(W("الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين"));
+  assert.ok(s.finished);
+  const t = new ReciteSession(A, "medium");
+  t.feed(W("الحمد لله رب العالمين الرحمن الكريم مالك"));
+  assert.ok(t.res.get("1:2").closed);
+  assert.equal(t.cursor, 1);
+  assert.ok(t.held);
+  assert.equal(t.res.get("1:4"), undefined);
 });
 test("new recogniser session restarts word counting without losing progress", () => {
   const s = new ReciteSession(A, "medium");

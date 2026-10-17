@@ -113,7 +113,7 @@ export function App() {
       {rc.mode !== "off" ? (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
-            <b>{rc.mode === "on" ? "● " + t.recitingNow : rc.mode === "paused" ? "❚❚ " + t.pausedNow : t.reviewNow}</b>
+            <b>{rc.mode === "on" ? (rc.held ? "⚠ " + t.reciteHold : "● " + t.recitingNow) : rc.mode === "paused" ? "❚❚ " + t.pausedNow : t.reviewNow}</b>
             <small>{rc.closedAyahs}/{rc.totalAyahs} {t.reciteAyahs} · {t.score}: {rc.score}%</small>
           </div>
           {rc.mode === "on" && <button className="ib" onClick={rc.pause}>❚❚ {t.recitePause}</button>}

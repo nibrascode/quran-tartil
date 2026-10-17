@@ -26,11 +26,11 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     sess.current?.res.forEach((r, key) => { if (r.closed) recordSession(key, { score: r.score, wrong: [] }); });
   }, []);
 
-  const feed = useCallback((words: string[]) => {
+  const feed = useCallback((words: string[], isFinal = false) => {
     heard.current = words;
     const s = sess.current;
     if (!s || modeRef.current !== "on") return;
-    s.feed(words);
+    s.feed(words, isFinal);
     setTick((t) => t + 1);
     if (s.finished && !turning.current) {
       turning.current = true;
@@ -92,7 +92,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     s.res.forEach((r, key) => {
       const [sn, an] = key.split(":");
       root.querySelectorAll<HTMLElement>(`.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((a) => a.classList.toggle("closed", r.closed));
-      root.querySelectorAll<HTMLElement>(`.ayah[data-s="${sn}"][data-a="${an}"] .w`).forEach((w, i) => {
+      root.querySelectorAll<HTMLElement>(`.w.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((w, i) => {
         const st = r.states[i];
         if (st === "ok") w.classList.add("ok"); else if (st === "bad" || st === "missing") w.classList.add("bad"); else if (st === "skip") w.classList.add("skp");
       });
@@ -100,5 +100,5 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   }, [tick, page, mode]);
 
   const s = sess.current;
-  return { mode, err, begin, pause, resume, stop, close, score: s?.score ?? 0, closedAyahs: s ? [...s.res.values()].filter((r) => r.closed).length : 0, totalAyahs: s?.ayahs.length ?? 0 };
+  return { held: !!s?.held, mode, err, begin, pause, resume, stop, close, score: s?.score ?? 0, closedAyahs: s ? [...s.res.values()].filter((r) => r.closed).length : 0, totalAyahs: s?.ayahs.length ?? 0 };
 }

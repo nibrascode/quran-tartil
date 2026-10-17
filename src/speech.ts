@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 
 export type Listener = { start(): Promise<void>; stop(): Promise<void> };
-type Cbs = { lang: string; onWords: (words: string[]) => void; onNewSession: () => void; onError: (msg: string) => void; onEnd: () => void };
+type Cbs = { lang: string; onWords: (words: string[], isFinal?: boolean) => void; onNewSession: () => void; onError: (msg: string) => void; onEnd: () => void };
 type WebRec = { start(): void; stop(): void; abort(): void; onresult: ((e: any) => void) | null; onerror: ((e: any) => void) | null; onend: (() => void) | null; lang: string; continuous: boolean; interimResults: boolean };
 const webCtor = (): (new () => WebRec) | null => (typeof window === "undefined" ? null : ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null));
 export const speechSupported = () => Capacitor.isNativePlatform() || !!webCtor();
@@ -16,7 +16,7 @@ export function createListener(c: Cbs): Listener {
     if (!C) { c.onError("unsupported"); return; }
     const r = new C();
     r.lang = c.lang; r.continuous = true; r.interimResults = true;
-    r.onresult = (e: any) => { let s = ""; for (let i = 0; i < e.results.length; i++) s += " " + e.results[i][0].transcript; c.onWords(split(s)); };
+    r.onresult = (e: any) => { let s = ""; for (let i = 0; i < e.results.length; i++) s += " " + e.results[i][0].transcript; c.onWords(split(s), !!e.results[e.results.length - 1]?.isFinal); };
     r.onerror = (e: any) => { if (e.error === "no-speech" || e.error === "aborted") return; want = false; c.onError(String(e.error || "error")); };
     r.onend = () => {
       if (want && restarts < 200) { restarts++; c.onNewSession(); setTimeout(() => { if (want) startWeb(); }, 150); } else { want = false; c.onEnd(); }
