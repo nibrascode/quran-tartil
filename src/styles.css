@@ -320,7 +320,9 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 
 /* ---- full-screen reader: edge to edge, no card/frame, dock floats over the page and auto-hides ---- */
 .page { padding:0; background-image:none; }
-.frame { border:0; border-radius:0; box-shadow:none; padding:0 6px; }
+.frame { border:0; border-radius:0; box-shadow:none; padding:5px 10px 3px; }
+@media (min-width:600px) { .frame { padding:10px 22px 6px; } }
+@media (max-width:339px) { .frame { padding:4px 8px 2px; } }
 .page-head { font-size:11px; padding:3px 4px 2px; border-bottom:0; margin-bottom:0; opacity:.75; }
 .page-no { font-size:12px; padding:0 0 3px; line-height:1.2; }
 .app:not(.rec-ui) .dock { position:absolute; left:0; right:0; bottom:0; padding:0 10px calc(8px + env(safe-area-inset-bottom)); background:none; border:0; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; pointer-events:none; }
