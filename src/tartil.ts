@@ -35,14 +35,39 @@ function lev(a: string, b: string, nearCost = 0.45): number {
 }
 export const similarity = (a: string, b: string, nearCost = 0.45) => (a || b ? 1 - lev(a, b, nearCost) / Math.max(a.length, b.length) : 1);
 /** Word match: very short words (1-2 letters) must be exact, longer ones may differ slightly. */
-export const same = (e: string, h: string, threshold = 0.72, nearCost = 0.45) => (e.length <= 2 || h.length <= 2 ? e === h : similarity(e, h, nearCost) >= threshold);
+export const sameBase = (e: string, h: string, threshold = 0.72, nearCost = 0.45) => (e.length <= 2 || h.length <= 2 ? e === h : similarity(e, h, nearCost) >= threshold);
 
+/**
+ * Sound-alike skeleton used on Easy: ignores madd length (ا و ي inside a word), alif wasla / assimilated "ال",
+ * ghunna / idgham (interior and tanween ن, doubled letters) and merges letters that sound alike (ص ث س, ض ظ ذ ز د, ط ت, ق ك, ح ه ة, ع ء ا, غ خ).
+ */
+const CLASSES: Record<string, string> = { ص: "س", ث: "س", ض: "د", ظ: "د", ذ: "د", ز: "د", ط: "ت", ق: "ك", ح: "ه", ة: "ه", ع: "ا", ء: "ا", غ: "خ", ش: "ش" };
+export function phon(w: string): string {
+  let x = w;
+  if (x.startsWith("ال") && x.length > 3) x = x.slice(2); else if (x[0] === "ا" && x.length > 2) x = x.slice(1);
+  x = Array.from(x).map((c) => CLASSES[c] ?? c).join("");
+  const mapped = x;
+  x = x[0] + x.slice(1).replace(/[اوي]/g, "");
+  if (x.length > 3 && x.endsWith("ن")) x = x.slice(0, -1);
+  x = x[0] + x.slice(1).replace(/ن(?=.)/g, "");
+  x = x.replace(/(.)\1+/g, "$1");
+  return x.length < 2 ? mapped : x;
+}
+/** sound-alike word match (Easy): equal skeletons, or very close skeletons */
+export function phonSame(e: string, h: string): boolean {
+  if (e.length <= 2 || h.length <= 2) return e.length === h.length && Array.from(e).every((c, i) => (CLASSES[c] ?? c) === (CLASSES[h[i]] ?? h[i]));
+  const a = phon(e), b = phon(h);
+  if (a === b) return true;
+  return Math.min(a.length, b.length) >= 3 && similarity(a, b, 0.3) >= 0.75;
+}
+
+export const same = sameBase;
 export type WordState = "ok" | "bad" | "missing" | "pending" | "skip";
 export type Level = "easy" | "medium" | "hard";
 /** How strict mistake detection is. threshold: word similarity needed; nearCost: price of a look-alike letter (ذ/ز...); delay: how many further words must be heard before a mistake is shown; forgive: isolated skipped words tolerated; extras: extra words lower the score. */
-export type AlignOpts = { threshold: number; nearCost: number; delay: number; forgive: number; extras: boolean; final?: boolean };
+export type AlignOpts = { threshold: number; nearCost: number; delay: number; forgive: number; extras: boolean; phonetic?: boolean; final?: boolean };
 export const LEVELS: Record<Level, AlignOpts> = {
-  easy: { threshold: 0.6, nearCost: 0.3, delay: 2, forgive: 1, extras: false },
+  easy: { threshold: 0.55, nearCost: 0.25, delay: 2, forgive: 1, extras: false, phonetic: true },
   medium: { threshold: 0.72, nearCost: 0.45, delay: 1, forgive: 0, extras: false },
   hard: { threshold: 0.86, nearCost: 1, delay: 0, forgive: 0, extras: true },
 };
@@ -58,6 +83,7 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: number 
   const threshold = o.threshold, nc = o.nearCost, mt = Math.max(threshold, 0.8); // merges/splits of words need a closer match
   const E = expectedRaw.map(normalizeAr), H = heardRaw.map(normalizeAr).filter(Boolean);
   const n = E.length, m = H.length;
+  const same = o.phonetic ? (e: string, h: string, t: number, c: number) => sameBase(e, h, t, c) || phonSame(e, h) : sameBase;
   const INF = 1e9;
   const D: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(INF));
   const B: string[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(""));
