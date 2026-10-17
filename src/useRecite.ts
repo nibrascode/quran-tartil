@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Stabilizer, CONFIRM_MS } from "./stabilize";
 import { ReciteSession, type AyahTokens } from "./reciteCore";
 import { createListener, type Listener } from "./speech";
 import { pageItems, PAGES } from "./quran";
@@ -15,6 +16,8 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const [err, setErr] = useState("");
   const sess = useRef<ReciteSession | null>(null);
   const heard = useRef<string[]>([]);
+  const stabRef = useRef(new Stabilizer(CONFIRM_MS[prefs.strict]));
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const lis = useRef<Listener | null>(null);
   const modeRef = useRef<ReciteMode>("off");
   const pageRef = useRef(page);
@@ -27,10 +30,22 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   }, []);
 
   const feed = useCallback((words: string[], isFinal = false) => {
-    heard.current = words;
     const s = sess.current;
     if (!s || modeRef.current !== "on") return;
-    s.feed(words, isFinal);
+    const stab = stabRef.current;
+    const stable = stab.push(words, isFinal, Date.now());
+    apply(stable, true); // released words are already confirmed
+    if (stab.waiting) {
+      // nothing new is released until the word is confirmed: check again shortly (no flicker from interim guesses)
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => { if (modeRef.current === "on") apply(stab.poll(Date.now()), true); }, stab.ms + 30);
+    }
+  }, [setPage]); // eslint-disable-line
+  const apply = useCallback((stable: string[], isFinal: boolean) => {
+    heard.current = stable;
+    const s = sess.current;
+    if (!s) return;
+    s.feed(stable, isFinal);
     setTick((t) => t + 1);
     if (s.finished && !turning.current) {
       turning.current = true;
@@ -57,12 +72,13 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     setErr("");
     sess.current = new ReciteSession(tokensOf(pageRef.current), prefs.strict);
     heard.current = [];
+    stabRef.current = new Stabilizer(CONFIRM_MS[prefs.strict]);
     setMode("on");
     modeRef.current = "on";
     lis.current = createListener({
       lang: prefs.recLang,
       onWords: feed,
-      onNewSession: () => { sess.current?.newRecogniser(); heard.current = []; },
+      onNewSession: () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); },
       onError: (m) => { setErr(m); setMode("off"); },
       onEnd: () => {},
     });
@@ -70,9 +86,10 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     setTick((t) => t + 1);
   }, [feed, prefs.recLang, prefs.strict]);
 
-  const pause = useCallback(async () => { await lis.current?.stop(); setMode("paused"); }, []);
-  const resume = useCallback(async () => { sess.current?.newRecogniser(); heard.current = []; setMode("on"); modeRef.current = "on"; await lis.current?.start(); }, []);
+  const pause = useCallback(async () => { clearTimeout(timer.current); await lis.current?.stop(); setMode("paused"); }, []);
+  const resume = useCallback(async () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); setMode("on"); modeRef.current = "on"; await lis.current?.start(); }, []);
   const stop = useCallback(async () => {
+    clearTimeout(timer.current);
     await lis.current?.stop();
     sess.current?.finish();
     save();

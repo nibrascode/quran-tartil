@@ -68,7 +68,9 @@ export class ReciteSession {
         // held: the retry must start with the wrong word (continue from there) or restart the ayah
         const cands = this.heldIdx > 0 ? [this.heldIdx, 0] : [0];
         let pick = -1, best = -1;
-        for (const c of cands) { const rr = run(c, false); if (rr.states[0] === "ok" && rr.matched > best) { best = rr.matched; pick = c; r = rr; } }
+        for (const c of cands) { const rr = run(c, false); // restarting the ayah must be convincing (two words), a single look-alike word must not release the hold
+          const good = rr.states[0] === "ok" && (c === this.heldIdx || rr.states[1] === "ok" || norms.length === 1);
+          if (good && rr.matched > best) { best = rr.matched; pick = c; r = rr; } }
         if (pick < 0) {
           // still wrong / nothing usable yet: stay held on the red word, show nothing new
           this.okBefore = this.okBefore.slice(0, this.heldIdx);
