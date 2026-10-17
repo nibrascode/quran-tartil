@@ -34,6 +34,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const turning = useRef(false);
   const prac = useRef<{ key: string; repeat: number; scores: number[] } | null>(null);
   const [rep, setRep] = useState(0);
+  const gotWords = useRef(false), silTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined); // nothing heard for 10 s while listening -> tell the user
   const navRef = useRef(false); // free start: the first words say where in the Quran the reciter is
   const pendingNav = useRef<{ key: string; at: number } | null>(null);
   const doneRef = useRef(onDone);
@@ -46,6 +47,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   }, []);
 
   const feed = useCallback((words: string[], isFinal = false) => {
+    gotWords.current = true; clearTimeout(silTimer.current);
     const s = sess.current;
     if (!s || modeRef.current !== "on") return;
     const stab = stabRef.current;
@@ -129,6 +131,8 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     stabRef.current = new Stabilizer(CONFIRM_MS[prefs.strict]);
     setMode("on");
     modeRef.current = "on";
+    gotWords.current = false; clearTimeout(silTimer.current);
+    silTimer.current = setTimeout(() => { if (modeRef.current === "on" && !gotWords.current) setErr("no-audio"); }, 10000);
     lis.current = createListener({
       lang: prefs.recLang,
       expected: () => { const x = sess.current; if (!x) return []; return x.ayahs.slice(Math.max(0, x.cursor), x.cursor + 3).flatMap((a) => a.tokens); },
@@ -147,7 +151,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const stop = useCallback(async () => {
     // state first (late results are ignored at once), then tear the recogniser down
     prac.current = null;
-    clearTimeout(timer.current);
+    clearTimeout(timer.current); clearTimeout(silTimer.current);
     const l = lis.current;
     const had = modeRef.current === "on" || modeRef.current === "paused";
     if (had) modeRef.current = "review";

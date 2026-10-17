@@ -51,6 +51,8 @@ jobs:
       - name: Precise engine (fake worker + fake mic, consent/download UI, stop terminates the worker)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/precise.mjs
+      - name: No-reaction guard (words must change state; silence must be visible)
+        run: node scripts/e2e/react.mjs
       - name: Full QA sweep (screens, languages, mic lifecycle, offline, a11y)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/qa.mjs

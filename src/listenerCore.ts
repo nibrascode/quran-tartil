@@ -38,10 +38,13 @@ export function createCore(mk: () => Engine, res: Resource, cbs: CoreCbs, clock:
         error: (msg, fatal) => { if (!live()) return; if (fatal) { void halt().then(() => cbs.onError(msg)); } },
       });
     } catch (err) {
-      if (active(g)) { await halt(); cbs.onError(String((err as Error)?.message || err)); } else await e.abort().catch(() => {});
+      if (active(g) && eng === e) { await halt(); cbs.onError(String((err as Error)?.message || err)); } else if (!active(g)) await e.abort().catch(() => {});
       return;
     }
-    if (!active(g) || eng !== e) { await e.abort().catch(() => {}); return; } // stopped while the engine was starting
+    // stopped while the engine was starting: clean it up. But if the engine merely reported `end` while starting (the Android plugin sends a stale
+    // 'stopped' event), a restart is already scheduled for the NEXT engine: aborting here would tear down that one (the plugin is a global singleton) and the mic would be dead and silent.
+    if (!active(g)) { await e.abort().catch(() => {}); return; }
+    if (eng !== e) return;
     if (state === "starting") set("listening");
   }
 

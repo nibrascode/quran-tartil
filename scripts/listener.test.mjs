@@ -95,3 +95,18 @@ test("native-style recogniser: many instant 'stopped' events never end the sessi
   assert.equal(core.state, "listening"); assert.deepEqual(w.errors, []); assert.ok(w.started >= 12, "keeps restarting: " + w.started);
   await core.stop();
 });
+
+test("REGRESSION no-reaction: a stale 'end' during a slow engine start must not let the old launch tear down the restarted (singleton) engine", async () => {
+  // models the Android plugin: one global recogniser + one global listener slot; abort() clears both
+  const g = { session: 0, handler: null, results: [] };
+  let n = 0;
+  const mk = () => ({
+    async start(h) { const id = ++n; g.handler = h; if (id === 1) { await tick(5); h.end(); await tick(400); } else await tick(2); g.session = id; },
+    async abort() { g.session = 0; g.handler = null; },
+  });
+  const core = createCore(mk, { async open() {}, close() {} }, { onResult: (a) => g.results.push(a[0][0].transcript), onNewSession() {}, onError() {}, onEnd() {} });
+  void core.start(); await tick(900);
+  assert.ok(g.session > 0 && g.handler, "the recogniser that is running must still be alive and listening");
+  g.handler.result(A("x"), false); assert.deepEqual(g.results, ["x"]);
+  await core.stop();
+});
