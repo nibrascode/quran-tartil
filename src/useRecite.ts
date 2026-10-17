@@ -15,7 +15,8 @@ const mergeEvents = (ev: { key: string; word: string; n: number }[]) => {
 const tokensOf = (p: number): AyahTokens[] => (pageItems(p).filter((x) => x.k === "ayah") as { k: "ayah"; s: number; a: number; text: string }[]).map((x) => ({ key: x.s + ":" + x.a, tokens: x.text.split(" ").filter(Boolean) }));
 
 /** Live recitation mode on the reader: words are revealed (green/red) as they are recited; the page turns itself when finished. */
-export function useRecite(page: number, setPage: (p: number) => void, prefs: Prefs) {
+export type PracticeOpts = { repeat: number };
+export function useRecite(page: number, setPage: (p: number) => void, prefs: Prefs, onDone?: (key: string, scores: number[]) => void) {
   const [mode, setMode] = useState<ReciteMode>("off");
   const [tick, setTick] = useState(0);
   const [err, setErr] = useState("");
@@ -28,6 +29,10 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const modeRef = useRef<ReciteMode>("off");
   const pageRef = useRef(page);
   const turning = useRef(false);
+  const prac = useRef<{ key: string; repeat: number; scores: number[] } | null>(null);
+  const [rep, setRep] = useState(0);
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
   modeRef.current = mode;
   pageRef.current = page;
 
@@ -53,6 +58,16 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     if (!s) return;
     s.feed(stable, isFinal);
     setTick((t) => t + 1);
+    const pr = prac.current;
+    if (pr) {
+      const r = s.res.get(pr.key);
+      if (r?.closed) {
+        pr.scores.push(r.score);
+        if (pr.scores.length < pr.repeat) { s.seek(s.ayahs.findIndex((x) => x.key === pr.key), heard.current.length); setRep(pr.scores.length); setTick((t) => t + 1); }
+        else { prac.current = null; const sc = pr.scores; doneRef.current?.(pr.key, sc); setTimeout(() => stop(), 350); }
+        return;
+      }
+    }
     if (s.finished && !turning.current) {
       turning.current = true;
       setTimeout(() => {
@@ -75,8 +90,10 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     setTick((t) => t + 1);
   }, [page]); // eslint-disable-line
 
-  const begin = useCallback(async (from?: { s: number; a: number } | null) => {
+  const begin = useCallback(async (from?: { s: number; a: number } | null, opts?: PracticeOpts) => {
     setErr("");
+    prac.current = from && opts ? { key: from.s + ":" + from.a, repeat: Math.max(1, opts.repeat), scores: [] } : null;
+    setRep(0);
     archive.current = [];
     const ns = new ReciteSession(tokensOf(pageRef.current), prefs.strict);
     const k = from ? ns.ayahs.findIndex((x) => x.key === from.s + ":" + from.a) : -1;
@@ -100,6 +117,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const pause = useCallback(async () => { clearTimeout(timer.current); await lis.current?.stop(); setMode("paused"); }, []);
   const resume = useCallback(async () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); setMode("on"); modeRef.current = "on"; await lis.current?.start(); }, []);
   const stop = useCallback(async () => {
+    prac.current = null;
     clearTimeout(timer.current);
     await lis.current?.stop();
     sess.current?.finish();
@@ -116,7 +134,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     setTick((t) => t + 1);
   }, []);
   const restart = useCallback(() => { const s = sess.current; if (!s) return; s.seek(s.start, heard.current.length); setTick((t) => t + 1); }, []);
-  const close = useCallback(() => { setMode("off"); sess.current = null; setTick((t) => t + 1); }, []);
+  const close = useCallback(() => { prac.current = null; setMode("off"); sess.current = null; setTick((t) => t + 1); }, []);
   useEffect(() => () => { lis.current?.stop(); }, []);
 
   // paint the page: green = matched, red = different/skipped, hidden (blurred) = not recited yet
@@ -138,5 +156,5 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   }, [tick, page, mode]);
 
   const s = sess.current;
-  return { held: !!s?.held, mode, err, begin, pause, resume, stop, close, back, restart, mistakes: mergeEvents([...archive.current, ...(s?.events ?? [])]), score: s?.score ?? 0, closedAyahs: s ? [...s.res.values()].filter((r) => r.closed).length : 0, totalAyahs: s?.ayahs.length ?? 0 };
+  return { rep, practicing: !!prac.current, held: !!s?.held, mode, err, begin, pause, resume, stop, close, back, restart, mistakes: mergeEvents([...archive.current, ...(s?.events ?? [])]), score: s?.score ?? 0, closedAyahs: s ? [...s.res.values()].filter((r) => r.closed).length : 0, totalAyahs: s?.ayahs.length ?? 0 };
 }

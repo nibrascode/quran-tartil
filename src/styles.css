@@ -291,3 +291,22 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 .sheet-body > *, .sheet-body section, .sheet-body label { max-width:100%; }
 .sheet-body input[type=time] { max-width:100%; min-width:0; }
 .sheet-body .primary { max-width:100%; box-sizing:border-box; }
+
+/* practice tab */
+.practice { display:flex; flex-direction:column; gap:12px; }
+.pcard { border:1px solid var(--line); border-radius:18px; padding:14px; background:linear-gradient(160deg, color-mix(in srgb, var(--card) 92%, transparent), color-mix(in srgb, var(--accent) 6%, var(--card))); min-width:0; }
+.pcard h3 { margin:0 0 4px; display:flex; align-items:center; gap:8px; font-size:16px; color:var(--accent); }
+.pcard p { margin:4px 0 10px; color:var(--muted); font-size:14px; line-height:1.4; }
+.pcard .pstat { color:var(--fg); font-weight:600; }
+.prow { display:flex; gap:8px; flex-wrap:wrap; }
+.prow .ib { flex:1 1 140px; justify-content:center; }
+.stepper { display:flex; align-items:center; gap:14px; }
+.stepper b { min-width:44px; text-align:center; font-size:20px; }
+.stepper .ib { width:44px; height:44px; font-size:22px; justify-content:center; }
+.pnone { display:block; margin-top:10px; color:var(--muted); }
+.plist { list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; }
+.plist li { display:flex; align-items:center; gap:6px; border-top:1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.plist .pgo { flex:1; min-width:0; display:flex; align-items:center; gap:10px; min-height:46px; appearance:none; border:0; background:none; color:var(--fg); font:inherit; text-align:start; cursor:pointer; padding:0; }
+.plist .pgo small { margin-inline-start:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
+.plist .pgo .mw { font-family:"Amiri Quran", serif; font-size:20px; }
+.plist .ref { font-size:12px; padding:2px 8px; border-radius:99px; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent); flex:none; }

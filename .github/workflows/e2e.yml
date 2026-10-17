@@ -27,3 +27,6 @@ jobs:
       - name: UI sweep (5 languages x 3 themes, sheets, settings, onboarding)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/ui.mjs
+      - name: Practice flows (repeat, hifz, weak words) with a faked recogniser
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/practice.mjs

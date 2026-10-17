@@ -10,11 +10,13 @@ import { drawBands } from "./band";
 import { Ic } from "./Icons";
 import { haptic, setHaptics } from "./haptic";
 import { pageOfAyah } from "./quran";
-import { markRead, toggleBookmark, useSettings } from "./store";
+import { markRead, toggleBookmark, useSettings, dayKey } from "./store";
+import { mergeWeak, clearWeak, weakAyahs, addCards, review, dueKeys, PASS_SCORE } from "./practice";
 
 export type Theme = "light" | "dark" | "sepia";
 const THEME_COLOR: Record<Theme, string> = { light: "#f6efdc", dark: "#0f1412", sepia: "#e9d9b4" };
 export type Sel = { s: number; a: number } | null;
+export type Queue = { kind: "hifz" | "weak" | "loop"; keys: string[]; i: number; started: boolean };
 
 /** Arabic text only: ayah in ornate brackets + sura name and number (no translation). */
 export function ayahShareText(s: number, a: number): string {
@@ -37,7 +39,19 @@ export function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
   const shiftRef = useRef(0);
   const t = T[lang];
-  const rc = useRecite(page, (p) => setPage(p), st.prefs);
+  const [pq, setPq] = useState<Queue | null>(null);
+  const cleared = useRef<Set<string>>(new Set());
+  const pqRef = useRef<Queue | null>(null);
+  pqRef.current = pq;
+  const onDone = (key: string, scores: number[]) => {
+    const q = pqRef.current; if (!q) return;
+    const last = scores[scores.length - 1] ?? 0, today = dayKey();
+    if (q.kind === "hifz") { update((x) => ({ ...x, hifz: review(x.hifz, key, last, today) })); say(last >= PASS_SCORE ? t.hifzPass : t.hifzFail); }
+    if (last >= (q.kind === "hifz" ? PASS_SCORE : 90)) { cleared.current.add(key); update((x) => ({ ...x, weak: clearWeak(x.weak, key) })); }
+    if (q.i + 1 < q.keys.length) setPq({ ...q, i: q.i + 1, started: false });
+    else { setPq(null); if (q.kind === "hifz") setTimeout(() => say(t.hifzDone), 1700); }
+  };
+  const rc = useRecite(page, (p) => setPage(p), st.prefs, onDone);
 
   const setPage = (p: number) => { setPageState(p); localStorage.setItem("page", String(p)); setSel(null); };
   useEffect(() => { setHaptics(st.prefs.haptics); }, [st.prefs.haptics]);
@@ -53,6 +67,30 @@ export function App() {
     if (rc.closedAyahs > prevClosed.current) haptic("ok");
     prevClosed.current = rc.closedAyahs;
   }, [rc.held, rc.closedAyahs]);
+  // practice queue: go to the ayah's page, then start reciting it (repeat count / hidden text for hifz)
+  useEffect(() => {
+    if (!pq || pq.started) return;
+    const [ps, pa] = pq.keys[pq.i].split(":").map(Number);
+    const target = pageOfAyah(ps, pa);
+    if (rc.mode === "review") { rc.close(); return; }
+    if (rc.mode !== "off") return;
+    if (page !== target) { setPage(target); return; }
+    setPq({ ...pq, started: true });
+    rc.begin({ s: ps, a: pa }, { repeat: pq.kind === "hifz" ? 1 : pq.kind === "weak" ? 2 : st.prefs.repeat });
+  }); // eslint-disable-line
+  // leaving recite mode by hand ends the practice queue
+  useEffect(() => { if (pq?.started && (rc.mode === "review" || rc.mode === "off")) setPq(null); }, [rc.mode]); // eslint-disable-line
+  // remember mistakes as weak words
+  const prevMode = useRef(rc.mode);
+  useEffect(() => {
+    const was = prevMode.current; prevMode.current = rc.mode;
+    if ((was === "on" || was === "paused") && (rc.mode === "review" || rc.mode === "off")) {
+      const ev = rc.mistakes.filter((m) => !cleared.current.has(m.key));
+      cleared.current.clear();
+      if (ev.length) update((x) => ({ ...x, weak: mergeWeak(x.weak, ev, dayKey()) }));
+    }
+  }, [rc.mode]); // eslint-disable-line
+  const startQueue = (kind: Queue["kind"], keys: string[]) => { if (!keys.length) return; setMenu(null); setSel(null); setBars(false); setPq({ kind, keys, i: 0, started: false }); };
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 1600); };
 
   useEffect(() => { document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"; localStorage.setItem("lang", lang); }, [lang]);
@@ -143,7 +181,7 @@ export function App() {
   }
 
   return (
-    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (st.prefs.hide ? " hide-ayahs" : "")}>
+    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (st.prefs.hide || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
       <div className={"bar top" + (bars ? "" : " hidden")} aria-hidden={!bars}>
         <button className="ib" aria-label={t.menu} onClick={() => setMenu("surah")}><Ic n="menu" /></button>
         <div className="title"><b>{sura.name}</b> · {t.juz} {juzOfPage(page)} · {t.page} {page}</div>
@@ -156,7 +194,7 @@ export function App() {
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
             <b className={"st " + (rc.mode === "on" ? (rc.held ? "warn" : "live") : rc.mode)}><Ic n={rc.mode === "on" ? (rc.held ? "warn" : "dot") : rc.mode === "paused" ? "pause" : "check"} size={16} fill={rc.mode === "on" && !rc.held} />{rc.mode === "on" ? (rc.held ? t.reciteHold : t.recitingNow) : rc.mode === "paused" ? t.pausedNow : t.reviewNow}</b>
-            <small>{rc.closedAyahs}/{rc.totalAyahs} {t.reciteAyahs} · {t.score}: {rc.score}%</small>
+            <small>{pq?.started ? <>{pq.kind === "loop" || pq.kind === "weak" ? t.repeatStep.replace("{i}", String(Math.min(rc.rep + 1, pq.kind === "weak" ? 2 : st.prefs.repeat))).replace("{n}", String(pq.kind === "weak" ? 2 : st.prefs.repeat)) + " · " : ""}{pq.keys.length > 1 ? t.practiceStep.replace("{i}", String(pq.i + 1)).replace("{n}", String(pq.keys.length)) + " · " : ""}{pq.keys[pq.i]}</> : <>{rc.closedAyahs}/{rc.totalAyahs} {t.reciteAyahs} · {t.score}: {rc.score}%</>}</small>
           </div>
           {(rc.mode === "on" || rc.mode === "paused") && <button className="ib danger" onClick={rc.stop}><Ic n="stop" size={16} fill />{t.reciteStop}</button>}
           {rc.mode === "review" && <button className="ib" onClick={rc.close}><Ic n="close" size={16} />{t.reciteClose}</button>}
@@ -183,6 +221,8 @@ export function App() {
           <button className="arow" onClick={copy}><Ic n="copy" />{t.copy}</button>
           <button className="arow" onClick={share}><Ic n="share" />{t.share}</button>
           <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{t.reciteThisAyah}</button>
+          <button className="arow" onClick={() => startQueue("loop", [sel.s + ":" + sel.a])}><Ic n="repeat" />{t.repeatAyah.replace("{n}", String(st.prefs.repeat))}</button>
+          <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? t.hifzIn : t.hifzAddAyah}</button>
         </div>
       )}
       {mist && (
@@ -204,7 +244,7 @@ export function App() {
       {toast && <div className="toast" role="status">{toast}</div>}
       {!st.onboarded && <Onboarding lang={lang} setLang={setLang} onDone={() => update((s) => ({ ...s, onboarded: true }))} />}
       {menu && (
-        <Menu tab={menu} setTab={setMenu} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} page={page} st={st} update={update} focusAyah={focusAyah}
+        <Menu startQueue={startQueue} say={say} tab={menu} setTab={setMenu} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} page={page} st={st} update={update} focusAyah={focusAyah}
           onGo={(p, a) => { setPage(p); if (a) setSel(a); setMenu(null); setBars(false); }} onClose={() => setMenu(null)} onIntro={() => { setMenu(null); update((s) => ({ ...s, onboarded: false })); }} />
       )}
     </div>

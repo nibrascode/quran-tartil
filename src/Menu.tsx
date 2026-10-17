@@ -10,24 +10,27 @@ import { streak, toggleBookmark, type Settings } from "./store";
 import { canNotify, setReminder } from "./notify";
 import { SettingsView } from "./Settings";
 import { PrivacyView } from "./Privacy";
+import { PracticeView } from "./Practice";
+import type { Queue } from "./App";
 
-export type Tab = "surah" | "juz" | "page" | "search" | "bookmarks" | "progress" | "tartil" | "settings" | "about" | "privacy";
+export type Tab = "surah" | "juz" | "page" | "search" | "bookmarks" | "progress" | "tartil" | "practice" | "settings" | "about" | "privacy";
 type Props = {
   tab: Tab; setTab: (t: Tab) => void; lang: Lang; setLang: (l: Lang) => void; theme: Theme; setTheme: (t: Theme) => void; page: number;
   st: Settings; update: (f: (s: Settings) => Settings) => void; focusAyah: Sel;
+  startQueue: (k: Queue["kind"], keys: string[]) => void; say: (m: string) => void;
   onGo: (p: number, a?: { s: number; a: number }) => void; onClose: () => void; onIntro: () => void;
 };
 
-export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, update, focusAyah, onGo, onClose, onIntro }: Props) {
+export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, update, focusAyah, startQueue, say, onGo, onClose, onIntro }: Props) {
   const t = T[lang];
   const [q, setQ] = useState("");
   const [sq, setSq] = useState("");
   const [num, setNum] = useState(String(page));
   const [rmsg, setRmsg] = useState("");
   const root = useRef<HTMLDivElement>(null);
-  const tabs: Tab[] = ["surah", "juz", "page", "search", "bookmarks", "progress", "tartil", "settings"];
+  const tabs: Tab[] = ["surah", "juz", "page", "search", "bookmarks", "progress", "tartil", "practice", "settings"];
   const sub = tab === "about" || tab === "privacy";
-  const label = (k: Tab) => ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, settings: t.settings, about: t.about, privacy: t.privacy }[k]);
+  const label = (k: Tab) => ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, practice: t.practiceTab, settings: t.settings, about: t.about, privacy: t.privacy }[k]);
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase(), n = normalizeAr(q);
     return suras.filter((x) => !s || (n && normalizeAr(x.name).includes(n)) || x.tname.toLowerCase().includes(s) || x.ename.toLowerCase().includes(s) || String(x.i) === s);
@@ -147,6 +150,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
               </div>
             </>
           )}
+          {tab === "practice" && <PracticeView lang={lang} st={st} update={update} page={page} startQueue={startQueue} onGo={onGo} say={say} />}
           {tab === "tartil" && <Tartil lang={lang} page={page} focus={focusAyah} prefs={st.prefs} />}
           {tab === "settings" && <SettingsView lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} st={st} update={update} applyReminder={applyReminder} rmsg={rmsg} onIntro={onIntro} openView={(v) => setTab(v)} />}
           {tab === "privacy" && <PrivacyView lang={lang} />}

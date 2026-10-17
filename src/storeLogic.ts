@@ -1,3 +1,4 @@
+import type { Weak, Hifz } from "./practice";
 const PAGES = 604; // Madinah mushaf
 
 export type Bookmark = { s: number; a: number; page: number; ts: number };
@@ -11,6 +12,8 @@ export type Settings = {
   goal: number; // pages per day
   reminder: { on: boolean; h: number; m: number };
   onboarded: boolean;
+  weak: Weak[]; // words got wrong while reciting
+  hifz: Hifz; // memorization cards (spaced repetition)
   prefs: Prefs;
 };
 export type Prefs = {
@@ -20,12 +23,13 @@ export type Prefs = {
   recLang: "ar-SA" | "ar-EG" | "ar-AE" | "ar-MA";
   strict: "easy" | "medium" | "hard";
   haptics: boolean;
+  repeat: number; // ayah repeat count (1..10)
   hide: boolean; // hide-ayahs mode: text hidden, only the ayah markers stay; words appear as they are recited
 };
-export const defaultPrefs = (): Prefs => ({ fontScale: 1, flip: "flip", keepAwake: false, recLang: "ar-SA", strict: "medium", hide: false, haptics: true });
+export const defaultPrefs = (): Prefs => ({ fontScale: 1, flip: "flip", keepAwake: false, recLang: "ar-SA", strict: "medium", hide: false, haptics: true, repeat: 3 });
 export const KEY = "qt.v2";
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-export const defaults = (): Settings => ({ bookmarks: [], visited: [], khatms: 0, days: {}, dayPages: [], today: dayKey(), goal: 2, reminder: { on: false, h: 20, m: 0 }, onboarded: false, prefs: defaultPrefs() });
+export const defaults = (): Settings => ({ bookmarks: [], visited: [], khatms: 0, days: {}, dayPages: [], today: dayKey(), goal: 2, reminder: { on: false, h: 20, m: 0 }, onboarded: false, weak: [], hifz: {}, prefs: defaultPrefs() });
 
 export function load(): Settings {
   try { const j = JSON.parse(localStorage.getItem(KEY) || "{}"); const pr = { ...defaultPrefs(), ...(j.prefs || {}) } as Prefs; pr.strict = (({ lenient: "easy", normal: "medium", strict: "hard" } as Record<string, Prefs["strict"]>)[pr.strict as string] ?? pr.strict) as Prefs["strict"]; return { ...defaults(), ...j, prefs: pr }; } catch { return defaults(); }
