@@ -135,6 +135,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
       onWords: feed,
       onNewSession: () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); },
       onError: (m) => { setErr(m); modeRef.current = "off"; setMode("off"); },
+      onNotice: (m) => setErr(m),
       onEnd: () => {},
     });
     await lis.current.start();

@@ -35,7 +35,10 @@ export class Pipeline {
   jobs = 0; skipped = 0; dropped = 0;
   constructor(o: Partial<Opts> = {}) { this.o = { ...DEFAULTS, ...o }; this.hop = this.o.hop; }
   /** words the reciter is expected to say next (tie-break only) */
-  setExpected(words: string[]) { this.exp = words.map(strip).filter(Boolean); }
+  setExpected(words: string[]) { const n = words.map(strip).filter(Boolean); if (n.join(" ") !== this.exp.join(" ")) this.ptr = 0; this.exp = n; }
+  private ptr = 0; // index in `exp` of the word expected next (advances as words are committed)
+  private near(x: string, from = this.ptr, n = 6) { let b = 0; for (let j = from; j < Math.min(this.exp.length, from + n); j++) b = Math.max(b, sim(x, this.exp[j])); return b; }
+  private advance(x: string) { let bj = -1, bs = 0.6; for (let j = this.ptr; j < Math.min(this.exp.length, this.ptr + 6); j++) { const v = sim(x, this.exp[j]); if (v > bs) { bs = v; bj = j; } } if (bj >= 0) this.ptr = bj + 1; }
   private plausible(x: string) { return !this.exp.length || this.exp.some((e) => sim(x, e) >= 0.7); }
   private exact(x: string) { return this.exp.some((e) => sim(x, e) >= 0.9); }
   /** Whisper likes to prepend a و/ف to the first word after a pause: drop it when the word without it is the expected one */
@@ -106,6 +109,9 @@ export class Pipeline {
     // window heard the same word at the same time). Words that fit nothing wait for a second sighting; after `maxWait` seconds, or at an
     // endpoint, the better of the two sightings (by the expected text) is taken so nothing waits forever.
     for (const x of w) x.w = this.unWaw(x.w);
+    // junk suppression: a word that resembles NONE of the next expected words (similarity < 0.5) is Whisper noise, not a recitation of this text. It is dropped, not
+    // passed: the expected word it replaced stays unheard, so a genuinely wrong word is still flagged by the aligner as missing (and look-alike wrong words (>= 0.5) are kept for it to judge).
+    if (this.exp.length) w = w.filter((x) => this.near(x.w) >= 0.5);
     const prev = this.prev;
     this.prev = w.map((x) => ({ ...x }));
     const out: string[] = [];
@@ -123,7 +129,7 @@ export class Pipeline {
         const q = prev.find((z) => Math.abs((z.s + z.e) / 2 - (x.s + x.e) / 2) <= 0.6);
         if (q && this.plausible(q.w) && !this.plausible(x.w)) x.w = q.w;
       }
-      out.push(x.w); this.committedUntil = Math.max(this.committedUntil, x.e);
+      out.push(x.w); this.advance(x.w); this.committedUntil = Math.max(this.committedUntil, x.e);
     }
     this.committed.push(...out);
     this.tentative = w.slice(i).map((x) => x.w);

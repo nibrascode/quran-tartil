@@ -76,13 +76,13 @@ test("pipeline never decodes silence and never commits words invented in silence
   const { P: P2 } = runPipe(truth, 13, decoder(truth, { junkInSilence: true }));
   assert.ok(!P2.committed.includes("جنك"), "junk in a silent stretch must be filtered: " + P2.committed.join(" "));
 });
-test("pipeline: expected-text voting keeps words that fit and holds back one-off junk", () => {
+test("pipeline: expected-text constraint drops words that resemble nothing expected, keeps near-misses for the aligner to judge", () => {
   const P = new Pipeline({ margin: 1 }); P.setExpected(["الحمد", "لله", "رب"]);
   P.push(signal(3, [[0.2, 2.8]]));
   const job = P.poll(5000); assert.ok(job);
   const r = P.done(job, [{ w: "الحمد", s: 0.3, e: 0.9 }, { w: "xxjunk", s: 1.0, e: 1.5 }, { w: "لله", s: 1.6, e: 2.1 }], 0.3);
-  assert.deepEqual(r.words, ["الحمد"]); // junk waits for a second sighting, and the words behind it wait too
-  assert.ok(r.tentative.includes("xxjunk"));
+  assert.deepEqual(r.words, ["الحمد"]); // "xxjunk" resembles no expected word: dropped (the word it displaced stays unheard, so the aligner still sees a gap)
+  assert.ok(!r.tentative.includes("xxjunk") && r.tentative.includes("لله"));
 });
 test("pipeline: leading و before the expected word is dropped, volume is normalised", () => {
   const P = new Pipeline({ margin: 0.5 }); P.setExpected(["اياك", "نعبد"]);
@@ -165,4 +165,25 @@ test("pipeline: a text-only model (no word times) still commits words, placed on
   const r = P.done(job, ["الحمد", "لله", "رب", "العالمين"].map((w) => ({ w, s: -1, e: -1 })), 0.3);
   assert.deepEqual(r.words.slice(0, 2), ["الحمد", "لله"]); // the first words sit in the first run; none lands in the 2 s pause
   assert.ok(P.committedUntil > 0.3 && P.committedUntil < 4.0 + 2.1);
+});
+
+test("engine: a device that decodes slower than real time gives up (fallback hook) instead of lagging forever", async () => {
+  const w = world({ onRun: () => [{ w: "الحمد", s: 0.2, e: 0.8 }] });
+  // fake worker answers with a decode time of 6 s per 5 s window
+  const orig = w.w.workers; void orig;
+  const { core, feed, w: ww } = world({});
+  const spawnOrig = ww.workers; void spawnOrig;
+  await core.start();
+  const fw = ww.workers[0]; const post = fw.postMessage.bind(fw);
+  fw.postMessage = (m) => { if (m.t === "run") setTimeout(() => fw.onmessage?.({ data: { t: "result", id: m.id, words: [], sec: 6 } }), 0); else post(m); };
+  for (let i = 0; i < 4 && core.state !== "idle"; i++) { feed(5.2, [[0.1, 5.1]]); ww.nowV += 10000; ww.tick?.(); await tick(5); }
+  assert.equal(core.state, "idle"); assert.match(ww.errors[0], /too slow/); assert.equal(ww.terminated, 1);
+});
+
+test("pipeline: a look-alike wrong word is NOT snapped to the expected word (the aligner must still see it)", () => {
+  const P = new Pipeline({ margin: 0.5 }); P.setExpected(["الحمد", "لله", "رب", "العالمين"]);
+  P.push(signal(5, [[0.2, 4.7]]));
+  const job = P.poll(5000); assert.ok(job);
+  const r = P.done(job, [{ w: "الحمد", s: 0.3, e: 0.9 }, { w: "لغه", s: 1.0, e: 1.6 }, { w: "رب", s: 1.7, e: 2.2 }], 0.3);
+  assert.ok(r.words.includes("لغه"), "wrong letter kept as heard: " + r.words.join(" "));
 });

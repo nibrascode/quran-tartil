@@ -76,11 +76,22 @@ test("fatal error stops everything and reports once; endless instant failures gi
   const a = world(); await a.core.start(); a.w.h.error("not-allowed", true); await tick(20);
   assert.deepEqual(a.w.errors, ["not-allowed"]); assert.equal(a.core.state, "idle"); assert.equal(a.w.micOpen, 0);
   const b = world(); await b.core.start();
-  for (let i = 0; i < 30 && b.core.state !== "idle"; i++) { b.w.h.end(); await tick(150); }
+  for (let i = 0; i < 14 && b.core.state !== "idle"; i++) { const n = b.w.started; b.w.h?.end(); for (let k = 0; k < 60 && b.w.started === n && b.core.state !== "idle"; k++) await tick(20); }
   assert.equal(b.core.state, "idle"); assert.equal(b.w.ends, 1); assert.ok(b.w.started <= 8);
+  assert.deepEqual(b.w.errors, ["no-audio"], "giving up is never silent: the user sees an error");
 });
 test("engine start failure is reported and leaves a clean idle state", async () => {
   const w = { errors: [], closed: 0 };
   const core = createCore(() => ({ async start() { throw new Error("boom"); }, async abort() {} }), { async open() {}, close() { w.closed++; } }, { onResult() {}, onNewSession() {}, onError: (m) => w.errors.push(m), onEnd() {} });
   await core.start(); assert.deepEqual(w.errors, ["boom"]); assert.equal(core.state, "idle"); assert.ok(w.closed >= 1);
+});
+
+test("native-style recogniser: many instant 'stopped' events never end the session silently (maxFast raised), still no tight loop", async () => {
+  const w = { started: 0, errors: [], ends: 0 }; let h = null;
+  const mk = () => ({ async start(x) { w.started++; h = x; }, async abort() {} });
+  const core = createCore(mk, { async open() {}, close() {} }, { onResult() {}, onNewSession() {}, onError: (m) => w.errors.push(m), onEnd: () => w.ends++ }, undefined, { maxFast: 40 });
+  await core.start();
+  for (let i = 0; i < 12; i++) { const n = w.started; h.end(); for (let k = 0; k < 60 && w.started === n; k++) await tick(20); }
+  assert.equal(core.state, "listening"); assert.deepEqual(w.errors, []); assert.ok(w.started >= 12, "keeps restarting: " + w.started);
+  await core.stop();
 });

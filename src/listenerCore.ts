@@ -12,10 +12,11 @@ export type Resource = { open(): Promise<void>; close(): void };
 export type CoreCbs = {
   onResult: (alts: Alt[][], final: boolean) => void; onNewSession: () => void; onError: (msg: string) => void; onEnd: () => void; onState?: (s: ListenState) => void;
 };
+export type CoreOpts = { maxFast?: number };
 export type Clock = { now(): number; set(fn: () => void, ms: number): unknown; clear(t: unknown): void };
 const realClock: Clock = { now: () => Date.now(), set: (f, ms) => setTimeout(f, ms), clear: (t) => clearTimeout(t as ReturnType<typeof setTimeout>) };
 
-export function createCore(mk: () => Engine, res: Resource, cbs: CoreCbs, clock: Clock = realClock) {
+export function createCore(mk: () => Engine, res: Resource, cbs: CoreCbs, clock: Clock = realClock, opts: CoreOpts = {}) {
   let state: ListenState = "idle", gen = 0, eng: Engine | null = null, timer: unknown = null, fastFails = 0, startedAt = 0, stopping: Promise<void> | null = null;
   const set = (s: ListenState) => { state = s; cbs.onState?.(s); };
   const active = (g: number) => g === gen && (state === "starting" || state === "listening");
@@ -28,11 +29,11 @@ export function createCore(mk: () => Engine, res: Resource, cbs: CoreCbs, clock:
         result: (alts, fin) => { if (live()) cbs.onResult(alts, fin); },
         end: () => {
           if (!live()) return;
-          const f = nextRestart(fastFails, clock.now() - startedAt); fastFails = f.fastFails;
+          const f = nextRestart(fastFails, clock.now() - startedAt, opts.maxFast ?? 6); fastFails = f.fastFails;
           eng = null;
-          if (f.giveUp) { void halt().then(() => cbs.onEnd()); return; }
+          if (f.giveUp) { void halt().then(() => { cbs.onEnd(); cbs.onError("no-audio"); }); return; } // never stop silently: the user is told the recogniser keeps failing
           cbs.onNewSession();
-          timer = clock.set(() => { timer = null; if (active(g)) void launch(g); }, fastFails ? 120 : 0);
+          timer = clock.set(() => { timer = null; if (active(g)) void launch(g); }, fastFails ? Math.min(600, 120 * fastFails) : 0);
         },
         error: (msg, fatal) => { if (!live()) return; if (fatal) { void halt().then(() => cbs.onError(msg)); } },
       });

@@ -6,7 +6,7 @@ import { createPreciseEngine, pdiag, pdiagReset } from "./precise/engine";
 import { openMic } from "./precise/capture";
 
 export type Listener = { start(): Promise<void>; stop(): Promise<void> };
-type Cbs = { lang: string; expected?: () => string[]; onWords: (words: string[], isFinal?: boolean) => void; onNewSession: () => void; onError: (msg: string) => void; onEnd: () => void };
+type Cbs = { lang: string; expected?: () => string[]; onWords: (words: string[], isFinal?: boolean) => void; onNewSession: () => void; onError: (msg: string) => void; onEnd: () => void; onNotice?: (msg: string) => void };
 type WebRec = { start(): void; stop(): void; abort(): void; onresult: ((e: any) => void) | null; onerror: ((e: any) => void) | null; onend: (() => void) | null; lang: string; continuous: boolean; interimResults: boolean };
 const webCtor = (): (new () => WebRec) | null => (typeof window === "undefined" ? null : ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null));
 export const speechSupported = () => Capacitor.isNativePlatform() || !!webCtor() || choosePrecise();
@@ -50,7 +50,8 @@ export function createListener(c: Cbs): Listener {
       await SpeechRecognition.removeAllListeners();
       await SpeechRecognition.addListener("partialResults", (d: { matches?: string[] }) => { if (d.matches?.length) h.result([d.matches.map((m) => ({ transcript: m }))], false); });
       await SpeechRecognition.addListener("listeningState", (d: { status: string }) => { if (d.status === "stopped") h.end(); });
-      await SpeechRecognition.start({ language: c.lang, partialResults: true, popup: false, maxResults: 5 });
+      try { await SpeechRecognition.start({ language: c.lang, partialResults: true, popup: false, maxResults: 5 }); }
+      catch (e) { if (!/ongoing|already|busy/i.test(String((e as Error)?.message || e))) throw e; } // a stale 'stopped' of the previous session can race the restart: the recogniser is already running
     },
     async abort() {
       try { const { SpeechRecognition } = await import("@capacitor-community/speech-recognition"); await SpeechRecognition.removeAllListeners(); await SpeechRecognition.stop(); } catch { /* ignore */ }
@@ -74,7 +75,7 @@ export function createListener(c: Cbs): Listener {
     onNewSession: () => { diag.restarts++; c.onNewSession(); },
     onError: (m) => { diag.error = m; c.onError(m); },
     onEnd: c.onEnd,
-  });
+  }, undefined, { maxFast: native ? 40 : 6 }); // the Android recogniser reports 'stopped' for every session end (even stale ones): never give up quickly, and never silently
   // ---- Precise engine (on-device Quran Whisper). Falls back to the platform recogniser on any failure.
   let userStopped = false, usingPlatform = false;
   const precise = choosePrecise() ? createCore(
@@ -86,7 +87,7 @@ export function createListener(c: Cbs): Listener {
       onError: (m) => {
         diag.error = m; pdiag.error = m; pdiag.fellBack = true;
         if (userStopped) return;
-        usingPlatform = true; diag.engine = (native ? "Android SpeechRecognizer (plugin)" : "Web Speech API") + " (fallback)"; c.onNewSession();
+        usingPlatform = true; diag.engine = (native ? "Android SpeechRecognizer (plugin)" : "Web Speech API") + " (fallback)"; c.onNewSession(); c.onNotice?.("precise-fallback");
         void core.start().catch((e) => c.onError(String((e as Error)?.message || e)));
       },
       onEnd: c.onEnd,

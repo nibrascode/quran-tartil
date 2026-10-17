@@ -97,13 +97,36 @@ async function stream(x, refs) {
       const r = P.done(pend.job, pend.words, pend.sec); if (process.env.TRACE) console.log(`t=${now.toFixed(1)} win ${pend.job.start.toFixed(1)}-${pend.job.end.toFixed(1)}${pend.job.endpoint ? " EP" : ""} hyp: ${pend.words.map((w) => w.w.trim() + "@" + (w.s + pend.job.start).toFixed(1) + "-" + (w.e + pend.job.start).toFixed(1)).join(" ")}\n    => commit [${r.words.join(" ")}] tent [${r.tentative.join(" ")}]`); pend = null;
       if (r.words.length) events.push({ t: now, words: r.words, until: P.committedUntil });
     }
-    if (!pend) { if (!NOEXP) { const k = P.committed.length; const at = Math.max(0, Math.floor(k * 0.95) - 2); P.setExpected(expAll.slice(at, at + 40)); } const job = P.poll(now * 1000); if (job) { const { words, sec } = await decode(job.samples); inferTotal += sec; pend = { job, words, sec, at: now + sec }; } }
+    if (!pend) { if (!NOEXP) P.setExpected(expAll); const job = P.poll(now * 1000); if (job) { const { words, sec } = await decode(job.samples); inferTotal += sec; pend = { job, words, sec, at: now + sec }; } }
     if (fed >= x.length && now > x.length / 16000 + 30) break;
   }
   return { P, events, inferTotal, audioSec: x.length / 16000, jobs: P.jobs };
 }
 
 const out = [];
+// --wrong: each ayah's audio is judged against the text of a DIFFERENT ayah (a wrong recitation): it must never be accepted. Control: against its own text.
+if (process.argv.includes("--wrong")) {
+  const kind = arg("degrade", "clean").split(",")[0];
+  for (const set of SETS) {
+    if (want.length && !want.some((w) => set.name.includes(w))) continue;
+    const n = set.a.length; if (n < 3) continue;
+    const acc = { easy: [0, 0], medium: [0, 0], hard: [0, 0] }, ctl = { easy: [0, 0], medium: [0, 0], hard: [0, 0] };
+    for (let i = 0; i < n; i++) for (const [mode, j] of [["wrong", (i + 1) % n], ["wrong", (i + 2) % n], ["ctl", i]]) {
+      const one = { ...set, a: [set.a[i]], more: undefined }; const { x } = build(one, kind);
+      const toks = (a) => { let tk = ayahText(set.s, a).split(" "); if (a === 1 && set.s !== 1 && /^بِسْمِ/.test(tk[0]) && tk.length > 4) tk = tk.slice(4); return tk; };
+      const refs = [{ s: set.s, a: set.a[j], tokens: toks(set.a[j]) }];
+      const res = await stream(x, refs);
+      for (const level of ["easy", "medium", "hard"]) {
+        const ss = new ReciteSession(refs.map((r) => ({ key: r.s + ":" + r.a, tokens: r.tokens })), level);
+        const all = res.P.committed.slice(); ss.feed(all, false); ss.feed(all, true); ss.feed(all, true);
+        const r = ss.res.get(refs[0].s + ":" + refs[0].a); const ok = !!(r && r.closed && r.score === 100 && ss.events.length === 0);
+        const t = mode === "ctl" ? ctl : acc; t[level][1]++; if (ok) t[level][0]++;
+      }
+    }
+    console.log(`${set.name.padEnd(22)} ${kind.padEnd(7)} WRONG accepted easy ${acc.easy.join("/")} medium ${acc.medium.join("/")} hard ${acc.hard.join("/")} | CORRECT accepted easy ${ctl.easy.join("/")} medium ${ctl.medium.join("/")} hard ${ctl.hard.join("/")}`);
+  }
+  process.exit(0);
+}
 for (const set of SETS) {
   if (want.length && !want.some((w) => set.name.includes(w))) continue;
   for (const kind of DEG) {

@@ -234,7 +234,7 @@ export function App() {
         <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
           onClick={() => (rc.mode === "on" ? rc.pause() : rc.mode === "paused" ? rc.resume() : rc.begin())}><Ic n={rc.mode === "on" ? "pause" : "mic"} size={30} /></button>
       </div>
-      {rc.err && <div className="toast" role="alert">{/permission|not-allowed|service-not-allowed/.test(rc.err) ? t.hMicDenied : /network/.test(rc.err) ? t.hNetErr : rc.err === "unsupported" ? t.tartilUnsupported : t.reciteFail + ": " + rc.err}</div>}
+      {rc.err && <div className="toast" role="alert">{/permission|not-allowed|service-not-allowed/.test(rc.err) ? t.hMicDenied : /network/.test(rc.err) ? t.hNetErr : rc.err === "unsupported" ? t.tartilUnsupported : rc.err === "no-audio" ? t.pNoVoice : rc.err === "precise-fallback" ? t.pFellBack : t.reciteFail + ": " + rc.err}</div>}
       {sel && !mist && (
         <div className="asheet" ref={sheetRef} role="region" aria-label={t.selectedAyah + " " + sel.s + ":" + sel.a}>
           <div className="ahead">

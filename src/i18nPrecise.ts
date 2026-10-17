@@ -1,5 +1,6 @@
 // Precise (offline Whisper) recognition engine strings (5 languages).
 const en = {
+  pNoVoice: "No sound is reaching the recogniser. Check the microphone permission and that no other app is using the microphone, then try again. You can also pick another engine in Settings → Recognition engine.",
   pEngT: "Recognition engine", pEngAuto: "Auto", pEngPlat: "Platform", pEngPrec: "Precise β",
   pEngD: "Auto and Platform use your device's speech service. Precise (beta) runs a Quran-tuned model on this device: it works offline and follows you about 2 s behind. Install the model below first; it falls back to Platform if anything fails.",
   pModelT: "Precise model", pModelD: "A Quran-tuned Whisper model (tarteel-ai, Apache-2.0) that runs on this device: no audio is sent anywhere. One-time download of about {mb} MB from Hugging Face; Wi-Fi recommended.",
@@ -10,6 +11,7 @@ const en = {
   pFellBack: "Precise mode failed, using the platform recogniser instead.",
 };
 const az: typeof en = {
+  pNoVoice: "Tanıyıcıya səs çatmır. Mikrofon icazəsini və mikrofonu başqa tətbiqin işlətmədiyini yoxlayın, sonra yenidən cəhd edin. Ayarlar → Tanıma mühərriki bölməsindən başqa mühərrik də seçə bilərsiniz.",
   pEngT: "Tanıma mühərriki", pEngAuto: "Avto", pEngPlat: "Platforma", pEngPrec: "Dəqiq β",
   pEngD: "Avto və Platforma cihazın səs xidmətindən istifadə edir. «Dəqiq» (beta) bu cihazda Quran üçün tənzimlənmiş modeli işlədir: oflayn işləyir, təxminən 2 san gecikmə ilə izləyir. Əvvəlcə aşağıdan modeli yükləyin; xəta olsa Platformaya keçir.",
   pModelT: "«Dəqiq» modeli", pModelD: "Bu cihazda işləyən Quran üçün tənzimlənmiş Whisper modeli (tarteel-ai, Apache-2.0): heç bir səs göndərilmir. Hugging Face-dən bir dəfəlik təxminən {mb} MB yükləmə; Wi-Fi tövsiyə olunur.",
@@ -20,6 +22,7 @@ const az: typeof en = {
   pFellBack: "«Dəqiq» rejim alınmadı, platforma tanıyıcısı istifadə olunur.",
 };
 const tr: typeof en = {
+  pNoVoice: "Tanıyıcıya ses ulaşmıyor. Mikrofon iznini ve mikrofonu başka bir uygulamanın kullanmadığını kontrol edip tekrar deneyin. Ayarlar → Tanıma motoru bölümünden başka bir motor da seçebilirsiniz.",
   pEngT: "Tanıma motoru", pEngAuto: "Otomatik", pEngPlat: "Platform", pEngPrec: "Hassas β",
   pEngD: "Otomatik ve Platform cihazın konuşma servisini kullanır. Hassas (beta) bu cihazda Kur'an için ayarlı bir modeli çalıştırır: çevrimdışı çalışır, yaklaşık 2 sn gecikmeyle izler. Önce aşağıdan modeli yükleyin; hata olursa Platform'a geçer.",
   pModelT: "Hassas model", pModelD: "Bu cihazda çalışan, Kur'an için ayarlanmış Whisper modeli (tarteel-ai, Apache-2.0): hiçbir ses gönderilmez. Hugging Face'ten tek seferlik yaklaşık {mb} MB indirme; Wi-Fi önerilir.",
@@ -30,6 +33,7 @@ const tr: typeof en = {
   pFellBack: "Hassas mod başarısız oldu, platform tanıyıcısı kullanılıyor.",
 };
 const ar: typeof en = {
+  pNoVoice: "لا يصل أي صوت إلى المتعرّف. تحقق من إذن الميكروفون ومن أن تطبيقاً آخر لا يستخدمه ثم حاول مجدداً. يمكنك أيضاً اختيار محرك آخر من الإعدادات ← محرك التعرف.",
   pEngT: "محرك التعرف", pEngAuto: "تلقائي", pEngPlat: "النظام", pEngPrec: "دقيق β",
   pEngD: "التلقائي والنظام يستخدمان خدمة الصوت في جهازك. «دقيق» (تجريبي) يشغّل نموذجاً مضبوطاً على القرآن على جهازك: يعمل دون إنترنت ويتابعك بتأخر نحو ثانيتين. ثبّت النموذج أدناه أولاً؛ وعند أي خلل يعود إلى النظام.",
   pModelT: "نموذج «دقيق»", pModelD: "نموذج Whisper مضبوط على القرآن (tarteel-ai، Apache-2.0) يعمل على جهازك: لا يُرسل أي صوت. تنزيل لمرة واحدة بحجم {mb} م.ب تقريباً من Hugging Face؛ يُفضّل الواي فاي.",
@@ -40,6 +44,7 @@ const ar: typeof en = {
   pFellBack: "فشل الوضع الدقيق، يجري استخدام محرك النظام.",
 };
 const ru: typeof en = {
+  pNoVoice: "Звук не доходит до распознавателя. Проверьте разрешение на микрофон и что его не использует другое приложение, затем повторите. Можно также выбрать другой движок в Настройки → Движок распознавания.",
   pEngT: "Движок распознавания", pEngAuto: "Авто", pEngPlat: "Системный", pEngPrec: "Точный β",
   pEngD: "«Авто» и «Системный» используют речевой сервис устройства. «Точный» (бета) запускает на устройстве модель, настроенную на Коран: работает офлайн и следует за вами с задержкой около 2 с. Сначала установите модель ниже; при сбое включается системный.",
   pModelT: "Модель «Точный»", pModelD: "Модель Whisper, настроенная на Коран (tarteel-ai, Apache-2.0), работает на устройстве: звук никуда не отправляется. Разовая загрузка около {mb} МБ с Hugging Face; лучше по Wi-Fi.",

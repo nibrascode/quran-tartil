@@ -53,7 +53,7 @@ export function Tartil({ lang, page, focus, prefs }: { lang: Lang; page: number;
       expected: () => shown,
       onWords: (w) => setHeard(w),
       onNewSession: () => {},
-      onError: (m) => { setErr(m === "unsupported" ? t.tartilUnsupported : m); setOn(false); rec.current = null; },
+      onError: (m) => { setErr(m === "unsupported" ? t.tartilUnsupported : m === "no-audio" ? t.pNoVoice : m); setOn(false); rec.current = null; },
       onEnd: () => { setOn(false); rec.current = null; },
     });
     rec.current = l; setOn(true);

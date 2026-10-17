@@ -36,7 +36,7 @@ export function diagResult(text: string, conf: number | undefined, final: boolea
   if (typeof conf === "number" && conf > 0) { diag.lastConf = conf; diag.avgConf = ((diag.avgConf ?? 0) * diag.confN + conf) / (diag.confN + 1); diag.confN++; }
 }
 /** restart policy: restart at once after the engine ends (gapless); give up only when it keeps failing right after starting */
-export function nextRestart(fastFails: number, ranMs: number): { fastFails: number; giveUp: boolean } {
+export function nextRestart(fastFails: number, ranMs: number, max = 6): { fastFails: number; giveUp: boolean } {
   const f = ranMs < 400 ? fastFails + 1 : 0;
-  return { fastFails: f, giveUp: f >= 6 };
+  return { fastFails: f, giveUp: f >= max };
 }

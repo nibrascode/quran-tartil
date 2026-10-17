@@ -33,7 +33,7 @@ export function createPreciseEngine(d: PreciseDeps): Engine {
   let w: WorkerLike | null = null, mic: { close(): void } | null = null, timer: unknown = null, dead = false;
   let P: Pipeline | null = null, h: EngineHandlers | null = null;
   let inflight: { id: number; job: ReturnType<Pipeline["poll"]>; at: number } | null = null;
-  let sumInfer = 0, sumAudio = 0;
+  let sumInfer = 0, sumAudio = 0, slow = 0;
   const kill = () => {
     dead = true; if (timer != null) clear(timer); timer = null;
     try { mic?.close(); } catch { /* ignore */ } mic = null;
@@ -47,6 +47,9 @@ export function createPreciseEngine(d: PreciseDeps): Engine {
     const r = P.done(job, m.words as TWord[], m.sec);
     const dur = job.end - job.start;
     sumInfer += m.sec; sumAudio += dur;
+    // a device that cannot keep up (decoding a window takes about as long as the window lasts, three times in a row) would fall further and further behind: give up so the platform recogniser takes over
+    slow = m.sec > 0.9 * Math.max(1.5, dur) ? slow + 1 : 0;
+    if (slow >= 3) { fail("too slow on this device"); return; }
     pdiag.windows++; pdiag.lastMs = Math.round(m.sec * 1000); pdiag.avgMs = Math.round((pdiag.avgMs * (pdiag.windows - 1) + m.sec * 1000) / pdiag.windows);
     pdiag.rtf = +(sumInfer / Math.max(0.001, sumAudio)).toFixed(2); pdiag.hopMs = Math.round(P.hop * 1000); pdiag.dropped = P.dropped;
     if (r.words.length) {
@@ -61,7 +64,7 @@ export function createPreciseEngine(d: PreciseDeps): Engine {
       h = handlers; dead = false; pdiagReset(); P = new Pipeline(d.opts);
       const worker = d.spawn(); w = worker;
       const loaded = new Promise<void>((res, rej) => {
-        const to = setTimeout(() => rej(new Error("model load timeout")), d.loadTimeoutMs ?? 90000);
+        const to = setTimeout(() => rej(new Error("model load timeout")), d.loadTimeoutMs ?? 45000);
         worker.onerror = () => { clearTimeout(to); rej(new Error("worker error")); };
         worker.onmessage = (e) => {
           const m = e.data;
