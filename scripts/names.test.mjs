@@ -18,3 +18,17 @@ test("names match the verified list (hamza-insensitive) and fixed names have ham
   names.forEach((n, i) => assert.equal(norm(n), norm(list[i]), `sura ${i + 1}: ${n} vs ${list[i]}`));
   for (const k of [14, 34, 76, 78, 82, 84]) assert.equal(names[k - 1], list[k - 1]);
 });
+
+test("names contain only the expected text: no URLs / web-page strings anywhere in the name data", () => {
+  for (const x of meta.suras) {
+    assert.match(x.name, /^[\u0621-\u064A\u0670\u0671 ]+$/, `ar ${x.i}`);
+    assert.match(x.tname, /^[A-Za-z' \-]+$/, `translit ${x.i}: ${x.tname}`);
+    assert.match(x.ename, /^[A-Za-z' ,\-]+$/, `english ${x.i}: ${x.ename}`);
+    for (const v of [x.name, x.tname, x.ename, x.type]) assert.doesNotMatch(v, /https?:|www\.|\.com|\.net|\.org|<|>|\/\/|@/i, `url-like text in sura ${x.i}`);
+    assert.ok(x.tname.length < 30 && x.ename.length < 40 && x.name.length < 30, `unexpected length for sura ${x.i}`);
+  }
+});
+test("rendered name sites only use the cleaned fields", () => {
+  const files = ["Menu.tsx", "Page.tsx", "App.tsx", "Practice.tsx"].map((f) => readFileSync(new URL("../src/" + f, import.meta.url), "utf8")).join("\n");
+  assert.doesNotMatch(files, /suras\[[^\]]*\]\.(link|url|href)/);
+});

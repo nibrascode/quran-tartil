@@ -13,65 +13,49 @@ export function normalizeAr(w: string): string {
     .replace(/\u0626/g, "\u064A") // ئ -> ي
     .replace(/[^\u0621-\u064A]/g, "");
 }
-export const words = (t: string) => t.split(/\s+/).map(normalizeAr).filter(Boolean);
-
-// Letters that speech recognisers often confuse (and that sound close): cheaper substitution so one such slip is tolerated.
-const CONF = new Set(["ذز", "ثس", "ضد", "ظز", "طت", "صس", "قك", "حه", "عا", "غخ", "ءا", "ذد", "ظض"]);
-const near = (a: string, b: string) => CONF.has(a + b) || CONF.has(b + a);
-function lev(a: string, b: string, nearCost = 0.45): number {
-  const m = a.length, n = b.length;
-  if (!m) return n;
-  if (!n) return m;
-  let prev = Array.from({ length: n + 1 }, (_, j) => j);
-  for (let i = 1; i <= m; i++) {
-    const cur = [i];
-    for (let j = 1; j <= n; j++) {
-      const c = a[i - 1] === b[j - 1] ? 0 : near(a[i - 1], b[j - 1]) ? nearCost : 1;
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + c);
-    }
-    prev = cur;
-  }
-  return prev[n];
-}
-export const similarity = (a: string, b: string, nearCost = 0.45) => (a || b ? 1 - lev(a, b, nearCost) / Math.max(a.length, b.length) : 1);
-/** Word match: very short words (1-2 letters) must be exact, longer ones may differ slightly. */
-export const sameBase = (e: string, h: string, threshold = 0.72, nearCost = 0.45) => (e.length <= 2 || h.length <= 2 ? e === h : similarity(e, h, nearCost) >= threshold);
+/** expected words, marks kept (the dagger alif etc. is needed to accept the imla'i spelling); align() normalises */
+export const words = (t: string) => t.split(/\s+/).filter((w) => normalizeAr(w));
 
 /**
- * Sound-alike skeleton used on Easy: ignores madd length (ا و ي inside a word), alif wasla / assimilated "ال",
- * ghunna / idgham (interior and tanween ن, doubled letters) and merges letters that sound alike (ص ث س, ض ظ ذ ز د, ط ت, ق ك, ح ه ة, ع ء ا, غ خ).
+ * Word matching rules (no similarity scoring: a different word or a different consonant letter NEVER passes, at any level).
+ *  - all levels: exact match after normalisation (harakat, hamza seats, alef maqsura, ta marbuta), or the imla'i spelling of the Uthmani
+ *    word (dagger alif / small waw / small ya written out: الرحمن = الرحمان, ذلك = ذالك).
+ *  - Easy only: light tajweed-level variance that never changes a consonant: alif wasla / assimilated "ال", doubled letters (shadda, idgham),
+ *    a dropped hamza, ghunna / tanween nun and pausal alif at the end of a word.
  */
-const CLASSES: Record<string, string> = { ص: "س", ث: "س", ض: "د", ظ: "د", ذ: "د", ز: "د", ط: "ت", ق: "ك", ح: "ه", ة: "ه", ع: "ا", ء: "ا", غ: "خ", ش: "ش" };
-export function phon(w: string): string {
-  let x = w;
-  if (x.startsWith("ال") && x.length > 3) x = x.slice(2); else if (x[0] === "ا" && x.length > 2) x = x.slice(1);
-  x = Array.from(x).map((c) => CLASSES[c] ?? c).join("");
-  const mapped = x;
-  x = x[0] + x.slice(1).replace(/[اوي]/g, "");
-  if (x.length > 3 && x.endsWith("ن")) x = x.slice(0, -1);
-  x = x[0] + x.slice(1).replace(/ن(?=.)/g, "");
-  x = x.replace(/(.)\1+/g, "$1");
-  return x.length < 2 ? mapped : x;
+const DAGGER: Record<string, string> = { "\u0670": "\u0627", "\u06E5": "\u0648", "\u06E6": "\u064A" };
+/** imla'i spelling of an Uthmani word (null when it has no such marks) */
+export function spelledOut(raw: string): string | null {
+  if (!/[\u0670\u06E5\u06E6]/.test(raw)) return null;
+  let out = "";
+  for (const ch of raw) out += DAGGER[ch] ?? ch;
+  const r = normalizeAr(out);
+  return r && r !== normalizeAr(raw) ? r : null;
 }
-/** sound-alike word match (Easy): equal skeletons, or very close skeletons */
+/** Easy-mode skeleton: consonants only change by tajweed phenomena, never by substitution */
+export function skeleton(w: string): string {
+  let x = w.replace(/\u0621/g, "");
+  if (x.startsWith("ال") && x.length > 3) x = x.slice(2); else if (x[0] === "ا" && x.length > 2) x = x.slice(1);
+  x = x.replace(/(.)\1+/g, "$1");
+  if (x.length > 3 && /[نا]$/.test(x)) x = x.slice(0, -1);
+  return x;
+}
+export const sameBase = (e: string, h: string) => e === h;
+export const phon = skeleton;
+/** Easy: equal skeletons (both at least 3 letters, so short words stay exact) */
 export function phonSame(e: string, h: string): boolean {
-  // idgham / ghunna on short nun words (من، عن، إن): the nun is heard assimilated into the next letter
-  if (e.length === 2 && e[1] === "ن" && h[0] === e[0] && (h.length === 1 || (h.length === 2 && "يرملو".includes(h[1])))) return true;
-  if (e.length <= 2 || h.length <= 2) return e.length === h.length && Array.from(e).every((c, i) => (CLASSES[c] ?? c) === (CLASSES[h[i]] ?? h[i]));
-  const a = phon(e), b = phon(h);
-  if (a === b) return true;
-  return Math.min(a.length, b.length) >= 3 && similarity(a, b, 0.3) >= 0.75;
+  if (e.length < 3 || h.length < 3) return e === h;
+  return skeleton(e) === skeleton(h);
 }
 
-export const same = sameBase;
 export type WordState = "ok" | "bad" | "missing" | "pending" | "skip";
 export type Level = "easy" | "medium" | "hard";
-/** How strict mistake detection is. threshold: word similarity needed; nearCost: price of a look-alike letter (ذ/ز...); delay: how many further words must be heard before a mistake is shown; forgive: isolated skipped words tolerated; extras: extra words lower the score. */
-export type AlignOpts = { threshold: number; nearCost: number; delay: number; forgive: number; extras: boolean; phonetic?: boolean; final?: boolean };
+/** How strict mistake detection is. delay: how many further words must be heard before a mistake is shown; forgive: isolated skipped words tolerated; extras: extra words lower the score; phonetic: light tajweed-level variance (Easy only). Word matching itself never accepts a different word or letter. */
+export type AlignOpts = { delay: number; forgive: number; extras: boolean; phonetic?: boolean; final?: boolean };
 export const LEVELS: Record<Level, AlignOpts> = {
-  easy: { threshold: 0.55, nearCost: 0.25, delay: 2, forgive: 1, extras: false, phonetic: true },
-  medium: { threshold: 0.72, nearCost: 0.45, delay: 1, forgive: 0, extras: false },
-  hard: { threshold: 0.86, nearCost: 1, delay: 0, forgive: 0, extras: true },
+  easy: { delay: 2, forgive: 1, extras: false, phonetic: true },
+  medium: { delay: 1, forgive: 0, extras: false },
+  hard: { delay: 0, forgive: 0, extras: true },
 };
 export type Result = { states: WordState[]; extra: string[]; matched: number; done: boolean; score: number; reached: number; used: number };
 
@@ -80,13 +64,13 @@ export type Result = { states: WordState[]; extra: string[]; matched: number; do
  * Handles recogniser word splits/merges (2 heard = 1 expected, 1 heard = 2 expected).
  * ok: same word; bad: a different word was heard there; missing: skipped; pending: not reached yet.
  */
-export function align(expectedRaw: string[], heardRaw: string[], optsIn: number | AlignOpts = 0.72): Result {
-  const o: AlignOpts = typeof optsIn === "number" ? { ...LEVELS.medium, threshold: optsIn, delay: 0 } : optsIn;
-  const threshold = o.threshold, nc = o.nearCost, mt = Math.max(threshold, 0.85); // merges/splits of words need a closer match
+export function align(expectedRaw: string[], heardRaw: string[], optsIn: AlignOpts = LEVELS.medium): Result {
+  const o: AlignOpts = optsIn;
   const E = expectedRaw.map(normalizeAr), H = heardRaw.map(normalizeAr).filter(Boolean);
   const n = E.length, m = H.length;
-  const same = sameBase; // merges/splits of words use the plain match
-  const sub = o.phonetic ? (e: string, h: string, t: number, c: number) => sameBase(e, h, t, c) || phonSame(e, h) : sameBase;
+  const ALT = expectedRaw.map(spelledOut);
+  const eq = (i: number, h: string) => E[i] === h || ALT[i] === h || (!!o.phonetic && (phonSame(E[i], h) || (!!ALT[i] && phonSame(ALT[i]!, h))));
+  const eqCat = (i: number, h: string) => E[i] === h || ALT[i] === h; // recogniser split / merged words: same letters only
   const INF = 1e9;
   const D: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(INF));
   const B: string[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(""));
@@ -97,9 +81,9 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: number 
     if (d >= INF) continue;
     if (i < n) upd(i + 1, j, d + 1, "del");
     if (j < m) upd(i, j + 1, d + 1, "ins");
-    if (i < n && j < m) upd(i + 1, j + 1, d + (sub(E[i], H[j], threshold, nc) ? 0 : 1), "sub");
-    if (i < n && j + 1 < m && same(E[i], H[j] + H[j + 1], mt, nc)) upd(i + 1, j + 2, d, "mergeH");
-    if (i + 1 < n && j < m && same(E[i] + E[i + 1], H[j], mt, nc)) upd(i + 2, j + 1, d, "mergeE");
+    if (i < n && j < m) upd(i + 1, j + 1, d + (eq(i, H[j]) ? 0 : 1), "sub");
+    if (i < n && j + 1 < m && eqCat(i, H[j] + H[j + 1])) upd(i + 1, j + 2, d, "mergeH");
+    if (i + 1 < n && j < m && [E[i] + E[i + 1], (ALT[i] ?? E[i]) + (ALT[i + 1] ?? E[i + 1])].includes(H[j])) upd(i + 2, j + 1, d, "mergeE");
   }
   let bi = 0;
   for (let i = 0; i <= n; i++) if (D[i][m] < D[bi][m] || (D[i][m] === D[bi][m] && i > bi)) bi = i;
@@ -109,7 +93,7 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: number 
   while (i > 0 || j > 0) {
     const b = B[i][j];
     if (used < 0 && b !== "ins") used = j;
-    if (b === "sub") { states[i - 1] = sub(E[i - 1], H[j - 1], threshold, nc) ? "ok" : "bad"; i--; j--; }
+    if (b === "sub") { states[i - 1] = eq(i - 1, H[j - 1]) ? "ok" : "bad"; i--; j--; }
     else if (b === "mergeH") { states[i - 1] = "ok"; i--; j -= 2; }
     else if (b === "mergeE") { states[i - 1] = "ok"; states[i - 2] = "ok"; i -= 2; j--; }
     else if (b === "del") { states[i - 1] = "missing"; i--; }

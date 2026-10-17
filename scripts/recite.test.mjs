@@ -8,7 +8,8 @@ const dir = mkdtempSync(join(tmpdir(), "rc-"));
 try { execFileSync("npx", ["tsc", "src/reciteCore.ts", "--outDir", dir, "--target", "ES2022", "--module", "ESNext", "--moduleResolution", "Bundler", "--skipLibCheck"], { stdio: "ignore", timeout: 60000 }); } catch {}
 writeFileSync(join(dir, "package.json"), '{"type":"module"}');
 import { readFileSync } from "node:fs";
-writeFileSync(join(dir, "reciteCore.js"), readFileSync(join(dir, "reciteCore.js"), "utf8").replace('"./tartil"', '"./tartil.js"'));
+for (const [f, deps] of [["reciteCore.js", ["tartil", "prefix"]], ["prefix.js", ["tartil"]]]) { let c = readFileSync(join(dir, f), "utf8"); for (const d of deps) c = c.replace(`"./${d}"`, `"./${d}.js"`); writeFileSync(join(dir, f), c); }
+const { ignoredPrefix } = await import(join(dir, "prefix.js"));
 const { ReciteSession } = await import(join(dir, "reciteCore.js"));
 
 const A = [
@@ -183,4 +184,43 @@ test("a burst of many words (silence, then a flood) is matched ayah by ayah", ()
   t.feed(W("الحمد لله رب العالمين الرحمن الكريم مالك يوم"));
   assert.equal(t.cursor, 1);
   assert.ok(t.held);
+});
+
+// ---- isti'adha / basmala before reciting ----
+const ISTI = "اعوذ بالله من الشيطان الرجيم".split(" ");
+test("isti'adha is always ignored (never a wrong word) at every level", () => {
+  for (const lvl of ["easy", "medium", "hard"]) {
+    const s = new ReciteSession(A, lvl);
+    s.feed([...ISTI, "الحمد", "لله", "رب", "العالمين", "الرحمن", "الرحيم"]);
+    assert.equal(s.cursor, 2, lvl);
+    assert.equal(s.events.length, 0, lvl);
+    assert.deepEqual(s.res.get("1:2").states, ["ok", "ok", "ok", "ok"], lvl);
+  }
+});
+test("isti'adha spoken word by word (interim results) does not create a mistake", () => {
+  const s = new ReciteSession(A, "hard");
+  const all = [...ISTI, "الحمد", "لله"];
+  for (let i = 1; i <= all.length; i++) s.feed(all.slice(0, i));
+  assert.equal(s.events.length, 0);
+  assert.deepEqual(s.res.get("1:2").states.slice(0, 2), ["ok", "ok"]);
+});
+test("isti'adha + basmala before an ayah that does not contain the basmala are ignored", () => {
+  const s = new ReciteSession(A, "medium");
+  s.feed([...ISTI, "بسم", "الله", "الرحمن", "الرحيم", "الحمد", "لله", "رب", "العالمين"]);
+  assert.equal(s.events.length, 0); assert.equal(s.cursor, 1);
+});
+test("basmala is expected text on 1:1 and still ignored when omitted elsewhere", () => {
+  const F = [{ key: "1:1", tokens: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ".split(" ") }, ...A];
+  const s = new ReciteSession(F, "medium");
+  s.feed(["بسم", "الله", "الرحمن", "الرحيم", "الحمد", "لله", "رب", "العالمين"]);
+  assert.equal(s.cursor, 2); assert.equal(s.events.length, 0);
+  assert.equal(ignoredPrefix(["بسم", "الله", "الرحمن", "الرحيم"], "بِسْمِ"), 0);
+  assert.equal(ignoredPrefix(["اعوذ", "بالله", "من", "الشيطان", "الرجيم", "بسم"], "بِسْمِ"), 5);
+});
+test("a wrong word after the isti'adha is still a mistake; the isti'adha words alone are never matched to text", () => {
+  const s = new ReciteSession(A, "easy");
+  s.feed([...ISTI, "الحمد", "لله", "ملك", "العالمين"]);
+  assert.ok(s.events.length >= 1); assert.equal(s.events[0].word, "رَبِّ");
+  assert.equal(ignoredPrefix(["الحمد", "لله"], "x"), 0);
+  assert.equal(ignoredPrefix(["من", "قبل"], "x"), 0); // "من" alone is not isti'adha
 });

@@ -38,6 +38,8 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleRelease bundleRelease --no-daemon
       - run: bash scripts/android-verify.sh
+      - name: Verify the app icon is in the APK
+        run: bash scripts/android-verify-icon.sh android/app/build/outputs/apk/release/app-release.apk
       - name: Verify APK signature
         run: |
           AS=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)

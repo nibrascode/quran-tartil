@@ -317,3 +317,26 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 .spread .page:first-child .frame { border-start-end-radius:2px; border-end-end-radius:2px; }
 .spread .page:last-child .frame { border-start-start-radius:2px; border-end-start-radius:2px; }
 .spread::after { content:""; position:absolute; top:0; bottom:0; left:50%; width:28px; margin-left:-14px; pointer-events:none; background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 9%, transparent) 50%, transparent); }
+
+/* ---- full-screen reader: edge to edge, no card/frame, dock floats over the page and auto-hides ---- */
+.page { padding:0; background-image:none; }
+.frame { border:0; border-radius:0; box-shadow:none; padding:0 6px; }
+.page-head { font-size:11px; padding:3px 4px 2px; border-bottom:0; margin-bottom:0; opacity:.75; }
+.page-no { font-size:12px; padding:0 0 3px; line-height:1.2; }
+.app:not(.rec-ui) .dock { position:absolute; left:0; right:0; bottom:0; padding:0 10px calc(8px + env(safe-area-inset-bottom)); background:none; border:0; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; pointer-events:none; }
+.app:not(.rec-ui) .dock > * { pointer-events:auto; }
+.app:not(.rec-ui) .dock .mic.big { width:54px; height:54px; margin:0; opacity:.62; }
+.app:not(.rec-ui) .dock:not(.auxhide) .mic.big { opacity:.95; }
+.app:not(.rec-ui) .dock .mic.big svg { width:26px; height:26px; }
+.dock.auxhide .dbtn { opacity:0; pointer-events:none; transform:translateY(14px) scale(.9); }
+.dock .dbtn { transition:transform .25s cubic-bezier(.3,1.3,.5,1), opacity .2s, background .2s, color .2s; }
+.app:not(.rec-ui) .dock:not(.auxhide) { background:linear-gradient(180deg, transparent, color-mix(in srgb, var(--bg) 85%, transparent) 55%); padding-top:18px; }
+.spread::after { display:none; }
+
+/* surah banner ornaments are drawn with CSS (a font glyph ❖ had a tall fallback line box and spilled below the banner) */
+.sura-head.orn { overflow:hidden; }
+.sura-head.orn::before, .sura-head.orn::after { content:""; width:.34em; height:.34em; background:var(--accent); border-radius:2px; font-size:1em; line-height:0; transform:translateY(-50%) rotate(45deg); box-shadow:0 0 0 .13em var(--bg), 0 0 0 .2em color-mix(in srgb, var(--accent) 60%, transparent); }
+.sura-head.orn::before { inset-inline-start:.9em; } .sura-head.orn::after { inset-inline-end:.9em; }
+/* banner text: sized by the row height (not just the font) and centred on its glyph ink (Amiri's line box is much taller than the letters) */
+.mtext.flow .sura-head.orn, .mtext.fixed .sura-head.orn { font-size:min(.95em, calc(var(--rowh, 48px) * .38)); }
+.sura-head.orn > span { position:relative; top:-.35em; }

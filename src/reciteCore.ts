@@ -1,3 +1,4 @@
+import { ignoredPrefix } from "./prefix";
 import { align, LEVELS, normalizeAr, type Level, type WordState } from "./tartil";
 
 export type AyahTokens = { key: string; tokens: string[] }; // tokens: words exactly as displayed (stop-mark tokens included)
@@ -27,6 +28,8 @@ export class ReciteSession {
   private mistakes = 0;
   private lastErr = -1; // error index seen in the previous feed (needs a second sighting when it is the newest word)
   private lastRest: string[] = [];
+  private prefixPending = true; // isti'adha / basmala spoken before reciting are skipped, never a mistake
+  private prefixFrom = -1;
 
   constructor(public ayahs: AyahTokens[], public level: Level) {
     this.idx = ayahs.map((a) => a.tokens.map((t, i) => (normalizeAr(t) ? i : -1)).filter((i) => i >= 0));
@@ -39,9 +42,10 @@ export class ReciteSession {
     k = Math.max(0, Math.min(this.ayahs.length - 1, k));
     for (let j = k; j < this.ayahs.length; j++) this.res.delete(this.ayahs[j].key);
     this.cursor = k; this.consumed = heardLen; this.resetAyah();
+    this.prefixPending = true; this.prefixFrom = heardLen;
   }
   /** a new recogniser session starts counting words from zero again */
-  newRecogniser() { this.consumed = 0; this.lastErr = -1; }
+  newRecogniser() { this.consumed = 0; this.lastErr = -1; this.prefixPending = true; this.prefixFrom = 0; }
 
   private expand(k: number, states: WordState[]): WordState[] {
     const full: WordState[] = this.ayahs[k].tokens.map(() => "skip");
@@ -64,6 +68,12 @@ export class ReciteSession {
   /** @param final true when the recogniser marked this result as final (a mistake on the newest word is then trusted at once) */
   feed(heard: string[], final = false): number {
     let closed = 0;
+    if (this.prefixPending && !this.finished) {
+      if (this.prefixFrom < 0) this.prefixFrom = this.consumed;
+      const w = heard.slice(this.prefixFrom), m = ignoredPrefix(w, this.norms[this.cursor]?.[0] ?? "");
+      if (m > 0) this.consumed = Math.max(this.consumed, this.prefixFrom + m);
+      if (w.length > m) this.prefixPending = false; // a real word arrived
+    }
     while (!this.finished) {
       const k = this.cursor, norms = this.norms[k], n = norms.length;
       if (n === 0) { this.cursor++; this.resetAyah(); closed++; continue; }

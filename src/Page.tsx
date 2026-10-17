@@ -112,7 +112,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       <div className="frame">
         <div className="page-head" aria-hidden="true"><span>سورة {sura.name}</span><span>الجزء {toArabicDigits(juzOfPage(page))}</span></div>
         <div className={"page-body" + (pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? " tall" : "")} ref={box}>
-          <div className={"mtext flow" + (fixed ? " fixed" : "")} style={{ fontSize: fsz, height: pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? pls.H : undefined, gridTemplateRows: `repeat(${n}, 1fr)`, ["--gap" as string]: GAP_MIN + "em", ["--nat" as string]: GAP_NAT + "em" }}>
+          <div className={"mtext flow" + (fixed ? " fixed" : "")} style={{ fontSize: fsz, height: pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? pls.H : undefined, gridTemplateRows: `repeat(${n}, 1fr)`, ["--rowh" as string]: (pls ? pls.H / n : 40) + "px", ["--gap" as string]: GAP_MIN + "em", ["--nat" as string]: GAP_NAT + "em" }}>
             {pl?.rows.map((r, i) => {
               const sg = data.segs[r.seg];
               if (r.type !== "line") return r.type === "head" ? <div className="sura-head orn" key={i}><span>سورة {sg.sura!.name}</span></div> : <div className="bism" key={i}>{BISMILLAH}</div>;

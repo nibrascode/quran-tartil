@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 const dir = mkdtempSync(join(tmpdir(), "st-"));
 try { execFileSync("npx", ["tsc", "src/reciteCore.ts", "src/stabilize.ts", "--outDir", dir, "--target", "ES2022", "--module", "ESNext", "--moduleResolution", "Bundler", "--skipLibCheck"], { stdio: "ignore", timeout: 60000 }); } catch {}
 writeFileSync(join(dir, "package.json"), '{"type":"module"}');
-writeFileSync(join(dir, "reciteCore.js"), readFileSync(join(dir, "reciteCore.js"), "utf8").replace('"./tartil"', '"./tartil.js"'));
+for (const [f, deps] of [["reciteCore.js", ["tartil", "prefix"]], ["prefix.js", ["tartil"]]]) { let c = readFileSync(join(dir, f), "utf8"); for (const d of deps) c = c.replace(`"./${d}"`, `"./${d}.js"`); writeFileSync(join(dir, f), c); }
 const { ReciteSession } = await import(join(dir, "reciteCore.js"));
 const { Stabilizer, CONFIRM_MS } = await import(join(dir, "stabilize.js"));
 

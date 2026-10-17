@@ -56,7 +56,7 @@ const countAt = (segs: Seg[], cap: number) => segs.reduce((n, s) => n + (s.kind 
 /** @param W line width in px, @param H body height in px */
 export function plan(segs: Seg[], W: number, H: number): Plan {
   const pitch = H / ROWS;
-  let lo = 6, hi = Math.min(pitch / 1.45, W * 0.062); // cap: sparse pages get looser lines instead of a bigger font
+  let lo = 6, hi = Math.min(pitch / 1.45, W * 0.07); // cap: sparse pages get looser lines instead of a bigger font
   // largest font where the page still needs at most 15 lines
   if (countAt(segs, W / lo) > ROWS) hi = lo; else {
     for (let i = 0; i < 14; i++) { const mid = (lo + hi) / 2; if (countAt(segs, W / mid) <= ROWS) lo = mid; else hi = mid; }

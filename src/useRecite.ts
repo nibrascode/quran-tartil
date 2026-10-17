@@ -5,6 +5,9 @@ import { createListener, type Listener } from "./speech";
 import { pageItems, PAGES } from "./quran";
 import type { Prefs } from "./store";
 import { recordSession } from "./Tartil";
+import { ignoredPrefix } from "./prefix";
+import { locateAyah, decideNav } from "./voiceNav";
+import { navIndex, navPageOf, navInfo } from "./navData";
 
 export type ReciteMode = "off" | "on" | "paused" | "review";
 const mergeEvents = (ev: { key: string; word: string; n: number }[]) => {
@@ -31,6 +34,8 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const turning = useRef(false);
   const prac = useRef<{ key: string; repeat: number; scores: number[] } | null>(null);
   const [rep, setRep] = useState(0);
+  const navRef = useRef(false); // free start: the first words say where in the Quran the reciter is
+  const pendingNav = useRef<{ key: string; at: number } | null>(null);
   const doneRef = useRef(onDone);
   doneRef.current = onDone;
   modeRef.current = mode;
@@ -56,6 +61,19 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     heard.current = stable;
     const s = sess.current;
     if (!s) return;
+    if (navRef.current) {
+      const m = ignoredPrefix(stable, ""), words = stable.slice(m);
+      if (!words.length) { setTick((t) => t + 1); return; }
+      const r = locateAyah(navIndex(), words, navPageOf, pageRef.current, navInfo), d = decideNav(words.length, r);
+      if (d === "wait") { setTick((t) => t + 1); return; }
+      navRef.current = false;
+      if (d === "go" && r.best) {
+        const key = r.best.s + ":" + r.best.a;
+        if (r.best.page !== pageRef.current) { pendingNav.current = { key, at: m }; setPage(r.best.page); setTick((t) => t + 1); return; }
+        const k = s.ayahs.findIndex((x) => x.key === key);
+        if (k >= 0) { s.seek(k, m); s.start = k; }
+      }
+    }
     s.feed(stable, isFinal);
     setTick((t) => t + 1);
     const pr = prac.current;
@@ -84,7 +102,12 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     const old = sess.current;
     if (old) archive.current.push(...old.events);
     const next = new ReciteSession(tokensOf(page), prefs.strict);
-    if (modeRef.current === "on" && old?.finished) { next.consumed = old.consumed; next.feed(heard.current); } else next.consumed = heard.current.length;
+    const pn = pendingNav.current;
+    if (pn) {
+      pendingNav.current = null;
+      const k = next.ayahs.findIndex((x) => x.key === pn.key);
+      if (k >= 0) { next.seek(k, pn.at); next.start = k; next.feed(heard.current); }
+    } else if (modeRef.current === "on" && old?.finished) { next.consumed = old.consumed; next.feed(heard.current); } else next.consumed = heard.current.length;
     sess.current = next;
     if (modeRef.current === "review") setMode("off");
     setTick((t) => t + 1);
@@ -92,6 +115,8 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
 
   const begin = useCallback(async (from?: { s: number; a: number } | null, opts?: PracticeOpts) => {
     setErr("");
+    navRef.current = !from && !opts;
+    pendingNav.current = null;
     prac.current = from && opts ? { key: from.s + ":" + from.a, repeat: Math.max(1, opts.repeat), scores: [] } : null;
     setRep(0);
     archive.current = [];
@@ -156,5 +181,5 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   }, [tick, page, mode]);
 
   const s = sess.current;
-  return { rep, practicing: !!prac.current, held: !!s?.held, mode, err, begin, pause, resume, stop, close, back, restart, mistakes: mergeEvents([...archive.current, ...(s?.events ?? [])]), score: s?.score ?? 0, closedAyahs: s ? [...s.res.values()].filter((r) => r.closed).length : 0, totalAyahs: s?.ayahs.length ?? 0 };
+  return { navigating: navRef.current && mode === "on", rep, practicing: !!prac.current, held: !!s?.held, mode, err, begin, pause, resume, stop, close, back, restart, mistakes: mergeEvents([...archive.current, ...(s?.events ?? [])]), score: s?.score ?? 0, closedAyahs: s ? [...s.res.values()].filter((r) => r.closed).length : 0, totalAyahs: s?.ayahs.length ?? 0 };
 }

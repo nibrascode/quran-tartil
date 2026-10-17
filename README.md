@@ -39,3 +39,8 @@ Honest limits: it compares **words only** (no tajweed, no letter-level makharij)
 - **Backup:** Settings → Backup exports/imports bookmarks, progress, mistakes and memorization as JSON (validated, merged, never overwrites). `src/backup.ts`.
 - **Tablets / landscape ≥ 900px:** two facing mushaf pages (odd on the right).
 - **CI:** `.github/workflows/e2e.yml` runs Playwright audits (page fill/overflow, UI sweep over 5 languages × 3 themes, practice, backup, spread).
+
+## App icon
+`assets/icon-source.jpg` is the master art. `python3 scripts/make-icons.py` (Pillow + numpy) regenerates the web icons in `public/` (favicon, apple-touch, PWA 192/512 + maskable) and the Android resources in `assets/android-res/` (legacy, round, adaptive foreground, background colour `#06193A`, splash). `scripts/android-setup.sh` copies them into the generated Android project; CI verifies the icon is inside the APK.
+## Voice navigation
+Open the mic anywhere and start reciting: isti'adha and basmala are ignored, the ayah is recognised from its first words across the whole Quran (`src/voiceNav.ts`), the page jumps there and tracking starts from that ayah at every strictness level.

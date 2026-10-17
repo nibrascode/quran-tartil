@@ -36,3 +36,9 @@ jobs:
       - name: Tablet two-page spread
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/spread.mjs
+      - name: All 114 surah banners fit inside the frame (glyph ink check)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/headers.mjs
+      - name: Voice navigation + isti'adha/basmala (faked recogniser, 3 levels)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/voicenav.mjs

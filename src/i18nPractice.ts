@@ -1,5 +1,6 @@
 // practice (repeat, weak words, hifz) and backup strings
 const en = {
+ navListening: "Recite any surah or ayah: I will find it",
  practiceTab: "Practice",
  repeatT: "Ayah repeat",
  repeatD: "How many times an ayah is recited in repeat mode.",
@@ -34,6 +35,7 @@ const en = {
  importBad: "This file is not a Quran Tartil backup",
 };
 const az: typeof en = {
+ navListening: "İstənilən surə və ya ayəni oxuyun: mən tapacağam",
  practiceTab: "Məşq",
  repeatT: "Ayə təkrarı",
  repeatD: "Təkrar rejimində ayənin neçə dəfə oxunacağı.",
@@ -68,6 +70,7 @@ const az: typeof en = {
  importBad: "Bu fayl Quran Tartil nüsxəsi deyil",
 };
 const tr: typeof en = {
+ navListening: "Herhangi bir sure veya ayet okuyun: ben bulacağım",
  practiceTab: "Pratik",
  repeatT: "Ayet tekrarı",
  repeatD: "Tekrar modunda bir ayetin kaç kez okunacağı.",
@@ -102,6 +105,7 @@ const tr: typeof en = {
  importBad: "Bu dosya bir Quran Tartil yedeği değil",
 };
 const ar: typeof en = {
+ navListening: "اقرأ أي سورة أو آية وسأجدها",
  practiceTab: "التدريب",
  repeatT: "تكرار الآية",
  repeatD: "عدد مرات قراءة الآية في وضع التكرار.",
@@ -136,6 +140,7 @@ const ar: typeof en = {
  importBad: "هذا الملف ليس نسخة احتياطية من Quran Tartil",
 };
 const ru: typeof en = {
+ navListening: "Читайте любую суру или аят: я найду его",
  practiceTab: "Практика",
  repeatT: "Повтор аята",
  repeatD: "Сколько раз аят читается в режиме повтора.",

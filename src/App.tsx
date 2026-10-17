@@ -183,7 +183,7 @@ export function App() {
   }
 
   return (
-    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (st.prefs.hide || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
+    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (st.prefs.hide || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
       <div className={"bar top" + (bars ? "" : " hidden")} aria-hidden={!bars}>
         <button className="ib" aria-label={t.menu} onClick={() => setMenu("surah")}><Ic n="menu" /></button>
         <div className="title"><b>{sura.name}</b> · {t.juz} {juzOfPage(page)} · {t.page} {page}</div>
@@ -196,18 +196,16 @@ export function App() {
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
             <b className={"st " + (rc.mode === "on" ? (rc.held ? "warn" : "live") : rc.mode)}><Ic n={rc.mode === "on" ? (rc.held ? "warn" : "dot") : rc.mode === "paused" ? "pause" : "check"} size={16} fill={rc.mode === "on" && !rc.held} />{rc.mode === "on" ? (rc.held ? t.reciteHold : t.recitingNow) : rc.mode === "paused" ? t.pausedNow : t.reviewNow}</b>
-            <small>{pq?.started ? <>{pq.kind === "loop" || pq.kind === "weak" ? t.repeatStep.replace("{i}", String(Math.min(rc.rep + 1, pq.kind === "weak" ? 2 : st.prefs.repeat))).replace("{n}", String(pq.kind === "weak" ? 2 : st.prefs.repeat)) + " · " : ""}{pq.keys.length > 1 ? t.practiceStep.replace("{i}", String(pq.i + 1)).replace("{n}", String(pq.keys.length)) + " · " : ""}{pq.keys[pq.i]}</> : <>{rc.closedAyahs}/{rc.totalAyahs} {t.reciteAyahs} · {t.score}: {rc.score}%</>}</small>
+            <small>{rc.navigating ? t.navListening : pq?.started ? <>{pq.kind === "loop" || pq.kind === "weak" ? t.repeatStep.replace("{i}", String(Math.min(rc.rep + 1, pq.kind === "weak" ? 2 : st.prefs.repeat))).replace("{n}", String(pq.kind === "weak" ? 2 : st.prefs.repeat)) + " · " : ""}{pq.keys.length > 1 ? t.practiceStep.replace("{i}", String(pq.i + 1)).replace("{n}", String(pq.keys.length)) + " · " : ""}{pq.keys[pq.i]}</> : <>{rc.closedAyahs}/{rc.totalAyahs} {t.reciteAyahs} · {t.score}: {rc.score}%</>}</small>
           </div>
           {(rc.mode === "on" || rc.mode === "paused") && <button className="ib danger" onClick={rc.stop}><Ic n="stop" size={16} fill />{t.reciteStop}</button>}
           {rc.mode === "review" && <button className="ib" onClick={rc.close}><Ic n="close" size={16} />{t.reciteClose}</button>}
         </div>
       )}
-      <div className="dock" role="toolbar" aria-label={t.reciteMic}>
+      <div className={"dock" + (bars || rc.mode !== "off" || sel || mist ? "" : " auxhide")} role="toolbar" aria-label={t.reciteMic}>
         <button className="dbtn pill" onClick={() => { setSel(null); setMist((m) => !m); }} aria-expanded={mist}>{t.dockMistakes}{rc.mistakes.length > 0 && <i className="badge">{rc.mistakes.reduce((n, m) => n + m.n, 0)}</i>}</button>
         <button className="dbtn" aria-label={t.dockSurah} onClick={() => setMenu("surah")}><Ic n="book" /></button>
         <button className={"dbtn" + (st.prefs.hide ? " on" : "")} aria-pressed={st.prefs.hide} aria-label={t.dockHide} onClick={() => { const v = !st.prefs.hide; update((x) => ({ ...x, prefs: { ...x.prefs, hide: v } })); say(v ? t.hideOnMsg : t.hideOffMsg); }}><Ic n={st.prefs.hide ? "eyeoff" : "eye"} /></button>
-        <button className="dbtn mirror" aria-label={rc.mode === "on" || rc.mode === "paused" ? t.dockPrevAyah : t.dockPrev} onClick={() => (rc.mode === "on" || rc.mode === "paused" ? rc.back() : page > 1 && setPage(page - 1))}><Ic n="prev" /></button>
-        <button className="dbtn mirror" aria-label={rc.mode === "on" || rc.mode === "paused" ? t.dockRestart : t.dockToSurah} onClick={() => (rc.mode === "on" || rc.mode === "paused" ? rc.restart() : setPage(suras[sura.i - 1] ? pageOfAyah(sura.i, 1) : page))}><Ic n="back2" /></button>
         <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
           onClick={() => (rc.mode === "on" ? rc.pause() : rc.mode === "paused" ? rc.resume() : rc.begin())}><Ic n={rc.mode === "on" ? "pause" : "mic"} size={30} /></button>
       </div>
