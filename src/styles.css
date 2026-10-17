@@ -310,3 +310,10 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 .plist .pgo small { margin-inline-start:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
 .plist .pgo .mw { font-family:"Amiri Quran", serif; font-size:20px; }
 .plist .ref { font-size:12px; padding:2px 8px; border-radius:99px; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent); flex:none; }
+
+/* tablet / landscape: two facing pages */
+.spread { position:absolute; inset:0; display:flex; flex-direction:row; }
+.spread .page { position:relative; inset:auto; flex:1 1 0; min-width:0; }
+.spread .page:first-child .frame { border-start-end-radius:2px; border-end-end-radius:2px; }
+.spread .page:last-child .frame { border-start-start-radius:2px; border-end-start-radius:2px; }
+.spread::after { content:""; position:absolute; top:0; bottom:0; left:50%; width:28px; margin-left:-14px; pointer-events:none; background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 9%, transparent) 50%, transparent); }

@@ -2,16 +2,26 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 import { Page } from "./Page";
 import { PAGES } from "./quran";
 
-type Props = { page: number; setPage: (p: number) => void; onTap: (ayah: { s: number; a: number } | null) => void; scale?: number; animate?: boolean };
+type Props = { page: number; setPage: (p: number) => void; onTap: (ayah: { s: number; a: number } | null, page?: number) => void; scale?: number; animate?: boolean };
 type Flip = { to: number; dir: "next" | "prev" };
 const MAX_ANGLE = 96;
 const reduced = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const SPREAD_Q = "(min-width: 900px) and (min-aspect-ratio: 5/4)";
+/** tablets / desktop landscape: two facing mushaf pages (odd on the right, even on the left) */
+export function useSpread(): boolean {
+  const [s, setS] = useState(() => typeof matchMedia !== "undefined" && matchMedia(SPREAD_Q).matches);
+  useEffect(() => { const m = matchMedia(SPREAD_Q); const f = () => setS(m.matches); m.addEventListener("change", f); return () => m.removeEventListener("change", f); }, []);
+  return s;
+}
+export const spreadBase = (p: number) => (p % 2 ? p : p - 1);
 
 /**
  * Arabic book: the spine is on the right. Going to the NEXT page lifts the left edge of the current page and turns it over the spine
  * (swipe left-to-right or tap the left edge). Going back lays the previous page down again.
  */
 export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Props) {
+  const spread = useSpread();
   const [flip, setFlip] = useState<Flip | null>(null);
   const over = useRef<HTMLDivElement>(null);
   const shade = useRef<HTMLDivElement>(null);
@@ -51,6 +61,7 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
   }, [finish]);
 
   const start = useCallback((dir: "next" | "prev"): Flip | null => {
+    if (spread) return null;
     const to = page + (dir === "next" ? 1 : -1);
     if (to < 1 || to > PAGES) return null;
     const f = { to, dir };
@@ -58,13 +69,14 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
     flipRef.current = f;
     setFlip(f);
     return f;
-  }, [page]);
+  }, [page, spread]);
 
   const turn = useCallback((dir: "next" | "prev") => {
     if (flipRef.current) return;
+    if (spread) { const to = spreadBase(page) + (dir === "next" ? 2 : -2); if (to >= 1 && to <= PAGES) setPage(to); return; }
     const f = start(dir);
     if (f) requestAnimationFrame(() => requestAnimationFrame(() => tween(f, 1)));
-  }, [start, tween]);
+  }, [start, tween, spread, page, setPage]);
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
@@ -103,7 +115,7 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
       else {
         // top and bottom strips always toggle the bars; elsewhere a tap on an ayah selects it
         const el = fy < 0.08 || fy > 0.92 ? null : ((e.target as HTMLElement).closest?.(".ayah") as HTMLElement | null);
-        onTap(el ? { s: Number(el.dataset.s), a: Number(el.dataset.a) } : null);
+        onTap(el ? { s: Number(el.dataset.s), a: Number(el.dataset.a) } : null, el ? Number((el.closest(".page") as HTMLElement | null)?.dataset.page) || undefined : undefined);
       }
     }
   };
@@ -113,8 +125,12 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
   const overPage = flip ? (flip.dir === "next" ? page : flip.to) : 0;
   return (
     <div className="reader" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel} role="region" aria-label={`Mushaf ${page}`}>
-      <div className="layer"><Page page={under} scale={scale} /><div className="shade" ref={shade} /></div>
-      {flip && <div className="layer over" ref={over}><Page page={overPage} scale={scale} /></div>}
+      {spread ? (
+        <div className="layer"><div className="spread" dir="rtl"><Page page={spreadBase(page)} scale={scale} />{spreadBase(page) + 1 <= PAGES && <Page page={spreadBase(page) + 1} scale={scale} />}</div></div>
+      ) : (
+        <div className="layer"><Page page={under} scale={scale} /><div className="shade" ref={shade} /></div>
+      )}
+      {flip && !spread && <div className="layer over" ref={over}><Page page={overPage} scale={scale} /></div>}
       <div className="sr-only" aria-live="polite">{page}</div>
     </div>
   );

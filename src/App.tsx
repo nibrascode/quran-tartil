@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Reader } from "./Reader";
+import { Reader, useSpread } from "./Reader";
 import { Menu, type Tab } from "./Menu";
 import { Onboarding } from "./Onboarding";
 import { PAGES, suraLabel, ayahs, firstSuraOfPage, indexOf, juzOfPage, suras, toArabicDigits } from "./quran";
@@ -39,6 +39,7 @@ export function App() {
   const sheetRef = useRef<HTMLDivElement>(null);
   const shiftRef = useRef(0);
   const t = T[lang];
+  const spread = useSpread();
   const [pq, setPq] = useState<Queue | null>(null);
   const cleared = useRef<Set<string>>(new Set());
   const pqRef = useRef<Queue | null>(null);
@@ -103,9 +104,10 @@ export function App() {
   // a page counts as read after a short dwell (khatm + daily goal)
   useEffect(() => {
     if (!st.onboarded) return;
-    const id = setTimeout(() => update((s) => markRead(s, page)), 3500);
+    const pair = spread ? (page % 2 ? page + 1 : page - 1) : 0;
+    const id = setTimeout(() => update((s) => { const r = markRead(s, page); return pair >= 1 && pair <= PAGES ? markRead(r, pair) : r; }), 3500);
     return () => clearTimeout(id);
-  }, [page, st.onboarded, update]);
+  }, [page, st.onboarded, update, spread]);
 
   // bookmark marks on the DOM (fitted text is not re-laid out)
   useEffect(() => {
@@ -189,7 +191,7 @@ export function App() {
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
         <button className="ib" aria-label={t.settings} onClick={() => setMenu("settings")}><Ic n="sliders" /></button>
       </div>
-      <Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a) => { setMist(false); if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} />
+      <Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} />
       {rc.mode !== "off" && (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">

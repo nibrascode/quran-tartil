@@ -33,3 +33,6 @@ jobs:
       - name: Backup export/import roundtrip
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/backup.mjs
+      - name: Tablet two-page spread
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/spread.mjs

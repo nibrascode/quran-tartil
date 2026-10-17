@@ -33,3 +33,9 @@ Honest limits: it compares **words only** (no tajweed, no letter-level makharij)
 - **Strictness** Easy / Medium / Hard (Settings > Tartil check options): matching threshold, look-alike letters, skipped words, and how soon a mistake is shown.
 - Settings as expandable cards (language, theme, text size, page-turn animation, keep screen on, reminders, tartil options, reset/clear data), Privacy Policy in 5 languages (`PRIVACY.md`, in app, and `privacy.html` on the web build; generated from `scripts/privacy-source.json` by `npm run privacy`).
 - Audio recitation is intentionally **not** included: no reciter audio with a clear permissive license was found (EveryAyah / Islamic Network files have undocumented per-recording rights).
+
+## Practice, backup, tablets
+- **Practice tab:** ayah repeat (×1–10), weak-word drill (mistakes from recitation are remembered; a clean pass clears them), and Hifz mode (add ayahs, recite with the text hidden, Leitner spaced repetition: 1/2/4/8/16/32/64 days; pass = 80%+). Logic: `src/practice.ts` (tests in `scripts/practice.test.mjs`).
+- **Backup:** Settings → Backup exports/imports bookmarks, progress, mistakes and memorization as JSON (validated, merged, never overwrites). `src/backup.ts`.
+- **Tablets / landscape ≥ 900px:** two facing mushaf pages (odd on the right).
+- **CI:** `.github/workflows/e2e.yml` runs Playwright audits (page fill/overflow, UI sweep over 5 languages × 3 themes, practice, backup, spread).
