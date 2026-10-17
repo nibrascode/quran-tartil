@@ -1,0 +1,60 @@
+:root { --bg:#f6efdc; --fg:#1c1a16; --muted:#7a6f58; --card:#fffaf0; --line:#d9ccae; --accent:#1f7a5c; --ink:#14110b; }
+:root[data-theme="dark"] { --bg:#0f1412; --fg:#e8e2d0; --muted:#8d9a90; --card:#18201c; --line:#2b3a33; --accent:#4fd1a0; --ink:#eee7d3; }
+:root[data-theme="sepia"] { --bg:#e9d9b4; --fg:#2d2210; --muted:#7a6840; --card:#f2e5c4; --line:#c9b583; --accent:#7a4d1a; --ink:#251b0b; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body, #root { margin:0; height:100%; background:var(--bg); color:var(--fg); overscroll-behavior:none; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow:hidden; }
+.app { position:fixed; inset:0; display:flex; flex-direction:column; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.reader { flex:1; min-height:0; position:relative; overflow:hidden; touch-action:pan-y; user-select:none; -webkit-user-select:none; }
+.turn { position:absolute; inset:0; }
+.turn.from-left { animation:inL .28s ease-out; }
+.turn.from-right { animation:inR .28s ease-out; }
+@keyframes inL { from { transform:translateX(-100%); } to { transform:none; } }
+@keyframes inR { from { transform:translateX(100%); } to { transform:none; } }
+@media (prefers-reduced-motion: reduce) { .turn.from-left, .turn.from-right { animation:none; } }
+.page { position:absolute; inset:0; display:flex; flex-direction:column; padding:10px 14px 0; background:var(--bg); }
+.page-body { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+.mtext { font-family:"Amiri Quran", "Amiri", serif; line-height:1.95; text-align:justify; text-align-last:center; color:var(--ink); font-feature-settings:"liga","calt"; word-spacing:.05em; }
+.ayah { }
+.end { color:var(--accent); font-size:.8em; white-space:nowrap; }
+.sura-head { text-align:center; margin:.25em 0; border:1.5px solid var(--accent); border-radius:10px; color:var(--accent); font-size:.9em; line-height:1.6; padding:.1em 0; background:color-mix(in srgb, var(--accent) 8%, transparent); }
+.bism { text-align:center; text-align-last:center; line-height:1.7; }
+.page-no { text-align:center; font-family:"Amiri Quran", serif; color:var(--muted); font-size:14px; padding:2px 0 6px; }
+/* chrome bars */
+.bar { position:absolute; left:0; right:0; z-index:5; display:flex; align-items:center; gap:8px; padding:8px 12px; background:color-mix(in srgb, var(--card) 94%, transparent); backdrop-filter:blur(10px); border-color:var(--line); transition:transform .22s, opacity .22s; }
+.bar.top { top:env(safe-area-inset-top); border-bottom:1px solid var(--line); }
+.bar.bottom { bottom:env(safe-area-inset-bottom); border-top:1px solid var(--line); flex-direction:column; align-items:stretch; }
+.bar.top.hidden { transform:translateY(-110%); opacity:0; pointer-events:none; }
+.bar.bottom.hidden { transform:translateY(110%); opacity:0; pointer-events:none; }
+.bar .title { flex:1; min-width:0; text-align:center; font-size:14px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bar .title b { font-family:"Amiri Quran", serif; font-size:18px; color:var(--fg); font-weight:400; }
+.ib { appearance:none; border:1px solid var(--line); background:var(--card); color:var(--fg); border-radius:10px; min-width:40px; height:40px; font-size:16px; padding:0 10px; cursor:pointer; }
+.ib.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.slider { width:100%; direction:rtl; accent-color:var(--accent); }
+.row { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+/* sheet */
+.scrim { position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.45); display:flex; align-items:flex-end; }
+.sheet { width:100%; max-height:86%; background:var(--bg); border-radius:18px 18px 0 0; display:flex; flex-direction:column; border:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); }
+.sheet-head { display:flex; align-items:center; gap:8px; padding:12px 14px 8px; }
+.sheet-head h2 { margin:0; flex:1; font-size:18px; }
+.tabs { display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 10px; }
+.tab { appearance:none; border:1px solid var(--line); background:var(--card); color:var(--fg); border-radius:999px; padding:7px 14px; font-size:14px; white-space:nowrap; cursor:pointer; }
+.tab[aria-selected="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+.sheet-body { overflow:auto; padding:0 14px 16px; flex:1; }
+.list { display:flex; flex-direction:column; gap:6px; }
+.li { appearance:none; text-align:start; display:flex; align-items:center; gap:10px; border:1px solid var(--line); background:var(--card); color:var(--fg); border-radius:12px; padding:10px 12px; font-size:15px; cursor:pointer; }
+.li .n { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent); font-size:13px; flex:none; }
+.li .nm { flex:1; min-width:0; }
+.li .ar { font-family:"Amiri Quran", serif; font-size:20px; }
+.li small { color:var(--muted); display:block; font-size:12px; }
+.field { width:100%; border:1px solid var(--line); background:var(--card); color:var(--fg); border-radius:12px; padding:11px 12px; font-size:16px; margin-bottom:10px; }
+.seg { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 16px; }
+.about h3 { margin:16px 0 4px; font-size:15px; }
+.about p, .about pre { font-size:14px; line-height:1.55; margin:4px 0; }
+.about pre { white-space:pre-wrap; overflow-wrap:anywhere; overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12px; direction:ltr; text-align:left; }
+.about a { color:var(--accent); }
+.hint { position:absolute; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:4; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:13px; text-align:center; color:var(--muted); }
+.tt .word { display:inline-block; padding:0 .08em; border-radius:6px; }
+.tt .word.ok { background:color-mix(in srgb, #2faa6a 28%, transparent); }
+.tt .word.bad { background:color-mix(in srgb, #e5484d 32%, transparent); }
+.tt .word.cur { outline:2px solid var(--accent); }
