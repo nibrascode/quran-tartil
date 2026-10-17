@@ -63,13 +63,16 @@ function build(set, kind) {
 
 // ---- decoder
 const { pipeline } = await import("@huggingface/transformers");
+// the base ONNX export ships a stripped generation_config (no alignment heads / language table): use openai/whisper-base's (same architecture) like the app does
+if (/base/.test(MODEL) && /raghib/.test(MODEL)) { const gc = readFileSync("public/precise/base-generation_config.json"); const of = globalThis.fetch; globalThis.fetch = async (u, o) => (String(u).includes("generation_config.json") ? new Response(gc, { headers: { "content-type": "application/json" } }) : of(u, o)); }
 const t0 = Date.now();
 const asr = await pipeline("automatic-speech-recognition", MODEL, { dtype: "q8", ...(THREADS ? { session_options: { intraOpNumThreads: THREADS, interOpNumThreads: 1 } } : {}) });
 console.log(`model ready in ${Date.now() - t0} ms (threads: ${THREADS || "default"}), win ${WIN}s hop ${HOP}s margin ${MARGIN}s`);
 async function decode(samples) {
   const t = performance.now();
-  const r = await asr(samples, { language: "ar", task: "transcribe", return_timestamps: "word" });
-  const words = (r.chunks || []).map((c) => ({ w: c.text, s: c.timestamp[0] ?? 0, e: c.timestamp[1] ?? 0 }));
+  let words;
+  if (process.argv.includes("--nots")) { const r = await asr(samples, { language: "ar", task: "transcribe" }); words = r.text.split(/\s+/).filter(Boolean).map((w) => ({ w, s: -1, e: -1 })); }
+  else { const r = await asr(samples, { language: "ar", task: "transcribe", return_timestamps: "word" }); words = (r.chunks || []).map((c) => ({ w: c.text, s: c.timestamp[0] ?? 0, e: c.timestamp[1] ?? 0 })); }
   return { words, sec: (performance.now() - t) / 1000 };
 }
 await decode(new Float32Array(16000 * 2).map(() => (Math.random() - 0.5) * 0.01)); // warm-up

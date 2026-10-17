@@ -21,8 +21,8 @@ await p.addInitScript(() => {
     const w = { onmessage: null, onerror: null, dead: false, postMessage(m) {
       const say = (d) => { if (!w.dead) w.onmessage?.({ data: d }); };
       if (m.t === "load") {
-        if (m.ort === undefined) say({ t: "error", msg: "no ort path" });
-        const total = 46e6; let l = 0; const step = () => { if (w.dead) return; l += total / 8; say({ t: "progress", loaded: l, total, file: "m.onnx" }); if (window.__fw.slow) { return; } if (l >= total) say({ t: "ready", ms: 12, threads: 1, backend: "wasm (fake)" }); else setTimeout(step, 120); }; step();
+        if (m.ort === undefined || m.app === undefined) say({ t: "error", msg: "no ort path" });
+        const total = 108e6; let l = 0; const step = () => { if (w.dead) return; l += total / 8; say({ t: "progress", loaded: l, total, file: "m.onnx" }); if (window.__fw.slow) { return; } if (l >= total) say({ t: "ready", ms: 12, threads: 1, backend: "wasm (fake)" }); else setTimeout(step, 120); }; step();
       } else if (m.t === "run") {
         window.__fw.runs++; const a = m.audio; let pk = 0; for (let i = 0; i < a.length; i++) pk = Math.max(pk, Math.abs(a[i]));
         let f = -1, l = -1; for (let i = 0; i < a.length; i++) if (Math.abs(a[i]) > pk * 0.15) { if (f < 0) f = i; l = i; }
@@ -40,7 +40,7 @@ await p.reload({ waitUntil: "networkidle" });
 const showDock = async () => { if (await p.$(".dock.auxhide")) { await p.mouse.click(195, 12); await p.waitForTimeout(450); } };
 const openEngine = async () => { await showDock(); await p.click("#home-dock ~ .dbtn >> nth=0"); await p.waitForTimeout(300); await p.click('[role=tab]:has-text("Settings")'); await p.waitForTimeout(300); await p.click('.scard-h:has-text("Recognition engine")'); await p.waitForTimeout(500); };
 await openEngine();
-if (!(await p.$("#precise-dl"))) fail("download button missing (consent UI)"); else console.log("OK consent card: download button, size shown:", /46 MB/.test(await p.textContent("#precise-card")));
+if (!(await p.$("#precise-dl"))) fail("download button missing (consent UI)"); else console.log("OK consent card: download button, size shown:", /108 MB/.test(await p.textContent("#precise-card")));
 // cancel path
 await p.evaluate(() => { window.__fw.slow = true; });
 await p.click("#precise-dl"); await p.waitForTimeout(400);

@@ -44,4 +44,14 @@ export class Vad {
     for (let i = b - 1; i >= a; i--) { if (!this.flags[i - this.base]) { run++; if (run >= need) { let j = i; while (j + run < b && !this.flags[j + run - this.base]) run++; return ((i + run / 2) * FRAME) / SR; } } else run = 0; }
     return -1;
   }
+  /** speech runs [a, b] (stream seconds) inside [t0, t1), merging gaps shorter than `gap` seconds */
+  spans(t0: number, t1: number, gap = 0.15): [number, number][] {
+    const a = Math.max(this.base, Math.floor((t0 * SR) / FRAME)), b = Math.min(this.frames, Math.ceil((t1 * SR) / FRAME)), out: [number, number][] = [];
+    let st = -1, last = -1;
+    for (let i = a; i < b; i++) {
+      if (this.flags[i - this.base]) { if (st < 0) st = i; else if ((i - last) * FRAME / SR > gap) { out.push([(st * FRAME) / SR, ((last + 1) * FRAME) / SR]); st = i; } last = i; }
+    }
+    if (st >= 0) out.push([(st * FRAME) / SR, ((last + 1) * FRAME) / SR]);
+    return out;
+  }
 }

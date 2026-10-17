@@ -1,8 +1,13 @@
 import { Capacitor } from "@capacitor/core";
 import type { FromWorker, WorkerLike } from "./protocol";
 
-/** Quran-tuned Whisper tiny (tarteel-ai/whisper-tiny-ar-quran, Apache-2.0), ONNX q8 export for transformers.js. Pinned revision. */
-export const MODEL = { id: "Sharjeelbaig/whisper-tiny-ar-quran-onnx", rev: "cd93bdec117adc2f84d6c4ab91c10164a2e9bee9", base: "tarteel-ai/whisper-tiny-ar-quran", license: "Apache-2.0", bytes: 46_000_000 };
+/** Quran-tuned Whisper models (Apache-2.0 base: tarteel-ai), ONNX q8 exports for transformers.js, pinned revisions. */
+export const MODELS = {
+  base: { id: "raghibdarr/whisper-base-ar-quran-onnx", rev: "d1350bd69d5a67d006a28123a19c53ff6b60dc15", base: "tarteel-ai/whisper-base-ar-quran", license: "Apache-2.0 (derived)", bytes: 108_000_000,
+    words: false, genConfig: "precise/base-generation_config.json" }, // text only: word times are laid over the speech runs (pipeline.spread); stripped generation_config replaced by openai/whisper-base's
+  tiny: { id: "Sharjeelbaig/whisper-tiny-ar-quran-onnx", rev: "cd93bdec117adc2f84d6c4ab91c10164a2e9bee9", base: "tarteel-ai/whisper-tiny-ar-quran", license: "Apache-2.0", bytes: 46_000_000, words: true, genConfig: "" },
+} as const;
+export const MODEL: (typeof MODELS)["base"] | (typeof MODELS)["tiny"] = MODELS.base;
 export type EngineMode = "auto" | "platform" | "precise";
 const K = { mode: "qt.engine", ready: "qt.precise.ready", rev: "qt.precise.rev" };
 const ls = () => (typeof localStorage === "undefined" ? null : localStorage);
@@ -45,7 +50,7 @@ export function downloadModel(onProgress: (loaded: number, total: number) => voi
       else if (m.t === "error") { finished = true; w.terminate(); r(new Error(m.msg)); }
     };
     w.onerror = () => { if (!finished) { finished = true; w.terminate(); r(new Error("worker")); } };
-    w.postMessage({ t: "load", ort: new URL("ort/", document.baseURI).href });
+    w.postMessage({ t: "load", ort: new URL("ort/", document.baseURI).href, app: document.baseURI });
   });
   return { cancel() { if (!finished) { finished = true; w.terminate(); rej(new Error("cancelled")); } }, done };
 }

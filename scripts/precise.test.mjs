@@ -157,3 +157,12 @@ test("engine: a decode that never returns times out instead of hanging", async (
   await core.start(); feed(4, [[0.1, 3.9]]); w.nowV = 5000; w.tick(); assert.equal(w.ran, 1); w.nowV = 9000; w.tick(); await tick(5);
   assert.equal(core.state, "idle"); assert.match(w.errors[0], /timed out/); assert.equal(w.terminated, 1);
 });
+
+test("pipeline: a text-only model (no word times) still commits words, placed on the voiced parts", () => {
+  const P = new Pipeline({ margin: 0.5 }); P.setExpected(["الحمد", "لله", "رب", "العالمين"]);
+  P.push(signal(8, [[0.3, 2.3], [4.0, 6.0]]));
+  const job = P.poll(5000); assert.ok(job);
+  const r = P.done(job, ["الحمد", "لله", "رب", "العالمين"].map((w) => ({ w, s: -1, e: -1 })), 0.3);
+  assert.deepEqual(r.words.slice(0, 2), ["الحمد", "لله"]); // the first words sit in the first run; none lands in the 2 s pause
+  assert.ok(P.committedUntil > 0.3 && P.committedUntil < 4.0 + 2.1);
+});

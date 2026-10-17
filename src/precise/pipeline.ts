@@ -77,11 +77,20 @@ export class Pipeline {
     return { id: this.nextId++, start: s0, end, samples, endpoint, gain };
   }
   /** a decode finished (hyp = words with times relative to the window start) → newly committed words */
+  /** Timestamp-free models (text only): words get time spans proportional to their length, laid over the speech runs of the window (pauses get no words). */
+  private spread(hyp: TWord[], job: Job): TWord[] {
+    const runs = this.vad.spans(job.start, job.end); if (!runs.length) return hyp.map((x) => ({ ...x, s: 0, e: 0 }));
+    const total = runs.reduce((t, r) => t + (r[1] - r[0]), 0), wt = hyp.map((x) => strip(x.w).length + 1), sum = wt.reduce((a, b) => a + b, 0);
+    const at = (u: number) => { let acc = u * total; for (const r of runs) { const l = r[1] - r[0]; if (acc <= l + 1e-9) return r[0] + acc; acc -= l; } return runs[runs.length - 1][1]; };
+    let c = 0;
+    return hyp.map((x, i) => { const s = at(c / sum); c += wt[i]; return { w: x.w, s: s - job.start, e: at(c / sum) - job.start }; });
+  }
   done(job: Job, hyp: TWord[], inferSec: number): { words: string[]; tentative: string[] } {
     this.busy = false;
     this.ema = this.ema ? this.ema * 0.6 + inferSec * 0.4 : inferSec;
     this.hop = Math.min(this.o.maxHop, Math.max(this.o.minHop, this.ema * 1.25)); // adaptive hop: never queue work faster than the device can do it
     const dur = job.end - job.start;
+    if (hyp.length && hyp.every((x) => x.s < 0)) hyp = this.spread(hyp, job); // the model gave no word times: place the words on the voiced parts of the window
     let w = hyp.map((x) => ({ w: x.w.trim(), s: x.s + job.start, e: x.e + job.start })).filter((x) => strip(x.w));
     // hallucination guards: impossible speaking rate, or one word looping
     if (w.length > 6 * dur + 2) { this.dropped++; return { words: [], tentative: [] }; }

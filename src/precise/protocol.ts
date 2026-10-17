@@ -1,6 +1,6 @@
 import type { TWord } from "./pipeline";
 /** messages between the app and the Whisper worker */
-export type ToWorker = { t: "load"; ort: string } | { t: "run"; id: number; audio: Float32Array; prompt?: string } | { t: "dispose" };
+export type ToWorker = { t: "load"; ort: string; app: string } | { t: "run"; id: number; audio: Float32Array; prompt?: string } | { t: "dispose" };
 export type FromWorker =
   | { t: "progress"; loaded: number; total: number; file: string }
   | { t: "ready"; ms: number; threads: number; backend: string }

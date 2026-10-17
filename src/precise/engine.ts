@@ -11,6 +11,7 @@ export type PreciseDeps = {
   spawn(): WorkerLike;
   openMic(onChunk: (x: Float32Array) => void): Promise<{ close(): void }>;
   ortBase?: string;
+  appBase?: string;
   now?: () => number;
   every?: (fn: () => void, ms: number) => unknown;
   clear?: (t: unknown) => void;
@@ -69,7 +70,7 @@ export function createPreciseEngine(d: PreciseDeps): Engine {
           else if (m.t === "result") onResult(m);
         };
       });
-      worker.postMessage({ t: "load", ort: d.ortBase ?? "" });
+      worker.postMessage({ t: "load", ort: d.ortBase ?? "", app: d.appBase ?? "" });
       try { await loaded; } catch (e) { kill(); throw e; }
       if (dead) return;
       worker.onerror = () => fail("worker error");

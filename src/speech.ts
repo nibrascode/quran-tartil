@@ -78,7 +78,7 @@ export function createListener(c: Cbs): Listener {
   // ---- Precise engine (on-device Quran Whisper). Falls back to the platform recogniser on any failure.
   let userStopped = false, usingPlatform = false;
   const precise = choosePrecise() ? createCore(
-    () => createPreciseEngine({ spawn: spawnWorker, openMic: (cb) => openMic(cb), ortBase: new URL("ort/", document.baseURI).href, expected: () => c.expected?.() ?? [] }),
+    () => createPreciseEngine({ spawn: spawnWorker, openMic: (cb) => openMic(cb), ortBase: new URL("ort/", document.baseURI).href, appBase: document.baseURI, expected: () => c.expected?.() ?? [] }),
     { async open() { /* the engine owns its microphone */ }, close() { /* closed by the engine */ } },
     {
       onResult: (segs, fin) => { const s = segs.map((a) => a[0]?.transcript ?? "").join(" ").trim(); diagResult(s, undefined, fin, false); c.onWords(split(s), fin); },
@@ -96,7 +96,7 @@ export function createListener(c: Cbs): Listener {
     async start() {
       userStopped = false; usingPlatform = false;
       if (precise) {
-        diagReset("Precise (Whisper tiny Quran, on-device)", "ar"); diag.supported = true; pdiagReset();
+        diagReset("Precise (Whisper base Quran, on-device)", "ar"); diag.supported = true; pdiagReset();
         await precise.start();
         return;
       }

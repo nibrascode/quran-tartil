@@ -77,16 +77,26 @@ Wrong recitations that must NOT be accepted (false accepts): substituted word 0/
 
 ## Precise mode (beta): on-device Quran Whisper, near-live
 
-An optional engine (Settings → Recognition engine → **Precise β**) that runs the Quran-tuned Whisper tiny
-([tarteel-ai/whisper-tiny-ar-quran](https://huggingface.co/tarteel-ai/whisper-tiny-ar-quran), Apache-2.0; ONNX q8 export
-[Sharjeelbaig/whisper-tiny-ar-quran-onnx](https://huggingface.co/Sharjeelbaig/whisper-tiny-ar-quran-onnx), pinned revision) with transformers.js in a Web Worker (WASM, CPU).
-Nothing is sent anywhere: the user downloads about 46 MB once (consent card with progress, cancel, delete; cached in Cache Storage), the WASM runtime ships inside the app (no CDN).
+An optional engine (Settings → Recognition engine → **Precise β**) that runs the Quran-tuned Whisper base
+([tarteel-ai/whisper-base-ar-quran](https://huggingface.co/tarteel-ai/whisper-base-ar-quran), Apache-2.0; ONNX q8 export
+[raghibdarr/whisper-base-ar-quran-onnx](https://huggingface.co/raghibdarr/whisper-base-ar-quran-onnx), pinned revision; tiny is kept in `MODELS` for comparison) with transformers.js in a Web Worker (WASM, CPU).
+Nothing is sent anywhere: the user downloads about 108 MB once (consent card with progress, cancel, delete; cached in Cache Storage), the WASM runtime ships inside the app (no CDN).
 
 * `src/precise/capture.ts`: microphone through an AudioWorklet at 16 kHz.
 * `src/precise/vad.ts`, `pipeline.ts` (pure, tested): energy VAD, windows of up to 5 s that start inside a pause, adaptive hop (never queues work faster than the device decodes), volume normalisation, hallucination guards (silence, loops, impossible speaking rate), **stitching** of overlapping windows by fuzzy text overlap + timestamps, a word is committed when it is clear of the window edge and either fits the expected text or was heard twice (a leading و/ف that Whisper adds after a pause is removed when the expected word has none).
 * `src/precise/engine.ts`: plugs into the same listener state machine as the other engines; emits the committed words to the unchanged `ReciteSession` (hold-at-mistake, strictness levels, no-flicker). `stop` terminates the worker (no inference keeps running). Any failure falls back to the platform recogniser.
 * Diagnostics panel shows backend, threads, windows decoded, decode time, real-time factor, window step, lag.
-* **Not enabled by default**: Auto/Platform use the platform recogniser. `node scripts/precise-bench.mjs` streams real EveryAyah recitations through the same code and prints word accuracy, lag and rtf (numbers in the v1.2.0 release notes).
+* **Not enabled by default**: Auto/Platform use the platform recogniser. `node scripts/precise-bench.mjs` streams real EveryAyah recitations through the same code and prints word accuracy, lag and rtf (numbers below and in the release notes).
+* **Benchmark, tiny (word timestamps) vs base (text only; times laid over speech), real EveryAyah audio streamed in real time, this box (CPU, default threads), word accuracy / inserted junk, then lag median:**
+
+  | set | tiny clean | base clean | tiny degraded | base degraded |
+  |---|---|---|---|---|
+  | Alafasy 1:1-7 | 93.1 / 21% | 75.9 / 37% | 82.8 | 82.8 |
+  | Husary 112+113 | 89.5 / 15% | 97.4 / 10% | 76.3 | 92.1 |
+  | Abdul Basit 93 | 92.5 / 14% | 90.0 / 14% | 77.5 | 85.0 |
+  | Minshawy 2:255 | 92.0 / 15% | 92.0 / 21% | 92.0 | 94.0 |
+
+  Mean word accuracy: clean 91.8% (tiny) vs 88.8% (base); degraded (noise/volume/speed) 82.2% vs 88.5%. Lag 1.6–2.2 s for both; real-time factor 0.65 (tiny, with word times) vs 0.55 (base). Whole-ayah success with hold-at-mistake stays low for both (ayahs closed e.g. Husary 7/9 base vs 2/9 tiny, Alafasy 0/7 vs 3/7), so Precise stays opt-in beta. Base is used because it is clearly more robust to noise/quiet audio and faster without word timestamps; it downloads about 108 MB (not 153 MB: that figure was the sherpa int8 export).
 * WebGPU is not included (it needs fp16/fp32 weights of 80–150 MB and a 27 MB runtime, and cannot be verified here).
 
 ## QA
