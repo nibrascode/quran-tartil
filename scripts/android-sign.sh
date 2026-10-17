@@ -20,6 +20,9 @@ s=s.replace("    buildTypes {",sc+"    buildTypes {",1)
 s=re.sub(r"(buildTypes\s*\{\s*release\s*\{)",r"\1\n            signingConfig signingConfigs.release",s,1)
 vc=__import__('os').environ.get('VERSION_CODE')
 if vc: s=re.sub(r"versionCode\s+\d+","versionCode "+vc,s,1)
+import json
+vn=json.load(open('package.json'))['version']
+s=re.sub(r'versionName "[^"]*"','versionName "'+vn+'"',s,1)
 open(p,'w').write(s)
 PY
 grep -n "signingConfig" "$g"

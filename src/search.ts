@@ -3,7 +3,7 @@ import { normalizeAr, words } from "./tartil";
 
 export type Hit = { s: number; a: number; page: number; text: string };
 let index: string[] | null = null;
-const build = () => (index ??= ayahs.map((x) => words(x.a === 1 && x.s !== 1 && x.s !== 9 ? stripBasmala(x.t) : x.t).join(" ")));
+const build = () => (index ??= ayahs.map((x) => words(x.a === 1 && x.s !== 1 && x.s !== 9 ? stripBasmala(x.t) : x.t).map(normalizeAr).join(" ")));
 
 /** Diacritic-insensitive Arabic search; "2:255" jumps to a reference. Query words must all appear (in any order) in the ayah. */
 export function search(q: string, limit = 80): Hit[] {

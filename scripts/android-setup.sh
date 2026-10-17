@@ -16,3 +16,11 @@ cp -r assets/android-res/. "$res/"
 find "$res" -name 'splash.png' -delete   # default Capacitor splash bitmaps: replaced by drawable/splash.xml (navy + centred art)
 find "$res" -name 'ic_launcher_foreground.xml' -delete 2>/dev/null || true  # default vector foreground: replaced by our PNG layers
 echo "--- icon resources"; ls "$res"/mipmap-xxxhdpi "$res"/drawable 2>/dev/null
+
+# --- system bars / keyboard: navy window behind the (margin-adjusted) web content, resize when the keyboard opens ---
+st=android/app/src/main/res/values/styles.xml
+if ! grep -q "windowBackground" "$st"; then
+  sed -i 's#<item name="android:background">@null</item>#<item name="android:background">@null</item>\n        <item name="android:windowBackground">@color/ic_launcher_background</item>\n        <item name="android:statusBarColor">@color/ic_launcher_background</item>\n        <item name="android:navigationBarColor">@color/ic_launcher_background</item>\n        <item name="android:windowLightStatusBar">false</item>#' "$st"
+fi
+grep -q "windowSoftInputMode" "$f" || sed -i 's#<activity#<activity android:windowSoftInputMode="adjustResize"#' "$f"
+echo "--- theme + activity"; grep -E "windowBackground|statusBarColor|windowSoftInputMode" "$st" "$f"

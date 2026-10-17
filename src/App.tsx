@@ -164,6 +164,27 @@ export function App() {
   }, [st.prefs.keepAwake]);
 
   const goHome = () => { setSel(null); setMist(false); setBars(false); if (rc.mode === "on" || rc.mode === "paused") rc.stop(); setHome(true); };
+  // Android back button: close the top-most thing first (sheet, ayah, mic), then the reader -> Home, and only then leave the app
+  const backRef = useRef<() => void>(() => {});
+  backRef.current = () => {
+    if (menu) { if (menu === "about" || menu === "privacy") setMenu("settings"); else setMenu(null); return; }
+    if (sel) { setSel(null); return; }
+    if (mist) { setMist(false); return; }
+    if (rc.mode === "on" || rc.mode === "paused") { void rc.stop(); return; }
+    if (rc.mode === "review") { rc.close(); return; }
+    if (!st.onboarded) return;
+    if (!home) { goHome(); return; }
+    import("@capacitor/app").then(({ App: CapApp }) => CapApp.exitApp()).catch(() => {});
+  };
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let h: { remove(): Promise<void> } | null = null, dead = false;
+    import("@capacitor/app").then(async ({ App: CapApp }) => {
+      const l = await CapApp.addListener("backButton", () => backRef.current());
+      if (dead) l.remove(); else h = l;
+    }).catch(() => {});
+    return () => { dead = true; h?.remove(); };
+  }, []);
   const sura = useMemo(() => firstSuraOfPage(page), [page]);
   const isBm = sel ? st.bookmarks.some((b) => b.s === sel.s && b.a === sel.a) : false;
 
@@ -213,7 +234,7 @@ export function App() {
         <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
           onClick={() => (rc.mode === "on" ? rc.pause() : rc.mode === "paused" ? rc.resume() : rc.begin())}><Ic n={rc.mode === "on" ? "pause" : "mic"} size={30} /></button>
       </div>
-      {rc.err && <div className="toast" role="alert">{t.reciteFail}: {rc.err}</div>}
+      {rc.err && <div className="toast" role="alert">{/permission|not-allowed|service-not-allowed/.test(rc.err) ? t.hMicDenied : /network/.test(rc.err) ? t.hNetErr : rc.err === "unsupported" ? t.tartilUnsupported : t.reciteFail + ": " + rc.err}</div>}
       {sel && !mist && (
         <div className="asheet" ref={sheetRef} role="region" aria-label={t.selectedAyah + " " + sel.s + ":" + sel.a}>
           <div className="ahead">

@@ -1,7 +1,7 @@
 {
   "name": "quran-tartil",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
   "dependencies": {
     "@capacitor-community/keep-awake": "^7.1.0",
     "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor/app": "^7.1.2",
     "@capacitor/clipboard": "^7.0.4",
     "@capacitor/haptics": "^7.0.5",
     "@capacitor/local-notifications": "^7.0.7",

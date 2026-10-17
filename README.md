@@ -59,3 +59,21 @@ What the app does (see `src/speech.ts`, `src/asr.ts`):
 Honest limits: locales (ar-SA/EG/AE/MA) cannot be compared without real devices, so ar-SA stays the default and the user can switch. Web Speech sends audio to the browser vendor's server (online only); Quranic Arabic is outside what these engines are trained on, and tajweed cannot be judged.
 
 Free stronger fallback: WASM Whisper (e.g. transformers.js / whisper.cpp) was evaluated but NOT integrated. Costs: tiny/base models (40-150 MB) must be downloaded once, and are noticeably worse than Google's Arabic on Quranic text; `small` (~250 MB) is better but far slower than real time on mid-range phones (seconds per utterance), so word-by-word live colouring would lag. It would also add large assets to an offline PWA and the APK. Recommendation: keep the platform recogniser for live use; consider Whisper-small only as an optional, user-downloaded, per-ayah (non-live) "check after reciting" mode.
+
+## Recitation matching: research notes and measured accuracy
+How others do it: Tarteel trains its own acoustic model (CTC on crowd-sourced recitation) and aligns the decoded text to the known verse; the open-source "Tilawa" project runs an on-device streaming CTC model and fuzzy-matches against the Quran text (its model assets are non-commercial). Those models are Quran-specific acoustic models; a free general recogniser (Web Speech / Android SpeechRecognizer) cannot be constrained to the expected text, so this app does the next best thing: it scores the engine's alternatives against the expected words, then aligns (DP over words, with split/merge, repeat and partial-word handling) using the expected ayah as the reference.
+
+Offline corpus (`scripts/recog-corpus.mjs`, `scripts/recog-corpus.test.mjs`): 389 ayahs sampled across the Quran (4-24 words), each turned into noisy but *correct* recitations and into *wrong* ones. Accepted = ayah closes with score 100 and no mistake.
+
+| correct variant | before | after |
+|---|---|---|
+| clean / hamza-alif-ta marbuta variants / imla'i spelling / merged words / "wa" split | 100% | 100% |
+| word split in two (e.g. يع ملون) | 94.9% | 100% |
+| word repeated by the engine (stutter / echo) | 94.6% / 93.1% | 100% / 100% |
+| number word written as digit ("3" for ثلاثة), only 3 ayahs in the sample | 66% easy, 0% medium/hard | 100% |
+| restart after a pause, engine repeats 0 / 1 / 2 last words | 100 / 100 / 99.7% | 100 / 100 / 99.7% |
+
+Wrong recitations that must NOT be accepted (false accepts): substituted word 0/389, wrong consonant 0/389, swapped order 0 (medium, hard) in all levels; skipped word 0/389 at medium and hard. At Easy only a dropped 1-2 letter particle (و، في، من...) is forgiven: 41/389 skipped-word cases and 1 swap pass there (before this change a skipped content word of any length also passed: 117 -> 41 after restricting; 349/389 in the previous version). The corpus simulates recogniser *text* errors; it cannot measure acoustic accuracy, which needs real recordings on a device.
+
+## QA
+`scripts/e2e/qa.mjs` is the systematic sweep (home in 6 sizes x 5 languages x 3 themes, every menu tab and settings card, search, bookmarks, ayah sheet, mic start/stop/pause/resume/rapid/background/leave, onboarding, reduced motion, tablet/landscape, offline reload, page-turn timing, touch targets, accessible names). Android-only behaviour (back button, system bars, permissions, notifications, haptics, share sheet) cannot run in headless Chrome and is listed in the release notes as device-verified-by-owner.
