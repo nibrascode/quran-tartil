@@ -1,0 +1,29 @@
+name: Layout audit (Playwright)
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Serve build
+        run: |
+          npx vite preview --port 4180 --host 127.0.0.1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4180/ >/dev/null && break; sleep 1; done
+      - name: All pages, every 3rd page, 3 viewports (fill, overflow, surah banners)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: |
+          node scripts/e2e/pages.mjs 390 844 /tmp/p390.json 3
+          node scripts/e2e/pages.mjs 320 640 /tmp/p320.json 5
+          node scripts/e2e/pages.mjs 1024 768 /tmp/p1024.json 5
+      - name: UI sweep (5 languages x 3 themes, sheets, settings, onboarding)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/ui.mjs
