@@ -9,7 +9,11 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["icon-192.png", "apple-touch-icon.png", "favicon.ico", "favicon-32.png", "OFL-AmiriQuran.txt"],
-      workbox: { globPatterns: ["**/*.{js,css,html,woff2,svg,png,txt}"], maximumFileSizeToCacheInBytes: 6_000_000 },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,woff2,svg,png,txt}"], globIgnores: ["**/worker-*.js", "ort/**"], maximumFileSizeToCacheInBytes: 6_000_000,
+        // the Whisper worker and its WASM runtime are cached when the user installs the Precise model (not for every visitor)
+        runtimeCaching: [{ urlPattern: /\/(ort\/|assets\/worker-)/, handler: "CacheFirst", options: { cacheName: "qt-precise-ort", expiration: { maxEntries: 8 } } }],
+      },
       manifest: {
         name: "Quran Tartil",
         short_name: "Tartil",
@@ -26,4 +30,5 @@ export default defineConfig({
     }),
   ],
   build: { target: "es2022" },
+  worker: { format: "es" },
 });

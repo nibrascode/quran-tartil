@@ -1,11 +1,11 @@
 {
   "name": "quran-tartil",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/copy-ort.mjs && tsc --noEmit && vite build",
     "preview": "vite preview",
     "data": "node scripts/build-data.mjs",
     "privacy": "node scripts/build-privacy.mjs",
@@ -21,6 +21,7 @@
     "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/share": "^7.0.4",
     "@fontsource/amiri-quran": "^5.0.0",
+    "@huggingface/transformers": "^4.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

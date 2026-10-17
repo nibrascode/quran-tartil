@@ -48,6 +48,9 @@ jobs:
       - name: Speech engine (alternatives scored against expected text, diagnostics panel)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/asr.mjs
+      - name: Precise engine (fake worker + fake mic, consent/download UI, stop terminates the worker)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/precise.mjs
       - name: Full QA sweep (screens, languages, mic lifecycle, offline, a11y)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/qa.mjs

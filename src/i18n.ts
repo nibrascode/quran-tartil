@@ -129,8 +129,9 @@ import { S } from "./i18nSettings";
 import { D } from "./i18nDock";
 import { PR } from "./i18nPractice";
 import { H } from "./i18nHome";
-type SS = (typeof S)["en"] & (typeof D)["en"] & (typeof PR)["en"] & (typeof H)["en"];
-export const T: Record<Lang, Dict & X & SS> = { az: { ...az, ...xaz, ...S.az, ...D.az, ...PR.az, ...H.az }, en: { ...en, ...xen, ...S.en, ...D.en, ...PR.en, ...H.en }, tr: { ...tr, ...xtr, ...S.tr, ...D.tr, ...PR.tr, ...H.tr }, ar: { ...ar, ...xar, ...S.ar, ...D.ar, ...PR.ar, ...H.ar }, ru: { ...ru, ...xru, ...S.ru, ...D.ru, ...PR.ru, ...H.ru } };
+import { P } from "./i18nPrecise";
+type SS = (typeof S)["en"] & (typeof D)["en"] & (typeof PR)["en"] & (typeof H)["en"] & (typeof P)["en"];
+export const T: Record<Lang, Dict & X & SS> = { az: { ...az, ...xaz, ...S.az, ...D.az, ...PR.az, ...H.az, ...P.az }, en: { ...en, ...xen, ...S.en, ...D.en, ...PR.en, ...H.en, ...P.en }, tr: { ...tr, ...xtr, ...S.tr, ...D.tr, ...PR.tr, ...H.tr, ...P.tr }, ar: { ...ar, ...xar, ...S.ar, ...D.ar, ...PR.ar, ...H.ar, ...P.ar }, ru: { ...ru, ...xru, ...S.ru, ...D.ru, ...PR.ru, ...H.ru, ...P.ru } };
 void XT;
 export type Key = keyof Dict | keyof X;
 export function detectLang(): Lang {

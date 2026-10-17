@@ -8,6 +8,7 @@ import { Ic } from "./Icons";
 import { haptic } from "./haptic";
 import { exportBackup, mergeBackup, parseBackup } from "./backup";
 import { DiagPanel } from "./Diag";
+import { PreciseCard } from "./PreciseCard";
 import { Capacitor } from "@capacitor/core";
 
 type TT = (typeof T)["en"];
@@ -185,6 +186,9 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
         <small className="desc">{t.tartilNote}</small>
       </Card>
 
+      <Card id="engine" icon="mic" tone="p" title={t.pEngT} open={open === "engine"} toggle={toggle}>
+        {open === "engine" && <PreciseCard lang={lang} />}
+      </Card>
       <Card id="diag" icon="info" tone="b" title={t.hDiagT} open={open === "diag"} toggle={toggle}>
         {open === "diag" && <DiagPanel lang={lang} locale={p.recLang} />}
       </Card>

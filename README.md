@@ -75,5 +75,19 @@ Offline corpus (`scripts/recog-corpus.mjs`, `scripts/recog-corpus.test.mjs`): 38
 
 Wrong recitations that must NOT be accepted (false accepts): substituted word 0/389, wrong consonant 0/389, swapped order 0 (medium, hard) in all levels; skipped word 0/389 at medium and hard. At Easy only a dropped 1-2 letter particle (و، في، من...) is forgiven: 41/389 skipped-word cases and 1 swap pass there (before this change a skipped content word of any length also passed: 117 -> 41 after restricting; 349/389 in the previous version). The corpus simulates recogniser *text* errors; it cannot measure acoustic accuracy, which needs real recordings on a device.
 
+## Precise mode (beta): on-device Quran Whisper, near-live
+
+An optional engine (Settings → Recognition engine → **Precise β**) that runs the Quran-tuned Whisper tiny
+([tarteel-ai/whisper-tiny-ar-quran](https://huggingface.co/tarteel-ai/whisper-tiny-ar-quran), Apache-2.0; ONNX q8 export
+[Sharjeelbaig/whisper-tiny-ar-quran-onnx](https://huggingface.co/Sharjeelbaig/whisper-tiny-ar-quran-onnx), pinned revision) with transformers.js in a Web Worker (WASM, CPU).
+Nothing is sent anywhere: the user downloads about 46 MB once (consent card with progress, cancel, delete; cached in Cache Storage), the WASM runtime ships inside the app (no CDN).
+
+* `src/precise/capture.ts`: microphone through an AudioWorklet at 16 kHz.
+* `src/precise/vad.ts`, `pipeline.ts` (pure, tested): energy VAD, windows of up to 5 s that start inside a pause, adaptive hop (never queues work faster than the device decodes), volume normalisation, hallucination guards (silence, loops, impossible speaking rate), **stitching** of overlapping windows by fuzzy text overlap + timestamps, a word is committed when it is clear of the window edge and either fits the expected text or was heard twice (a leading و/ف that Whisper adds after a pause is removed when the expected word has none).
+* `src/precise/engine.ts`: plugs into the same listener state machine as the other engines; emits the committed words to the unchanged `ReciteSession` (hold-at-mistake, strictness levels, no-flicker). `stop` terminates the worker (no inference keeps running). Any failure falls back to the platform recogniser.
+* Diagnostics panel shows backend, threads, windows decoded, decode time, real-time factor, window step, lag.
+* **Not enabled by default**: Auto/Platform use the platform recogniser. `node scripts/precise-bench.mjs` streams real EveryAyah recitations through the same code and prints word accuracy, lag and rtf (numbers in the v1.2.0 release notes).
+* WebGPU is not included (it needs fp16/fp32 weights of 80–150 MB and a 27 MB runtime, and cannot be verified here).
+
 ## QA
 `scripts/e2e/qa.mjs` is the systematic sweep (home in 6 sizes x 5 languages x 3 themes, every menu tab and settings card, search, bookmarks, ayah sheet, mic start/stop/pause/resume/rapid/background/leave, onboarding, reduced motion, tablet/landscape, offline reload, page-turn timing, touch targets, accessible names). Android-only behaviour (back button, system bars, permissions, notifications, haptics, share sheet) cannot run in headless Chrome and is listed in the release notes as device-verified-by-owner.

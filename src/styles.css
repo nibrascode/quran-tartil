@@ -407,3 +407,10 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 .diag .drow { display:flex; justify-content:space-between; gap:12px; font-size:13.5px; padding:6px 0; border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .diag .drow span { color:var(--muted); } .diag .drow b { text-align:end; overflow-wrap:anywhere; max-width:60%; }
 .toast { max-width:calc(100vw - 32px); width:max-content; white-space:normal; text-align:center; border-radius:18px; line-height:1.35; }
+
+/* Precise engine card */
+.pcard{display:flex;flex-direction:column;gap:10px}
+.pbar{position:relative;height:22px;border-radius:11px;background:rgba(255,255,255,.08);overflow:hidden}
+.pbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#1c8f6e,#3fc89c);transition:width .25s}
+.pbar small{position:relative;display:block;text-align:center;line-height:22px;font-size:12px}
+@media (prefers-reduced-motion:reduce){.pbar i{transition:none}}

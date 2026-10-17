@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { T, type Lang } from "./i18n";
 import { diag } from "./asr";
+import { pdiag } from "./precise/engine";
 import { createListener, speechSupported, type Listener } from "./speech";
 
 /** Settings card body: what the speech engine is, which locale, confidence, restarts; plus a live microphone test. */
@@ -18,6 +19,7 @@ export function DiagPanel({ lang, locale }: { lang: Lang; locale: string }) {
     setTimeout(() => { if (lis.current) stop(); }, 12000);
   };
   const ok = speechSupported();
+  const eng = pdiag.on || (diag.engine.startsWith("Precise") && pdiag.windows > 0);
   const conf = diag.avgConf == null ? t.hDiagNone : Math.round(diag.avgConf * 100) + "% (" + Math.round((diag.lastConf ?? 0) * 100) + "%)";
   const row = (k: string, v: string) => <div className="drow" key={k}><span>{k}</span><b dir="auto">{v}</b></div>;
   return (
@@ -29,6 +31,16 @@ export function DiagPanel({ lang, locale }: { lang: Lang; locale: string }) {
       {row(t.hDiagResults, `${diag.results} (${diag.finals})`)}
       {row(t.hDiagRestarts, String(diag.restarts))}
       {row(t.hDiagSwaps, String(diag.altSwaps))}
+      {(pdiag.on || pdiag.windows > 0 || pdiag.fellBack) && <>
+        {row(t.pdBackend, `${pdiag.backend} · ${pdiag.threads} thr · load ${pdiag.loadMs} ms`)}
+        {row(t.pdWindows, String(pdiag.windows))}
+        {row(t.pdMs, `${pdiag.lastMs} / ${pdiag.avgMs} ms`)}
+        {row(t.pdRtf, String(pdiag.rtf))}
+        {row(t.pdHop, `${pdiag.hopMs} ms`)}
+        {row(t.pdLag, `${pdiag.lagMs} ms`)}
+        {row(t.pdWords, String(pdiag.words))}
+        {row(t.pdFell, pdiag.fellBack ? t.pdYes : t.pdNo)}
+      </>}
       {row(t.hDiagMic, typeof navigator !== "undefined" && !!navigator.mediaDevices ? t.hDiagOn : t.hDiagOff)}
       {row(t.hDiagHeard, diag.lastText || t.hDiagNone)}
       {diag.error && <small className="desc" role="alert">⚠ {diag.error}</small>}

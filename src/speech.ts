@@ -1,12 +1,15 @@
 import { Capacitor } from "@capacitor/core";
 import { pickAlternative, diag, diagReset, diagResult, type Alt } from "./asr";
 import { createCore, type Engine, type EngineHandlers } from "./listenerCore";
+import { choosePrecise, spawnWorker } from "./precise/model";
+import { createPreciseEngine, pdiag, pdiagReset } from "./precise/engine";
+import { openMic } from "./precise/capture";
 
 export type Listener = { start(): Promise<void>; stop(): Promise<void> };
 type Cbs = { lang: string; expected?: () => string[]; onWords: (words: string[], isFinal?: boolean) => void; onNewSession: () => void; onError: (msg: string) => void; onEnd: () => void };
 type WebRec = { start(): void; stop(): void; abort(): void; onresult: ((e: any) => void) | null; onerror: ((e: any) => void) | null; onend: (() => void) | null; lang: string; continuous: boolean; interimResults: boolean };
 const webCtor = (): (new () => WebRec) | null => (typeof window === "undefined" ? null : ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null));
-export const speechSupported = () => Capacitor.isNativePlatform() || !!webCtor();
+export const speechSupported = () => Capacitor.isNativePlatform() || !!webCtor() || choosePrecise();
 
 /** Continuous listener: browsers use the Web Speech API (auto-restarts after silence), the Android app uses the Capacitor speech plugin.
  *  The lifecycle (start/stop/restart/late events) lives in listenerCore.ts; this file only provides the two engines and the mic stream. */
@@ -72,12 +75,38 @@ export function createListener(c: Cbs): Listener {
     onError: (m) => { diag.error = m; c.onError(m); },
     onEnd: c.onEnd,
   });
+  // ---- Precise engine (on-device Quran Whisper). Falls back to the platform recogniser on any failure.
+  let userStopped = false, usingPlatform = false;
+  const precise = choosePrecise() ? createCore(
+    () => createPreciseEngine({ spawn: spawnWorker, openMic: (cb) => openMic(cb), ortBase: new URL("ort/", document.baseURI).href, expected: () => c.expected?.() ?? [] }),
+    { async open() { /* the engine owns its microphone */ }, close() { /* closed by the engine */ } },
+    {
+      onResult: (segs, fin) => { const s = segs.map((a) => a[0]?.transcript ?? "").join(" ").trim(); diagResult(s, undefined, fin, false); c.onWords(split(s), fin); },
+      onNewSession: () => {},
+      onError: (m) => {
+        diag.error = m; pdiag.error = m; pdiag.fellBack = true;
+        if (userStopped) return;
+        usingPlatform = true; diag.engine = (native ? "Android SpeechRecognizer (plugin)" : "Web Speech API") + " (fallback)"; c.onNewSession();
+        void core.start().catch((e) => c.onError(String((e as Error)?.message || e)));
+      },
+      onEnd: c.onEnd,
+    },
+  ) : null;
   return {
     async start() {
+      userStopped = false; usingPlatform = false;
+      if (precise) {
+        diagReset("Precise (Whisper tiny Quran, on-device)", "ar"); diag.supported = true; pdiagReset();
+        await precise.start();
+        return;
+      }
       diagReset(native ? "Android SpeechRecognizer (plugin)" : "Web Speech API", c.lang);
       diag.supported = native || !!webCtor();
       await core.start();
     },
-    stop: core.stop,
+    async stop() {
+      userStopped = true; // first: a failing engine must not start the fallback while we are stopping
+      await Promise.all([precise?.stop(), usingPlatform || !precise ? core.stop() : core.stop()]);
+    },
   };
 }
