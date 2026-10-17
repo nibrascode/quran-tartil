@@ -68,8 +68,68 @@ const ru: Dict = {
   layout: "Вёрстка страниц", layoutBody: "Разбивка на 604 страницы мединского мусхафа по метаданным Tanzil. Текст масштабируется под страницу; переносы строк не совпадают с печатным мусхафом.",
   by: "Сделано Nibras Code", openTanzil: "Открыть tanzil.net",
 };
-export const T: Record<Lang, Dict> = { az, en, tr, ar, ru };
-export type Key = keyof Dict;
+const xen = {
+  searchTab: "Search", searchPh: "Search in Arabic (no marks needed) or 2:255", noResults: "Nothing found", bookmarks: "Bookmarks", bookmarkAdd: "Bookmark", bookmarkRemove: "Remove bookmark", noBookmarks: "No bookmarks yet. Tap an ayah, then the bookmark button.",
+  progress: "Progress", khatm: "Khatm progress", khatmsDone: "Completed khatms", todayGoal: "Today", goalPages: "Daily goal (pages)", streak: "Day streak", days: "days", pagesRead: "pages",
+  reminder: "Daily reminder", reminderOn: "Remind me to read", reminderTime: "Time", reminderApp: "Reminders work in the Android app.", reminderDenied: "Notification permission was denied.", reminderTitle: "Time for your Quran wird", reminderBody: "A few pages today keep the habit alive.",
+  copy: "Copy", share: "Share", copied: "Copied", retry: "Retry", summary: "Session summary", score: "Score", noMistakes: "No mistakes found so far.", weakWords: "Words to review", tapRetry: "Tap an ayah score to retry it.",
+  ob1t: "Read like a real mushaf", ob1b: "604 pages, one page per screen. Swipe left-to-right or tap the left edge for the next page, like an Arabic book.",
+  ob2t: "Tap an ayah", ob2b: "Highlight, copy, share or bookmark it. Search Arabic without typing marks. Your place and daily goal are saved.",
+  ob3t: "Check your tartil", ob3b: "Experimental: recite an ayah and see which words differ. It is a hint, not a teacher.",
+  next: "Next", skip: "Skip", begin: "Begin", intro: "Show introduction", continueFrom: "Continue from page", ayahWord: "Ayah", textSize: "Reading",
+  pageOf: "Page {n} of {t}", selectedAyah: "Selected ayah",
+};
+type X = typeof xen;
+const xaz: X = {
+  searchTab: "Axtarış", searchPh: "Ərəbcə axtar (hərəkə lazım deyil) və ya 2:255", noResults: "Heç nə tapılmadı", bookmarks: "Əlfəcinlər", bookmarkAdd: "Əlfəcin", bookmarkRemove: "Əlfəcini sil", noBookmarks: "Hələ əlfəcin yoxdur. Ayəyə toxunun, sonra əlfəcin düyməsini basın.",
+  progress: "İrəliləyiş", khatm: "Xətm irəliləyişi", khatmsDone: "Tamamlanan xətmlər", todayGoal: "Bu gün", goalPages: "Gündəlik hədəf (səhifə)", streak: "Ardıcıl gün", days: "gün", pagesRead: "səhifə",
+  reminder: "Gündəlik xatırlatma", reminderOn: "Oxumağı xatırlat", reminderTime: "Vaxt", reminderApp: "Xatırlatmalar Android tətbiqində işləyir.", reminderDenied: "Bildiriş icazəsi verilmədi.", reminderTitle: "Quran vird vaxtıdır", reminderBody: "Bu gün bir neçə səhifə vərdişi saxlayır.",
+  copy: "Kopyala", share: "Paylaş", copied: "Kopyalandı", retry: "Təkrar", summary: "Seans xülasəsi", score: "Nəticə", noMistakes: "İndiyə qədər səhv tapılmadı.", weakWords: "Təkrar ediləcək sözlər", tapRetry: "Təkrar üçün ayənin nəticəsinə toxunun.",
+  ob1t: "Əsl mushaf kimi oxu", ob1b: "604 səhifə, ekranda bir səhifə. Növbəti səhifə üçün soldan sağa çəkin və ya sol kənara toxunun, ərəb kitabı kimi.",
+  ob2t: "Ayəyə toxun", ob2b: "Vurğula, kopyala, paylaş və ya əlfəcinlə. Ərəbcə hərəkəsiz axtar. Yeriniz və gündəlik hədəf saxlanır.",
+  ob3t: "Tərtilini yoxla", ob3b: "Eksperimental: ayəni oxuyun və hansı sözlərin fərqləndiyini görün. Bu ipucudur, müəllim deyil.",
+  next: "Növbəti", skip: "Keç", begin: "Başla", intro: "Təqdimatı göstər", continueFrom: "Davam: səhifə", ayahWord: "Ayə", textSize: "Oxu",
+  pageOf: "Səhifə {n} / {t}", selectedAyah: "Seçilmiş ayə",
+};
+const xtr: X = {
+  searchTab: "Ara", searchPh: "Arapça ara (hareke gerekmez) veya 2:255", noResults: "Bir şey bulunamadı", bookmarks: "Yer imleri", bookmarkAdd: "Yer imi", bookmarkRemove: "Yer imini sil", noBookmarks: "Henüz yer imi yok. Bir ayete dokunun, sonra yer imi düğmesine basın.",
+  progress: "İlerleme", khatm: "Hatim ilerlemesi", khatmsDone: "Tamamlanan hatimler", todayGoal: "Bugün", goalPages: "Günlük hedef (sayfa)", streak: "Gün serisi", days: "gün", pagesRead: "sayfa",
+  reminder: "Günlük hatırlatma", reminderOn: "Okumayı hatırlat", reminderTime: "Saat", reminderApp: "Hatırlatmalar Android uygulamasında çalışır.", reminderDenied: "Bildirim izni reddedildi.", reminderTitle: "Kur'an vird vakti", reminderBody: "Bugün birkaç sayfa alışkanlığı canlı tutar.",
+  copy: "Kopyala", share: "Paylaş", copied: "Kopyalandı", retry: "Tekrar", summary: "Oturum özeti", score: "Skor", noMistakes: "Şimdiye kadar hata bulunmadı.", weakWords: "Gözden geçirilecek kelimeler", tapRetry: "Tekrar için ayetin skoruna dokunun.",
+  ob1t: "Gerçek mushaf gibi oku", ob1b: "604 sayfa, ekranda tek sayfa. Sonraki sayfa için soldan sağa kaydırın veya sol kenara dokunun, Arapça kitap gibi.",
+  ob2t: "Bir ayete dokun", ob2b: "Vurgula, kopyala, paylaş veya yer imi koy. Arapçayı harekesiz ara. Yeriniz ve günlük hedef kaydedilir.",
+  ob3t: "Tertilini kontrol et", ob3b: "Deneysel: bir ayeti okuyun, hangi kelimelerin farklı olduğunu görün. Bu bir ipucudur, öğretmen değil.",
+  next: "İleri", skip: "Geç", begin: "Başla", intro: "Tanıtımı göster", continueFrom: "Devam: sayfa", ayahWord: "Ayet", textSize: "Okuma",
+  pageOf: "Sayfa {n} / {t}", selectedAyah: "Seçili ayet",
+};
+const xar: X = {
+  searchTab: "بحث", searchPh: "ابحث بالعربية (بلا تشكيل) أو 2:255", noResults: "لا نتائج", bookmarks: "العلامات", bookmarkAdd: "علامة", bookmarkRemove: "إزالة العلامة", noBookmarks: "لا علامات بعد. المس آية ثم زر العلامة.",
+  progress: "التقدم", khatm: "تقدم الختمة", khatmsDone: "الختمات المكتملة", todayGoal: "اليوم", goalPages: "الهدف اليومي (صفحات)", streak: "أيام متتالية", days: "يوم", pagesRead: "صفحة",
+  reminder: "تذكير يومي", reminderOn: "ذكّرني بالقراءة", reminderTime: "الوقت", reminderApp: "التذكيرات تعمل في تطبيق أندرويد.", reminderDenied: "تم رفض إذن الإشعارات.", reminderTitle: "حان وقت وردك من القرآن", reminderBody: "بضع صفحات اليوم تحفظ العادة.",
+  copy: "نسخ", share: "مشاركة", copied: "تم النسخ", retry: "إعادة", summary: "ملخص الجلسة", score: "النتيجة", noMistakes: "لم تُرصد أخطاء حتى الآن.", weakWords: "كلمات للمراجعة", tapRetry: "المس نتيجة الآية لإعادتها.",
+  ob1t: "اقرأ كالمصحف الحقيقي", ob1b: "٦٠٤ صفحات، صفحة واحدة في الشاشة. اسحب من اليسار إلى اليمين أو المس الحافة اليسرى للصفحة التالية كالكتاب العربي.",
+  ob2t: "المس آية", ob2b: "ظلّلها أو انسخها أو شاركها أو ضع علامة. ابحث بالعربية دون تشكيل. يُحفظ موضعك وهدفك اليومي.",
+  ob3t: "افحص ترتيلك", ob3b: "تجريبي: اقرأ آية وانظر أي الكلمات تختلف. هو تلميح وليس معلّماً.",
+  next: "التالي", skip: "تخطي", begin: "ابدأ", intro: "عرض المقدمة", continueFrom: "تابع من صفحة", ayahWord: "آية", textSize: "القراءة",
+  pageOf: "صفحة {n} من {t}", selectedAyah: "الآية المحددة",
+};
+const xru: X = {
+  searchTab: "Поиск", searchPh: "Поиск по-арабски (без огласовок) или 2:255", noResults: "Ничего не найдено", bookmarks: "Закладки", bookmarkAdd: "Закладка", bookmarkRemove: "Убрать закладку", noBookmarks: "Закладок пока нет. Коснитесь аята и нажмите кнопку закладки.",
+  progress: "Прогресс", khatm: "Прогресс хатма", khatmsDone: "Завершённые хатмы", todayGoal: "Сегодня", goalPages: "Дневная цель (страниц)", streak: "Дней подряд", days: "дн.", pagesRead: "стр.",
+  reminder: "Ежедневное напоминание", reminderOn: "Напоминать о чтении", reminderTime: "Время", reminderApp: "Напоминания работают в Android-приложении.", reminderDenied: "Разрешение на уведомления отклонено.", reminderTitle: "Время вашего вирда", reminderBody: "Несколько страниц сегодня поддерживают привычку.",
+  copy: "Копировать", share: "Поделиться", copied: "Скопировано", retry: "Повторить", summary: "Итоги сеанса", score: "Результат", noMistakes: "Ошибок пока нет.", weakWords: "Слова для повторения", tapRetry: "Коснитесь результата аята, чтобы повторить.",
+  ob1t: "Читайте как настоящий мусхаф", ob1b: "604 страницы, одна страница на экран. Проведите слева направо или коснитесь левого края для следующей страницы, как в арабской книге.",
+  ob2t: "Коснитесь аята", ob2b: "Выделите, скопируйте, поделитесь или добавьте закладку. Ищите по-арабски без огласовок. Место и дневная цель сохраняются.",
+  ob3t: "Проверьте тартиль", ob3b: "Экспериментально: прочтите аят и увидите, какие слова отличаются. Это подсказка, а не учитель.",
+  next: "Далее", skip: "Пропустить", begin: "Начать", intro: "Показать введение", continueFrom: "Продолжить со страницы", ayahWord: "Аят", textSize: "Чтение",
+  pageOf: "Страница {n} из {t}", selectedAyah: "Выбранный аят",
+};
+const XT: Record<Lang, X> = { az: xaz, en: xen, tr: xtr, ar: xar, ru: xru };
+import { S } from "./i18nSettings";
+type SS = (typeof S)["en"];
+export const T: Record<Lang, Dict & X & SS> = { az: { ...az, ...xaz, ...S.az }, en: { ...en, ...xen, ...S.en }, tr: { ...tr, ...xtr, ...S.tr }, ar: { ...ar, ...xar, ...S.ar }, ru: { ...ru, ...xru, ...S.ru } };
+void XT;
+export type Key = keyof Dict | keyof X;
 export function detectLang(): Lang {
   const saved = localStorage.getItem("lang") as Lang | null;
   if (saved && T[saved]) return saved;

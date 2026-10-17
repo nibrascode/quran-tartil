@@ -15,47 +15,83 @@ export function normalizeAr(w: string): string {
 }
 export const words = (t: string) => t.split(/\s+/).map(normalizeAr).filter(Boolean);
 
-function lev(a: string, b: string): number {
+// Letters that speech recognisers often confuse (and that sound close): cheaper substitution so one such slip is tolerated.
+const CONF = new Set(["ذز", "ثس", "ضد", "ظز", "طت", "صس", "قك", "حه", "عا", "غخ", "ءا", "ذد", "ظض"]);
+const near = (a: string, b: string) => CONF.has(a + b) || CONF.has(b + a);
+function lev(a: string, b: string, nearCost = 0.45): number {
   const m = a.length, n = b.length;
   if (!m) return n;
   if (!n) return m;
   let prev = Array.from({ length: n + 1 }, (_, j) => j);
   for (let i = 1; i <= m; i++) {
     const cur = [i];
-    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    for (let j = 1; j <= n; j++) {
+      const c = a[i - 1] === b[j - 1] ? 0 : near(a[i - 1], b[j - 1]) ? nearCost : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + c);
+    }
     prev = cur;
   }
   return prev[n];
 }
-export const similarity = (a: string, b: string) => (a || b ? 1 - lev(a, b) / Math.max(a.length, b.length) : 1);
+export const similarity = (a: string, b: string, nearCost = 0.45) => (a || b ? 1 - lev(a, b, nearCost) / Math.max(a.length, b.length) : 1);
+/** Word match: very short words (1-2 letters) must be exact, longer ones may differ slightly. */
+export const same = (e: string, h: string, threshold = 0.72, nearCost = 0.45) => (e.length <= 2 || h.length <= 2 ? e === h : similarity(e, h, nearCost) >= threshold);
 
-export type WordState = "ok" | "bad" | "missing" | "pending";
-export type Result = { states: WordState[]; extra: string[]; matched: number; done: boolean };
+export type WordState = "ok" | "bad" | "missing" | "pending" | "skip";
+export type Level = "easy" | "medium" | "hard";
+/** How strict mistake detection is. threshold: word similarity needed; nearCost: price of a look-alike letter (ذ/ز...); delay: how many further words must be heard before a mistake is shown; forgive: isolated skipped words tolerated; extras: extra words lower the score. */
+export type AlignOpts = { threshold: number; nearCost: number; delay: number; forgive: number; extras: boolean; final?: boolean };
+export const LEVELS: Record<Level, AlignOpts> = {
+  easy: { threshold: 0.6, nearCost: 0.3, delay: 2, forgive: 1, extras: false },
+  medium: { threshold: 0.72, nearCost: 0.45, delay: 1, forgive: 0, extras: false },
+  hard: { threshold: 0.86, nearCost: 1, delay: 0, forgive: 0, extras: true },
+};
+export type Result = { states: WordState[]; extra: string[]; matched: number; done: boolean; score: number; reached: number; used: number };
 
 /**
- * Align heard words to the expected ayah (word-level edit distance, expected tail is free = "not recited yet").
- * ok: same word (similarity >= threshold); bad: a different word was heard in that place; missing: skipped word; pending: not reached.
+ * Align heard words to the expected ayah (word-level edit distance; the unrecited expected tail is free = "pending").
+ * Handles recogniser word splits/merges (2 heard = 1 expected, 1 heard = 2 expected).
+ * ok: same word; bad: a different word was heard there; missing: skipped; pending: not reached yet.
  */
-export function align(expectedRaw: string[], heardRaw: string[], threshold = 0.72): Result {
+export function align(expectedRaw: string[], heardRaw: string[], optsIn: number | AlignOpts = 0.72): Result {
+  const o: AlignOpts = typeof optsIn === "number" ? { ...LEVELS.medium, threshold: optsIn, delay: 0 } : optsIn;
+  const threshold = o.threshold, nc = o.nearCost, mt = Math.max(threshold, 0.8); // merges/splits of words need a closer match
   const E = expectedRaw.map(normalizeAr), H = heardRaw.map(normalizeAr).filter(Boolean);
   const n = E.length, m = H.length;
-  const D: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
-  for (let i = 1; i <= n; i++) D[i][0] = i;
-  for (let j = 1; j <= m; j++) D[0][j] = j;
-  const subCost = (i: number, j: number) => { const s = similarity(E[i - 1], H[j - 1]); return s >= threshold ? 0 : 1; };
-  for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) D[i][j] = Math.min(D[i - 1][j] + 1, D[i][j - 1] + 1, D[i - 1][j - 1] + subCost(i, j));
+  const INF = 1e9;
+  const D: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(INF));
+  const B: string[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(""));
+  D[0][0] = 0;
+  const upd = (i: number, j: number, c: number, b: string) => { if (c < D[i][j]) { D[i][j] = c; B[i][j] = b; } };
+  for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) {
+    const d = D[i][j];
+    if (d >= INF) continue;
+    if (i < n) upd(i + 1, j, d + 1, "del");
+    if (j < m) upd(i, j + 1, d + 1, "ins");
+    if (i < n && j < m) upd(i + 1, j + 1, d + (same(E[i], H[j], threshold, nc) ? 0 : 1), "sub");
+    if (i < n && j + 1 < m && same(E[i], H[j] + H[j + 1], mt, nc)) upd(i + 1, j + 2, d, "mergeH");
+    if (i + 1 < n && j < m && same(E[i] + E[i + 1], H[j], mt, nc)) upd(i + 2, j + 1, d, "mergeE");
+  }
   let bi = 0;
-  for (let i = 0; i <= n; i++) if (D[i][m] < D[bi][m]) bi = i;
-  // prefer the longest prefix among equal costs (so correct recitation reaches the end)
-  for (let i = 0; i <= n; i++) if (D[i][m] === D[bi][m] && i > bi) bi = i;
+  for (let i = 0; i <= n; i++) if (D[i][m] < D[bi][m] || (D[i][m] === D[bi][m] && i > bi)) bi = i;
   const states: WordState[] = new Array(n).fill("pending");
   const extra: string[] = [];
-  let i = bi, j = m;
+  let i = bi, j = m, used = -1;
   while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && D[i][j] === D[i - 1][j - 1] + subCost(i, j)) { states[i - 1] = subCost(i, j) === 0 ? "ok" : "bad"; i--; j--; }
-    else if (i > 0 && D[i][j] === D[i - 1][j] + 1) { states[i - 1] = "missing"; i--; }
+    const b = B[i][j];
+    if (used < 0 && b !== "ins") used = j;
+    if (b === "sub") { states[i - 1] = same(E[i - 1], H[j - 1], threshold, nc) ? "ok" : "bad"; i--; j--; }
+    else if (b === "mergeH") { states[i - 1] = "ok"; i--; j -= 2; }
+    else if (b === "mergeE") { states[i - 1] = "ok"; states[i - 2] = "ok"; i -= 2; j--; }
+    else if (b === "del") { states[i - 1] = "missing"; i--; }
     else { extra.unshift(H[j - 1]); j--; }
   }
-  const matched = states.filter((s) => s === "ok").length;
-  return { states, extra, matched, done: bi === n && states.every((s) => s === "ok") };
+  if (used < 0) used = 0;
+  // mistakes are only shown once enough further words were heard (unless the recitation is finished)
+  if (!o.final) for (let k = Math.max(0, bi - o.delay); k < bi; k++) if (states[k] === "bad" || states[k] === "missing") states[k] = "pending";
+  // isolated skipped words are forgiven on easy
+  if (o.forgive > 0 && states.filter((x) => x === "missing").length <= o.forgive) for (let k = 0; k < n; k++) if (states[k] === "missing") states[k] = "skip";
+  const matched = states.filter((x) => x === "ok").length;
+  const denom = n + (o.extras ? extra.length : 0);
+  return { states, extra, matched, done: bi === n && states.every((x) => x === "ok" || x === "skip"), score: denom ? Math.round((matched / denom) * 100) : 0, reached: bi, used };
 }

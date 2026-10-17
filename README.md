@@ -22,3 +22,11 @@ npm run build      # static build in dist/
 Menu > Tartil check: pick an ayah of the current page, press Start and recite. Each word turns green (matches), red (a different word was heard or a word was skipped) and the app warns.
 
 Honest limits: it compares **words only** (no tajweed, no letter-level makharij); accuracy depends on the recogniser. Web/Chrome uses the browser Web Speech API (`ar-SA`, usually online via the browser vendor). The Android app uses `@capacitor-community/speech-recognition` (the system recogniser, also usually online). A fully offline on-device ONNX model (e.g. Whisper tiny/base Arabic) is **not** included yet: it would add tens of MB and needs real-device testing. Matching logic: `src/tartil.ts` (word-level edit distance after normalising harakat and letter variants), covered by `scripts/tartil.test.mjs`.
+
+## v0.2 features
+- Opening pages 1-2 set line by line like the printed mushaf (ornate surah frame, centred lines, full screen height); other pages fill the screen with fitted font size and line spacing.
+- Book-style 3D page turn (spine on the right), bookmarks, last read, khatm progress, daily goal + streak, daily reminder (Android), Arabic diacritic-insensitive search, ayah copy/share (Arabic text only, with Tanzil credit).
+- **Recite mode** (mic button in the reader's bottom bar): words are revealed and coloured green/red as you recite, the page turns itself, pause/stop/review.
+- **Strictness** Easy / Medium / Hard (Settings > Tartil check options): matching threshold, look-alike letters, skipped words, and how soon a mistake is shown.
+- Settings as expandable cards (language, theme, text size, page-turn animation, keep screen on, reminders, tartil options, reset/clear data), Privacy Policy in 5 languages (`PRIVACY.md`, in app, and `privacy.html` on the web build; generated from `scripts/privacy-source.json` by `npm run privacy`).
+- Audio recitation is intentionally **not** included: no reciter audio with a clear permissive license was found (EveryAyah / Islamic Network files have undocumented per-recording rights).
