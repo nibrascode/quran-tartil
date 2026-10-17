@@ -42,3 +42,6 @@ jobs:
       - name: Voice navigation + isti'adha/basmala (faked recogniser, 3 levels)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/voicenav.mjs
+      - name: Home screen (launch, content, navigation, 5 languages x 3 themes, RTL)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/home.mjs

@@ -6,6 +6,7 @@ let bad = 0; const fail = (m) => { bad++; console.log("FAIL", m); };
 const cases = [["67:1", "تبارك الذي بيده الملك وهو على كل شيء قدير"], ["112:1", "قل هو الله احد الله الصمد"], ["2:255", "الله لا اله الا هو الحي القيوم لا تاخذه سنه ولا نوم"]];
 for (const strict of ["easy", "medium", "hard"]) for (const [key, text] of cases) {
   const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
   const errs = []; p.on("pageerror", (e) => errs.push(e.message));
   await p.addInitScript(() => { window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { window.__rec = this; } abort() {} stop() {} }; window.__said = ""; });
   await p.goto(BASE); await p.evaluate((st) => { localStorage.setItem("qt.v2", JSON.stringify({ onboarded: true, prefs: { strict: st } })); localStorage.setItem("page", "300"); localStorage.setItem("lang", "en"); }, strict);

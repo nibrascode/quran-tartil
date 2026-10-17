@@ -340,3 +340,64 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 /* banner text: sized by the row height (not just the font) and centred on its glyph ink (Amiri's line box is much taller than the letters) */
 .mtext.flow .sura-head.orn, .mtext.fixed .sura-head.orn { font-size:min(.95em, calc(var(--rowh, 48px) * .38)); }
 .sura-head.orn > span { position:relative; top:-.35em; }
+
+/* ===== Home screen ===== */
+.home { position:fixed; inset:0; z-index:12; overflow-y:auto; -webkit-overflow-scrolling:touch; background:var(--bg); color:var(--fg);
+  background-image:radial-gradient(70% 38% at 12% 0%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 70%), radial-gradient(60% 34% at 100% 6%, color-mix(in srgb, #d9a441 22%, transparent), transparent 70%), radial-gradient(80% 40% at 50% 100%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 75%); }
+.home-in { max-width:640px; margin:0 auto; padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:14px; }
+.home > .home-in > * { animation:hin .55s cubic-bezier(.2,.8,.2,1) both; animation-delay:calc(var(--i, 0) * 70ms); }
+@keyframes hin { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+.home button { font:inherit; color:inherit; text-align:start; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.hhead { display:flex; align-items:center; gap:12px; }
+.hhead img { border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.28), 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
+.hhead > div { flex:1; min-width:0; }
+.hhead small { display:block; font-family:"Amiri Quran","Amiri",serif; font-size:17px; color:var(--accent); line-height:1.4; }
+.hhead h1 { margin:0; font-size:22px; line-height:1.2; letter-spacing:-.01em; }
+.hset { width:44px; height:44px; border-radius:14px; display:grid; place-items:center; border:1px solid var(--line); background:color-mix(in srgb, var(--card) 70%, transparent); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+.hcont, .hayah, .hcard, .hq { border:1px solid color-mix(in srgb, var(--line) 80%, transparent); background:color-mix(in srgb, var(--card) 72%, transparent); backdrop-filter:blur(14px) saturate(1.2); -webkit-backdrop-filter:blur(14px) saturate(1.2); box-shadow:0 8px 24px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.12); transition:transform .2s cubic-bezier(.3,1.3,.5,1), box-shadow .2s; }
+.hcont:active, .hayah:active, .hcard:active, .hq:active { transform:scale(.975); }
+@media (hover:hover) { .hcont:hover, .hayah:hover, .hcard:hover, .hq:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.12); } }
+.hcont { display:flex; flex-direction:column; gap:4px; padding:18px 18px 16px; border-radius:24px; background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 88%, #000) 0%, color-mix(in srgb, var(--accent) 62%, #d9a441) 100%); color:#fff; border-color:transparent; position:relative; overflow:hidden; }
+.hcont::after { content:""; position:absolute; inset-inline-end:-40px; top:-50px; width:190px; height:190px; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.22), transparent 70%); pointer-events:none; }
+.hc-k { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; opacity:.85; }
+.hc-t { font-family:"Amiri Quran","Amiri",serif; font-size:40px; line-height:1.5; text-align:start; }
+.hc-s { font-size:13.5px; opacity:.9; }
+.hbar { display:block; height:8px; border-radius:6px; background:rgba(255,255,255,.25); margin-top:10px; overflow:hidden; }
+.hbar i { display:block; height:100%; background:#fff; border-radius:6px; transform-origin:left; animation:hgrow .9s .3s cubic-bezier(.2,.8,.2,1) both; }
+[dir="rtl"] .hbar i { transform-origin:right; }
+@keyframes hgrow { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+.hc-f { display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:13px; }
+.hc-f em { font-style:normal; font-weight:700; display:inline-flex; align-items:center; gap:2px; background:rgba(255,255,255,.2); padding:6px 8px 6px 14px; border-radius:999px; }
+[dir="rtl"] .hc-f em { padding:6px 14px 6px 8px; }
+[dir="rtl"] .hc-f em svg, [dir="rtl"] .hq-main svg.ic-chev { transform:scaleX(-1); }
+.hayah { display:flex; flex-direction:column; gap:8px; padding:16px 18px; border-radius:22px; position:relative; }
+.ha-k { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+.ha-t { font-family:"Amiri Quran","Amiri",serif; font-size:24px; line-height:2; color:var(--ink); display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; text-align:justify; text-align-last:center; }
+.ha-f { display:flex; justify-content:space-between; align-items:center; gap:8px; font-family:"Amiri Quran","Amiri",serif; font-size:15px; color:var(--muted); }
+.ha-f em { font-family:system-ui,sans-serif; font-style:normal; font-size:12px; color:var(--accent); font-weight:600; }
+.hrow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.hcard { display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px 10px; border-radius:22px; text-align:center !important; }
+.hc-l { display:flex; flex-direction:column; gap:2px; align-items:center; }
+.hc-l small { color:var(--muted); font-size:12.5px; }
+.hstreak { text-align:center;  margin-top:6px; display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; color:var(--muted); padding:3px 9px; border-radius:999px; background:color-mix(in srgb, var(--accent) 10%, transparent); }
+.hstreak.on { color:#d9822b; background:color-mix(in srgb, #d9822b 16%, transparent); }
+.hring { position:relative; flex:none; }
+.hring svg { display:block; } .hring .trk { fill:none; stroke:color-mix(in srgb, var(--accent) 16%, transparent); stroke-width:9; }
+.hring .val { fill:none; stroke:var(--accent); stroke-width:9; stroke-linecap:round; animation:hring 1.1s .35s cubic-bezier(.2,.8,.2,1) both; }
+.hk .val { stroke:#d9a441; }
+@keyframes hring { from { stroke-dashoffset:1000; } }
+.hring-in { position:absolute; inset:0; display:grid; place-items:center; }
+.hring-in b { font-size:20px; } .hring-in small { font-size:12px; color:var(--muted); font-weight:600; }
+.hsec { margin:6px 4px 0; font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+.hgrid { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
+.hq { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:14px; border-radius:20px; min-height:92px; position:relative; }
+.hq b { font-size:15px; margin-top:6px; } .hq small { color:var(--muted); font-size:12.5px; min-height:1em; }
+.hq-i { width:40px; height:40px; border-radius:13px; display:grid; place-items:center; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent); }
+.hq-main { grid-column:1 / -1; flex-direction:row; align-items:center; gap:14px; background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--card)), color-mix(in srgb, #d9a441 18%, var(--card))); border-color:color-mix(in srgb, var(--accent) 45%, transparent); }
+.hq-main .hq-i { width:54px; height:54px; border-radius:50%; background:var(--accent); color:#fff; box-shadow:0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent); animation:hpulse 2.6s ease-in-out infinite; }
+.hq-tx { display:flex; flex-direction:column; gap:2px; } .hq-main b { margin:0; font-size:17px; }
+@keyframes hpulse { 50% { box-shadow:0 0 0 12px color-mix(in srgb, var(--accent) 6%, transparent); } }
+.hfoot { text-align:center; color:var(--muted); font-size:12px; margin:6px 0 0; }
+@media (min-width:700px) { .hgrid { grid-template-columns:repeat(4, 1fr); } .hq-main { grid-column:1 / -1; } }
+@media (prefers-reduced-motion: reduce) { .home > .home-in > *, .hbar i, .hring .val, .hq-main .hq-i { animation:none !important; } .hcont, .hayah, .hcard, .hq { transition:none !important; } }
+.app.homing > .reader, .app.homing > .bar, .app.homing > .dock, .app.homing > .rstrip, .app.homing > .asheet { visibility:hidden; }

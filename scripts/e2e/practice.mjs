@@ -3,6 +3,7 @@ import { chromium } from "playwright-core";
 const URL = process.env.URL || "http://127.0.0.1:4180/";
 const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox"] });
 const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
 const showDock = async () => { if (await p.$(".dock.auxhide")) { await p.mouse.click(195, 12); await p.waitForTimeout(450); } };
 const errs = []; p.on("pageerror", (e) => errs.push(e.message));
 await p.addInitScript(() => { window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { window.__rec = this; } abort() {} stop() {} }; window.__said = ""; });

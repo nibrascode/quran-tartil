@@ -9,6 +9,7 @@ const themes = (process.env.THEMES || "light,dark,sepia").split(","), sizes = [[
 let bad = 0, checked = 0;
 for (const [w, h] of sizes) {
   const p = await (await b.newContext({ viewport: { width: w, height: h } })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
   await p.addInitScript(() => localStorage.setItem("qt.v2", JSON.stringify({ onboarded: true })));
   await p.goto(BASE);
   for (const th of themes.slice(0, w === 390 ? 3 : 1)) {

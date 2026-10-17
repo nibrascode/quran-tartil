@@ -4,12 +4,13 @@ import { readFileSync } from "node:fs";
 const URL = process.env.URL || "http://127.0.0.1:4180/";
 const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox"] });
 const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, acceptDownloads: true, hasTouch: true, isMobile: true })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
 const showDock = async () => { if (await p.$(".dock.auxhide")) { await p.mouse.click(195, 12); await p.waitForTimeout(450); } };
 const errs = []; p.on("pageerror", (e) => errs.push(e.message));
 const seed = { onboarded: true, bookmarks: [{ s: 2, a: 255, page: 42, ts: 1 }], hifz: { "1:2": { box: 2, due: "2026-10-20", reps: 3, lapses: 0 } }, weak: [{ key: "1:3", word: "x", n: 2, last: "2026-10-16" }] };
 await p.goto(URL); await p.evaluate((s) => { localStorage.setItem("qt.v2", JSON.stringify(s)); localStorage.setItem("lang", "en"); }, seed);
 await p.reload({ waitUntil: "networkidle" });
-const openBackup = async () => { await showDock(); await p.click('.dock .dbtn >> nth=1'); await p.waitForTimeout(300); await p.click('[role=tab]:has-text("Settings")'); await p.waitForTimeout(300); await p.click('.scard-h:has-text("Backup")'); await p.waitForTimeout(400); };
+const openBackup = async () => { await showDock(); await p.click('#home-dock ~ .dbtn >> nth=0'); await p.waitForTimeout(300); await p.click('[role=tab]:has-text("Settings")'); await p.waitForTimeout(300); await p.click('.scard-h:has-text("Backup")'); await p.waitForTimeout(400); };
 await openBackup();
 const [dl] = await Promise.all([p.waitForEvent("download"), p.click('button:has-text("Export data")')]);
 const path = await dl.path(); const json = JSON.parse(readFileSync(path, "utf8"));

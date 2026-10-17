@@ -2,6 +2,7 @@ import { chromium } from "playwright-core";
 const b = await chromium.launch({ executablePath:process.env.CHROME||"/usr/bin/google-chrome", args:["--no-sandbox"] });
 const ctx = await b.newContext({ viewport:{width:390,height:844}, deviceScaleFactor:1, hasTouch:true, isMobile:true });
 const p = await ctx.newPage(); const errs=[]; p.on("pageerror",e=>errs.push(e.stack.split("\n").slice(0,2).join("|"))); p.on("console",m=>m.type()==="error"&&errs.push("console:"+m.text()));
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
 await p.addInitScript(()=>{ const C = class { start(){ window.__rec=this; } abort(){} stop(){} }; window.webkitSpeechRecognition = C; window.SpeechRecognition = C; });
 const S="/workspace/screens/quran7/"; const issues=[];
 const check=(tag)=>p.evaluate((tag)=>{ const out=[]; const W=innerWidth,H=innerHeight;

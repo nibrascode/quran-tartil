@@ -3,6 +3,7 @@ import fs from "fs";
 const [w,h,out,step]=[+process.argv[2],+process.argv[3],process.argv[4],+(process.argv[5]||1)];
 const b = await chromium.launch({ executablePath:process.env.CHROME||"/usr/bin/google-chrome", args:["--no-sandbox"] });
 const p = await (await b.newContext({ viewport:{width:w,height:h}, deviceScaleFactor:1 })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
 await p.addInitScript(()=>{ localStorage.setItem("qt.v2", JSON.stringify({onboarded:true})); });
 await p.goto((process.env.URL||"http://127.0.0.1:4180/"),{waitUntil:"networkidle"});
 const res=[];

@@ -5,6 +5,7 @@ const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bi
 let bad = 0; const fail = (m) => { bad++; console.log("FAIL", m); };
 for (const [w, h] of [[1180, 820], [1024, 768], [1366, 1024]]) {
   const p = await (await b.newContext({ viewport: { width: w, height: h } })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
   const errs = []; p.on("pageerror", (e) => errs.push(e.message));
   await p.addInitScript(() => localStorage.setItem("qt.v2", JSON.stringify({ onboarded: true })));
   await p.goto(URL);

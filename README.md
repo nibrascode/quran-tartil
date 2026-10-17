@@ -44,3 +44,6 @@ Honest limits: it compares **words only** (no tajweed, no letter-level makharij)
 `assets/icon-source.jpg` is the master art. `python3 scripts/make-icons.py` (Pillow + numpy) regenerates the web icons in `public/` (favicon, apple-touch, PWA 192/512 + maskable) and the Android resources in `assets/android-res/` (legacy, round, adaptive foreground, background colour `#06193A`, splash). `scripts/android-setup.sh` copies them into the generated Android project; CI verifies the icon is inside the APK.
 ## Voice navigation
 Open the mic anywhere and start reciting: isti'adha and basmala are ignored, the ayah is recognised from its first words across the whole Quran (`src/voiceNav.ts`), the page jumps there and tracking starts from that ayah at every strictness level.
+
+## Home screen
+The app opens on a Home screen (`src/Home.tsx`): greeting and logo, a "Continue reading" card with khatm progress, the ayah of the day (deterministic per local date, Arabic only), daily-goal and khatm rings with the streak, and quick actions (start tartil, practice due count, surah/page/juz, bookmarks, mistakes, search, settings). The home button in the reader's top bar and dock returns to it. E2E audits skip it with `sessionStorage["qt.home"]="0"`; `scripts/e2e/home.mjs` covers Home itself.

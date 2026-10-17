@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Reader, useSpread } from "./Reader";
 import { Menu, type Tab } from "./Menu";
+import { Home } from "./Home";
 import { Onboarding } from "./Onboarding";
 import { PAGES, suraLabel, ayahs, firstSuraOfPage, indexOf, juzOfPage, suras, toArabicDigits } from "./quran";
 import { T, detectLang, type Lang } from "./i18n";
@@ -30,6 +31,7 @@ export function App() {
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("theme") as Theme) || "light");
   const [st, update] = useSettings();
   const [page, setPageState] = useState<number>(() => { const n = Number(localStorage.getItem("page")); return n >= 1 && n <= PAGES ? n : 1; });
+  const [home, setHome] = useState(() => { try { return sessionStorage.getItem("qt.home") !== "0"; } catch { return true; } });
   const [bars, setBars] = useState(false);
   const [menu, setMenu] = useState<Tab | null>(null);
   const [sel, setSel] = useState<Sel>(null);
@@ -91,7 +93,7 @@ export function App() {
       if (ev.length) update((x) => ({ ...x, weak: mergeWeak(x.weak, ev, dayKey()) }));
     }
   }, [rc.mode]); // eslint-disable-line
-  const startQueue = (kind: Queue["kind"], keys: string[]) => { if (!keys.length) return; setMenu(null); setSel(null); setBars(false); setPq({ kind, keys, i: 0, started: false }); };
+  const startQueue = (kind: Queue["kind"], keys: string[]) => { if (!keys.length) return; setHome(false); setMenu(null); setSel(null); setBars(false); setPq({ kind, keys, i: 0, started: false }); };
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 1600); };
 
   useEffect(() => { document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"; localStorage.setItem("lang", lang); }, [lang]);
@@ -161,6 +163,7 @@ export function App() {
     };
   }, [st.prefs.keepAwake]);
 
+  const goHome = () => { setSel(null); setMist(false); setBars(false); if (rc.mode === "on" || rc.mode === "paused") rc.stop(); setHome(true); };
   const sura = useMemo(() => firstSuraOfPage(page), [page]);
   const isBm = sel ? st.bookmarks.some((b) => b.s === sel.s && b.a === sel.a) : false;
 
@@ -183,9 +186,9 @@ export function App() {
   }
 
   return (
-    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (st.prefs.hide || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
+    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (home ? " homing" : "") + (st.prefs.hide || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
       <div className={"bar top" + (bars ? "" : " hidden")} aria-hidden={!bars}>
-        <button className="ib" aria-label={t.menu} onClick={() => setMenu("surah")}><Ic n="menu" /></button>
+        <button className="ib" id="home-btn" aria-label={t.hHome} onClick={goHome}><Ic n="home" /></button>
         <div className="title"><b>{sura.name}</b> · {t.juz} {juzOfPage(page)} · {t.page} {page}</div>
         <button className="ib" aria-label={t.progress} onClick={() => setMenu("progress")}><Ic n="progress" /></button>
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
@@ -204,6 +207,7 @@ export function App() {
       )}
       <div className={"dock" + (bars || rc.mode !== "off" || sel || mist ? "" : " auxhide")} role="toolbar" aria-label={t.reciteMic}>
         <button className="dbtn pill" onClick={() => { setSel(null); setMist((m) => !m); }} aria-expanded={mist}>{t.dockMistakes}{rc.mistakes.length > 0 && <i className="badge">{rc.mistakes.reduce((n, m) => n + m.n, 0)}</i>}</button>
+        <button className="dbtn" id="home-dock" aria-label={t.hHome} onClick={goHome}><Ic n="home" /></button>
         <button className="dbtn" aria-label={t.dockSurah} onClick={() => setMenu("surah")}><Ic n="book" /></button>
         <button className={"dbtn" + (st.prefs.hide ? " on" : "")} aria-pressed={st.prefs.hide} aria-label={t.dockHide} onClick={() => { const v = !st.prefs.hide; update((x) => ({ ...x, prefs: { ...x.prefs, hide: v } })); say(v ? t.hideOnMsg : t.hideOffMsg); }}><Ic n={st.prefs.hide ? "eyeoff" : "eye"} /></button>
         <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
@@ -242,10 +246,15 @@ export function App() {
         </div>
       )}
       {toast && <div className="toast" role="status">{toast}</div>}
+      {home && <Home lang={lang} st={st} page={page}
+        onResume={() => { setHome(false); setBars(false); }}
+        onMic={() => { setHome(false); setBars(false); rc.begin(); }}
+        onAyah={(p, a) => { setPage(p); setSel(a); setHome(false); setBars(false); }}
+        onTab={(tb) => setMenu(tb)} />}
       {!st.onboarded && <Onboarding lang={lang} setLang={setLang} onDone={() => update((s) => ({ ...s, onboarded: true }))} />}
       {menu && (
         <Menu startQueue={startQueue} say={say} tab={menu} setTab={setMenu} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} page={page} st={st} update={update} focusAyah={focusAyah}
-          onGo={(p, a) => { setPage(p); if (a) setSel(a); setMenu(null); setBars(false); }} onClose={() => setMenu(null)} onIntro={() => { setMenu(null); update((s) => ({ ...s, onboarded: false })); }} />
+          onGo={(p, a) => { setPage(p); if (a) setSel(a); setMenu(null); setBars(false); setHome(false); }} onClose={() => setMenu(null)} onIntro={() => { setMenu(null); update((s) => ({ ...s, onboarded: false })); }} />
       )}
     </div>
   );
