@@ -126,11 +126,11 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     if (mode === "off" || !s) return;
     const root = document.querySelector(`.page[data-page="${page}"]`);
     if (!root) return;
-    for (let i = 0; i < s.start; i++) { const [sn, an] = s.ayahs[i].key.split(":"); root.querySelectorAll<HTMLElement>(`.w.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((w) => w.classList.add("skp")); }
+    for (let i = 0; i < s.start; i++) { const [sn, an] = s.ayahs[i].key.split(":"); root.querySelectorAll<HTMLElement>(`.mtext .w.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((w) => w.classList.add("skp")); }
     s.res.forEach((r, key) => {
       const [sn, an] = key.split(":");
       root.querySelectorAll<HTMLElement>(`.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((a) => a.classList.toggle("closed", r.closed));
-      root.querySelectorAll<HTMLElement>(`.w.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((w, i) => {
+      root.querySelectorAll<HTMLElement>(`.mtext .w.ayah[data-s="${sn}"][data-a="${an}"]`).forEach((w, i) => {
         const st = r.states[i];
         if (st === "ok") w.classList.add("ok"); else if (st === "bad" || st === "missing") w.classList.add("bad"); else if (st === "skip") w.classList.add("skp");
       });

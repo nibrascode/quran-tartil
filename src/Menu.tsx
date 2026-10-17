@@ -1,4 +1,5 @@
 import { Ic } from "./Icons";
+import { normalizeAr } from "./tartil";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LANGS, T, type Lang } from "./i18n";
 import { LICENSE_BLOCK, PAGES, ayahs, indexOf, pageOfAyah, pageOfJuz, suras, toArabicDigits, firstSuraOfPage } from "./quran";
@@ -28,8 +29,8 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
   const sub = tab === "about" || tab === "privacy";
   const label = (k: Tab) => ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, settings: t.settings, about: t.about, privacy: t.privacy }[k]);
   const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return suras.filter((x) => !s || x.name.includes(s) || x.tname.toLowerCase().includes(s) || String(x.i) === s);
+    const s = q.trim().toLowerCase(), n = normalizeAr(q);
+    return suras.filter((x) => !s || (n && normalizeAr(x.name).includes(n)) || x.tname.toLowerCase().includes(s) || x.ename.toLowerCase().includes(s) || String(x.i) === s);
   }, [q]);
   const hits = useMemo(() => search(sq), [sq]);
 

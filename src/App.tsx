@@ -3,7 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { Reader } from "./Reader";
 import { Menu, type Tab } from "./Menu";
 import { Onboarding } from "./Onboarding";
-import { PAGES, ayahs, firstSuraOfPage, indexOf, juzOfPage, suras, toArabicDigits } from "./quran";
+import { PAGES, suraLabel, ayahs, firstSuraOfPage, indexOf, juzOfPage, suras, toArabicDigits } from "./quran";
 import { T, detectLang, type Lang } from "./i18n";
 import { useRecite } from "./useRecite";
 import { drawBands } from "./band";
@@ -176,7 +176,7 @@ export function App() {
         <div className="asheet" ref={sheetRef} role="region" aria-label={t.selectedAyah + " " + sel.s + ":" + sel.a}>
           <div className="ahead">
             <span className="ref">{sel.s}:{sel.a}</span>
-            <b>{t.ayahTitle.replace("{n}", lang === "ar" ? suras[sel.s - 1].name : suras[sel.s - 1].tname).replace("{a}", String(sel.a))}</b>
+            <b>{t.ayahTitle.replace("{n}", suraLabel(sel.s, lang === "ar")).replace("{a}", String(sel.a))}</b>
             <button className="x" aria-label={t.closeA} onClick={() => setSel(null)}><Ic n="close" size={20} /></button>
           </div>
           <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? t.bookmarkRemove : t.bookmarkAdd}</button>
@@ -194,7 +194,7 @@ export function App() {
               const [ms, ma] = m.key.split(":").map(Number);
               return (
                 <button key={m.key + m.word} className="arow mrow" onClick={() => { setMist(false); setPage(pageOfAyah(ms, ma)); setSel({ s: ms, a: ma }); }}>
-                  <span className="ref">{m.key}</span><span className="mw" lang="ar" dir="rtl">{m.word}</span><small>{lang === "ar" ? suras[ms - 1].name : suras[ms - 1].tname}</small>{m.n > 1 && <i className="badge">{t.mistakeTimes.replace("{n}", String(m.n))}</i>}
+                  <span className="ref">{m.key}</span><span className="mw" lang="ar" dir="rtl">{m.word}</span><small>{suraLabel(ms, lang === "ar")}</small>{m.n > 1 && <i className="badge">{t.mistakeTimes.replace("{n}", String(m.n))}</i>}
                 </button>
               );
             })}

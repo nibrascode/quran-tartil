@@ -10,7 +10,7 @@ export function drawBands(page: number, sel: { s: number; a: number } | null, sh
   if (!host) return null;
   const hr = host.getBoundingClientRect();
   const lines = new Map<HTMLElement, DOMRect[]>();
-  host.querySelectorAll<HTMLElement>(`.ayah[data-s="${sel.s}"][data-a="${sel.a}"]`).forEach((w) => {
+  host.querySelectorAll<HTMLElement>(`.mtext .ayah[data-s="${sel.s}"][data-a="${sel.a}"]`).forEach((w) => {
     const ln = (w.closest(".ln, .line") as HTMLElement) || w;
     const arr = lines.get(ln) || [];
     arr.push(w.getBoundingClientRect());

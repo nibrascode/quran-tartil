@@ -53,7 +53,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
   const box = useRef<HTMLDivElement>(null);
   const meas = useRef<HTMLDivElement>(null);
   const widths = useRef<number[][] | null>(null);
-  const [pls, setPl] = useState<{ page: number; plan: Plan } | null>(null);
+  const [pls, setPl] = useState<{ page: number; plan: Plan; H: number } | null>(null);
   const pl = pls && pls.page === page ? pls.plan : null;
   const items = pageItems(page);
   const sura = firstSuraOfPage(page);
@@ -93,7 +93,10 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       if (!widths.current) measure();
       const segs: Seg[] = data.segs.map((sg, i) => ({ kind: sg.kind, w: widths.current![i], endsSura: sg.endsSura }));
       const r = ranges();
-      setPl({ page, plan: r ? planFixed(segs, segs.findIndex((x) => x.kind === "text"), r, b.clientWidth - 2, b.clientHeight) : plan(segs, b.clientWidth - 2, b.clientHeight) });
+      // short screens (landscape phones): keep rows readable and let the page scroll instead of squeezing 15 rows into a strip
+      const rowsN = r ? r.length + segs.length - 1 : ROWS;
+      const H = Math.max(b.clientHeight, rowsN * (r ? 56 : 40));
+      setPl({ page, plan: r ? planFixed(segs, segs.findIndex((x) => x.kind === "text"), r, b.clientWidth - 2, H) : plan(segs, b.clientWidth - 2, H), H });
     };
     run();
     const ro = new ResizeObserver(run);
@@ -108,8 +111,8 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     <div className="page" lang="ar" dir="rtl" data-page={page}>
       <div className="frame">
         <div className="page-head" aria-hidden="true"><span>سورة {sura.name}</span><span>الجزء {toArabicDigits(juzOfPage(page))}</span></div>
-        <div className="page-body" ref={box}>
-          <div className={"mtext flow" + (fixed ? " fixed" : "")} style={{ fontSize: fsz, gridTemplateRows: `repeat(${n}, 1fr)`, ["--gap" as string]: GAP_MIN + "em", ["--nat" as string]: GAP_NAT + "em" }}>
+        <div className={"page-body" + (pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? " tall" : "")} ref={box}>
+          <div className={"mtext flow" + (fixed ? " fixed" : "")} style={{ fontSize: fsz, height: pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? pls.H : undefined, gridTemplateRows: `repeat(${n}, 1fr)`, ["--gap" as string]: GAP_MIN + "em", ["--nat" as string]: GAP_NAT + "em" }}>
             {pl?.rows.map((r, i) => {
               const sg = data.segs[r.seg];
               if (r.type !== "line") return r.type === "head" ? <div className="sura-head orn" key={i}><span>سورة {sg.sura!.name}</span></div> : <div className="bism" key={i}>{BISMILLAH}</div>;

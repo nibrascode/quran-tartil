@@ -3,7 +3,11 @@ import meta from "./data/meta.json";
 
 export type Sura = { i: number; ayas: number; name: string; tname: string; ename: string; type: string };
 export type Ayah = { s: number; a: number; t: string };
-export const suras = meta.suras as Sura[];
+/** Tanzil writes some names without hamza; these are the standard printed forms (all 114 names stay Arabic everywhere) */
+const NAME_FIX: Record<number, string> = { 14: "إبراهيم", 34: "سبأ", 76: "الإنسان", 78: "النبأ", 82: "الانفطار", 84: "الانشقاق" };
+export const suras = (meta.suras as Sura[]).map((x) => (NAME_FIX[x.i] ? { ...x, name: NAME_FIX[x.i] } : x));
+/** Arabic name always; other UI languages add the transliteration */
+export const suraLabel = (i: number, arabicUi: boolean) => (arabicUi ? suras[i - 1].name : `${suras[i - 1].name} · ${suras[i - 1].tname}`);
 export const PAGES = meta.pages.length; // 604 (Madinah mushaf)
 
 // Tanzil file lines look like "sura|aya|text"; "#" lines are the license block (kept verbatim in the bundle, shown in About).

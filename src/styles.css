@@ -278,3 +278,17 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 .mirror.flip { display:inline-grid; transform:scaleX(-1); }
 [dir="rtl"] .mirror.flip { transform:none; }
 @media (prefers-reduced-motion: reduce) { .medal, .st.live .ic, .li, .ob .art, .ob h1, .ob p { animation:none !important; } }
+
+.page-body.tall { overflow-y:auto; overflow-x:hidden; display:block; -webkit-overflow-scrolling:touch; }
+.page-body.tall .mtext.flow { height:auto; }
+
+/* audit fixes: progress cards / reminder must never exceed the sheet */
+.cards { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+.card { min-width:0; padding:10px; gap:10px; }
+.card > div:not(.ring) { min-width:0; overflow-wrap:anywhere; }
+.card .ring { width:72px; height:72px; }
+.card .ring > span { width:54px; height:54px; font-size:15px; }
+.settings { overflow-x:clip; max-width:100%; }
+.sheet-body > *, .sheet-body section, .sheet-body label { max-width:100%; }
+.sheet-body input[type=time] { max-width:100%; min-width:0; }
+.sheet-body .primary { max-width:100%; box-sizing:border-box; }
