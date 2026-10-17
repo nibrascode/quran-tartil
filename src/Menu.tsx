@@ -152,7 +152,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
           )}
           {tab === "practice" && <PracticeView lang={lang} st={st} update={update} page={page} startQueue={startQueue} onGo={onGo} say={say} />}
           {tab === "tartil" && <Tartil lang={lang} page={page} focus={focusAyah} prefs={st.prefs} />}
-          {tab === "settings" && <SettingsView lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} st={st} update={update} applyReminder={applyReminder} rmsg={rmsg} onIntro={onIntro} openView={(v) => setTab(v)} />}
+          {tab === "settings" && <SettingsView say={say} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} st={st} update={update} applyReminder={applyReminder} rmsg={rmsg} onIntro={onIntro} openView={(v) => setTab(v)} />}
           {tab === "privacy" && <PrivacyView lang={lang} />}
           {tab === "about" && (
             <div className="about">

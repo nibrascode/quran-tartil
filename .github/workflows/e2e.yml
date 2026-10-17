@@ -30,3 +30,6 @@ jobs:
       - name: Practice flows (repeat, hifz, weak words) with a faked recogniser
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/practice.mjs
+      - name: Backup export/import roundtrip
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/backup.mjs

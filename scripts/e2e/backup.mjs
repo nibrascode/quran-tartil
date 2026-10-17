@@ -1,0 +1,29 @@
+// Export -> wipe -> import roundtrip through the Settings UI.
+import { chromium } from "playwright-core";
+import { readFileSync } from "node:fs";
+const URL = process.env.URL || "http://127.0.0.1:4180/";
+const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox"] });
+const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, acceptDownloads: true, hasTouch: true, isMobile: true })).newPage();
+const errs = []; p.on("pageerror", (e) => errs.push(e.message));
+const seed = { onboarded: true, bookmarks: [{ s: 2, a: 255, page: 42, ts: 1 }], hifz: { "1:2": { box: 2, due: "2026-10-20", reps: 3, lapses: 0 } }, weak: [{ key: "1:3", word: "x", n: 2, last: "2026-10-16" }] };
+await p.goto(URL); await p.evaluate((s) => { localStorage.setItem("qt.v2", JSON.stringify(s)); localStorage.setItem("lang", "en"); }, seed);
+await p.reload({ waitUntil: "networkidle" });
+const openBackup = async () => { await p.click('.dock .dbtn >> nth=1'); await p.waitForTimeout(300); await p.click('[role=tab]:has-text("Settings")'); await p.waitForTimeout(300); await p.click('.scard-h:has-text("Backup")'); await p.waitForTimeout(400); };
+await openBackup();
+const [dl] = await Promise.all([p.waitForEvent("download"), p.click('button:has-text("Export data")')]);
+const path = await dl.path(); const json = JSON.parse(readFileSync(path, "utf8"));
+let ok = json.app === "quran-tartil" && json.bookmarks.length === 1 && json.hifz["1:2"].reps === 3 && json.weak.length === 1;
+console.log(ok ? "OK export" : "FAIL export", dl.suggestedFilename());
+await p.evaluate(() => localStorage.setItem("qt.v2", JSON.stringify({ onboarded: true }))); await p.reload({ waitUntil: "networkidle" });
+await openBackup();
+await p.setInputFiles('input[type=file]', path); await p.waitForTimeout(600);
+const st = await p.evaluate(() => JSON.parse(localStorage.getItem("qt.v2")));
+const ok2 = st.bookmarks?.length === 1 && st.hifz?.["1:2"]?.reps === 3 && st.weak?.length === 1;
+console.log(ok2 ? "OK import" : "FAIL import", JSON.stringify(st).slice(0, 200));
+await p.screenshot({ path: process.env.SHOT || "/tmp/backup.png" });
+// a foreign file is rejected
+await p.setInputFiles('input[type=file]', { name: "x.json", mimeType: "application/json", buffer: Buffer.from('{"hello":1}') }); await p.waitForTimeout(400);
+const toast = await p.evaluate(() => document.querySelector(".toast")?.textContent || "");
+const ok3 = /not a Quran Tartil backup/.test(toast); console.log(ok3 ? "OK reject foreign file" : "FAIL reject: " + toast);
+console.log("errors", errs); await b.close();
+if (!(ok && ok2 && ok3) || errs.length) process.exit(1);

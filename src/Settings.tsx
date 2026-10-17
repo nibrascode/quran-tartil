@@ -6,6 +6,8 @@ import type { Prefs, Settings as St } from "./store";
 import { canNotify } from "./notify";
 import { Ic } from "./Icons";
 import { haptic } from "./haptic";
+import { exportBackup, mergeBackup, parseBackup } from "./backup";
+import { Capacitor } from "@capacitor/core";
 
 type TT = (typeof T)["en"];
 
@@ -86,13 +88,30 @@ function LangSheet({ lang, onPick, onClose, title }: { lang: Lang; onPick: (l: L
 
 type Props = {
   lang: Lang; setLang: (l: Lang) => void; theme: Theme; setTheme: (t: Theme) => void; st: St; update: (f: (s: St) => St) => void;
-  applyReminder: (on: boolean, h: number, m: number) => void; rmsg: string; onIntro: () => void; openView: (v: "about" | "privacy") => void;
+  applyReminder: (on: boolean, h: number, m: number) => void; rmsg: string; onIntro: () => void; say: (m: string) => void; openView: (v: "about" | "privacy") => void;
 };
 
-export function SettingsView({ lang, setLang, theme, setTheme, st, update, applyReminder, rmsg, onIntro, openView }: Props) {
+export function SettingsView({ lang, setLang, theme, setTheme, st, update, applyReminder, rmsg, onIntro, say, openView }: Props) {
   const t: TT = T[lang];
   const [open, setOpen] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<null | "progress" | "bookmarks" | "all">(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  async function doExport() {
+    const json = JSON.stringify(exportBackup(st), null, 2);
+    const name = `quran-tartil-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    try {
+      if (Capacitor.isNativePlatform()) { const { Share } = await import("@capacitor/share"); await Share.share({ title: name, text: json, dialogTitle: name }); }
+      else { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([json], { type: "application/json" })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+      say(t.exportDone);
+    } catch { /* cancelled */ }
+  }
+  async function doImport(f: File | undefined) {
+    if (!f) return;
+    const b = f.size < 5_000_000 ? parseBackup(await f.text()) : null;
+    if (!b) { say(t.importBad); return; }
+    update((x) => mergeBackup(x, b));
+    say(t.importDone.replace("{b}", String(b.bookmarks.length)).replace("{w}", String(b.weak.length)).replace("{h}", String(Object.keys(b.hifz).length)));
+  }
   const toggle = (id: string) => setOpen((o) => (o === id ? null : id));
   const pref = <K extends keyof Prefs>(k: K, v: Prefs[K]) => update((s) => ({ ...s, prefs: { ...s.prefs, [k]: v } }));
   const p = st.prefs;
@@ -166,6 +185,14 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
       </Card>
 
       <Group>{t.setData}</Group>
+      <Card id="backup" icon="download" tone="b" title={t.dataT} open={open === "backup"} toggle={toggle}>
+        <small className="desc">{t.dataD}</small>
+        <div className="stack">
+          <button className="ib" onClick={doExport}><Ic n="download" size={16} />{t.exportBtn}</button>
+          <button className="ib" onClick={() => fileRef.current?.click()}><Ic n="upload" size={16} />{t.importBtn}</button>
+          <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => { doImport(e.target.files?.[0]); e.target.value = ""; }} />
+        </div>
+      </Card>
       <Card id="reset" icon="trash" tone="d" title={t.resetData} open={open === "reset"} toggle={toggle}>
         {confirm ? (
           <div role="alertdialog" aria-label={t.confirmQ}>
