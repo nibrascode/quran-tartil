@@ -12,6 +12,7 @@
     "cap:sync": "npm run build && cap sync android"
   },
   "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
     "@fontsource/amiri-quran": "^5.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -19,7 +20,7 @@
   "devDependencies": {
     "@capacitor/android": "^7.0.0",
     "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
+    "@capacitor/core": "^7.6.9",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",

@@ -2,16 +2,17 @@ import { useMemo, useState } from "react";
 import { LANGS, T, type Lang } from "./i18n";
 import { LICENSE_BLOCK, PAGES, pageOfAyah, pageOfJuz, suras, toArabicDigits, firstSuraOfPage } from "./quran";
 import type { Theme } from "./App";
+import { Tartil } from "./Tartil";
 
-export type Tab = "surah" | "juz" | "page" | "settings" | "about";
+export type Tab = "surah" | "juz" | "page" | "tartil" | "settings" | "about";
 type Props = { tab: Tab; setTab: (t: Tab) => void; lang: Lang; setLang: (l: Lang) => void; theme: Theme; setTheme: (t: Theme) => void; page: number; onGo: (p: number) => void; onClose: () => void };
 
 export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, onGo, onClose }: Props) {
   const t = T[lang];
   const [q, setQ] = useState("");
   const [num, setNum] = useState(String(page));
-  const tabs: Tab[] = ["surah", "juz", "page", "settings", "about"];
-  const label = (k: Tab) => (k === "surah" ? t.surah : k === "juz" ? t.juz : k === "page" ? t.page : k === "settings" ? t.settings : t.about);
+  const tabs: Tab[] = ["surah", "juz", "page", "tartil", "settings", "about"];
+  const label = (k: Tab) => (k === "surah" ? t.surah : k === "juz" ? t.juz : k === "page" ? t.page : k === "tartil" ? t.tartil : k === "settings" ? t.settings : t.about);
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     return suras.filter((x) => !s || x.name.includes(s) || x.tname.toLowerCase().includes(s) || String(x.i) === s);
@@ -57,6 +58,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, onGo, 
               <button className="ib primary" type="submit" style={{ width: "100%" }}>{t.go} · {toArabicDigits(Number(num) || 1)}</button>
             </form>
           )}
+          {tab === "tartil" && <Tartil lang={lang} page={page} />}
           {tab === "settings" && (
             <>
               <label>{t.language}</label>
