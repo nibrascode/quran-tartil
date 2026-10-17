@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   push:
     tags: ["v*"]
+permissions:
+  contents: write
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -50,3 +52,23 @@ jobs:
           path: |
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/bundle/release/app-release.aab
+      - name: Publish GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk out/quran-tartil-${GITHUB_REF_NAME}.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab out/quran-tartil-${GITHUB_REF_NAME}.aab
+          (cd out && sha256sum * > SHA256SUMS.txt)
+          {
+            echo "Quran Tartil $GITHUB_REF_NAME: offline Quran reader with recitation check."
+            echo
+            echo "- Home screen, full-screen mushaf reader (604 pages), tablet two-page spread"
+            echo "- Live tartil check (3 strictness levels), voice navigation, practice and hifz"
+            echo "- Backup/restore, 5 languages, light/dark/sepia"
+            echo
+            echo "Install: download the .apk, allow installs from this source, open it. The .aab is for Google Play."
+            echo "Quran text: Tanzil Project (tanzil.net), CC BY 3.0."
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" out/* --title "Quran Tartil $GITHUB_REF_NAME" --notes-file notes.md --verify-tag
