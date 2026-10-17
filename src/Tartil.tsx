@@ -1,15 +1,10 @@
 import { Ic } from "./Icons";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Capacitor } from "@capacitor/core";
+import { createListener, speechSupported, type Listener } from "./speech";
 import { T, type Lang } from "./i18n";
 import type { Prefs } from "./store";
 import { pageItems, pageOfAyah } from "./quran";
 import { align, words, LEVELS, type WordState } from "./tartil";
-
-type Rec = { start(): void; stop(): void; abort(): void; onresult: ((e: any) => void) | null; onerror: ((e: any) => void) | null; onend: (() => void) | null; lang: string; continuous: boolean; interimResults: boolean };
-
-const webCtor = (): (new () => Rec) | null => (typeof window === "undefined" ? null : ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null));
-const native = () => Capacitor.isNativePlatform();
 
 /** Experimental: listens to the microphone and marks every word of the chosen ayah as correct / different / skipped. */
 type Row = { score: number; wrong: string[] };
@@ -23,8 +18,8 @@ export function Tartil({ lang, page, focus, prefs }: { lang: Lang; page: number;
   const [heard, setHeard] = useState<string[]>([]);
   const [on, setOn] = useState(false);
   const [err, setErr] = useState("");
-  const rec = useRef<Rec | null>(null);
-  const supported = native() || !!webCtor();
+  const rec = useRef<Listener | null>(null);
+  const supported = speechSupported();
 
   useEffect(() => {
     const k = focus ? list.findIndex((x) => x.s === focus.s && x.a === focus.a) : -1;
@@ -45,43 +40,24 @@ export function Tartil({ lang, page, focus, prefs }: { lang: Lang; page: number;
   }, [result]); // eslint-disable-line
 
   async function stopAll() {
-    try { rec.current?.abort(); } catch { /* ignore */ }
-    rec.current = null;
-    if (native()) {
-      try { const { SpeechRecognition } = await import("@capacitor-community/speech-recognition"); await SpeechRecognition.stop(); await SpeechRecognition.removeAllListeners(); } catch { /* ignore */ }
-    }
     setOn(false);
+    const l = rec.current; rec.current = null;
+    try { await l?.stop(); } catch { /* ignore */ }
   }
 
   async function start() {
     setErr(""); setHeard([]);
-    try {
-      if (native()) {
-        const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
-        const av = await SpeechRecognition.available();
-        if (!av.available) { setErr(t.tartilUnsupported); return; }
-        const perm = await SpeechRecognition.requestPermissions();
-        if (perm.speechRecognition !== "granted") { setErr("microphone permission denied"); return; }
-        await SpeechRecognition.addListener("partialResults", (d: { matches?: string[] }) => { if (d.matches?.[0]) setHeard(d.matches[0].split(/\s+/).filter(Boolean)); });
-        await SpeechRecognition.start({ language: prefs.recLang, partialResults: true, popup: false, maxResults: 1 });
-        setOn(true);
-        return;
-      }
-      const C = webCtor();
-      if (!C) { setErr(t.tartilUnsupported); return; }
-      const r = new C();
-      r.lang = prefs.recLang; r.continuous = true; r.interimResults = true;
-      r.onresult = (e: any) => {
-        let s = "";
-        for (let i = 0; i < e.results.length; i++) s += " " + e.results[i][0].transcript;
-        setHeard(s.split(/\s+/).filter(Boolean));
-      };
-      r.onerror = (e: any) => { setErr(String(e.error || "error")); setOn(false); };
-      r.onend = () => setOn(false);
-      rec.current = r;
-      r.start();
-      setOn(true);
-    } catch (e) { setErr(String((e as Error).message || e)); setOn(false); }
+    if (rec.current) await stopAll();
+    const l = createListener({
+      lang: prefs.recLang,
+      expected: () => shown,
+      onWords: (w) => setHeard(w),
+      onNewSession: () => {},
+      onError: (m) => { setErr(m === "unsupported" ? t.tartilUnsupported : m); setOn(false); rec.current = null; },
+      onEnd: () => { setOn(false); rec.current = null; },
+    });
+    rec.current = l; setOn(true);
+    await l.start();
   }
 
   if (!ay) return <p>—</p>;

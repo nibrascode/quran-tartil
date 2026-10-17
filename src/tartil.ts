@@ -48,6 +48,23 @@ export function phonSame(e: string, h: string): boolean {
   return skeleton(e) === skeleton(h);
 }
 
+/** Recognisers write number words as digits ("3" for ثلاثة): a digit token matches an expected word that starts with the number word's stem. */
+const NUM_STEMS: Record<string, string[]> = {
+  "1": ["واحد", "احد"], "2": ["اثن", "ثنت", "اثنا"], "3": ["ثلث", "ثلاث"], "4": ["اربع"], "5": ["خمس"], "6": ["ست", "سدس"], "7": ["سبع"], "8": ["ثمن", "ثماني"], "9": ["تسع"], "10": ["عشر"],
+  "20": ["عشرين"], "30": ["ثلثين", "ثلاثين"], "40": ["اربعين"], "50": ["خمسين"], "60": ["ستين"], "70": ["سبعين"], "80": ["ثمنين", "ثمانين"], "90": ["تسعين"], "99": ["تسع"], "100": ["ماية", "مايه", "مائه", "مائة", "ماءه"], "1000": ["الف"],
+};
+const ARDIG = "٠١٢٣٤٥٦٧٨٩";
+/** normalised heard token: digit tokens become "#<latin digits>" (never lost to normalisation) */
+export function normHeard(w: string): string {
+  if (/^[0-9\u0660-\u0669]+$/.test(w)) return "#" + w.replace(/[\u0660-\u0669]/g, (d) => String(ARDIG.indexOf(d)));
+  return normalizeAr(w);
+}
+export function numberMatches(expected: string, h: string): boolean {
+  if (h[0] !== "#") return false;
+  const e = expected.replace(/^[وفبل]?(ال)?/, "");
+  return (NUM_STEMS[h.slice(1)] ?? []).some((st) => e.startsWith(st) || expected.includes(st));
+}
+
 export type WordState = "ok" | "bad" | "missing" | "pending" | "skip";
 export type Level = "easy" | "medium" | "hard";
 /** How strict mistake detection is. delay: how many further words must be heard before a mistake is shown; forgive: isolated skipped words tolerated; extras: extra words lower the score; phonetic: light tajweed-level variance (Easy only). Word matching itself never accepts a different word or letter. */
@@ -57,7 +74,7 @@ export const LEVELS: Record<Level, AlignOpts> = {
   medium: { delay: 1, forgive: 0, extras: false },
   hard: { delay: 0, forgive: 0, extras: true },
 };
-export type Result = { states: WordState[]; extra: string[]; matched: number; done: boolean; score: number; reached: number; used: number };
+export type Result = { states: WordState[]; extra: string[]; matched: number; done: boolean; score: number; reached: number; used: number; partial: boolean };
 
 /**
  * Align heard words to the expected ayah (word-level edit distance; the unrecited expected tail is free = "pending").
@@ -66,10 +83,12 @@ export type Result = { states: WordState[]; extra: string[]; matched: number; do
  */
 export function align(expectedRaw: string[], heardRaw: string[], optsIn: AlignOpts = LEVELS.medium): Result {
   const o: AlignOpts = optsIn;
-  const E = expectedRaw.map(normalizeAr), H = heardRaw.map(normalizeAr).filter(Boolean);
+  const E = expectedRaw.map(normalizeAr), H = heardRaw.map(normHeard).filter(Boolean);
   const n = E.length, m = H.length;
   const ALT = expectedRaw.map(spelledOut);
-  const eq = (i: number, h: string) => E[i] === h || ALT[i] === h || (!!o.phonetic && (phonSame(E[i], h) || (!!ALT[i] && phonSame(ALT[i]!, h))));
+  const eq = (i: number, h: string) => E[i] === h || ALT[i] === h || numberMatches(E[i], h) || (!!ALT[i] && numberMatches(ALT[i]!, h)) || (!!o.phonetic && (phonSame(E[i], h) || (!!ALT[i] && phonSame(ALT[i]!, h))));
+  // a recogniser may still be writing the newest word: a proper prefix of the expected word is "in progress", not a mistake (interim results only)
+  const part = (i: number, j: number) => !o.final && j === m - 1 && H[j].length >= 1 && H[j][0] !== "#" && [E[i], ALT[i]].some((x) => !!x && x.length > H[j].length && x.startsWith(H[j]));
   const eqCat = (i: number, h: string) => E[i] === h || ALT[i] === h; // recogniser split / merged words: same letters only
   const INF = 1e9;
   const D: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(INF));
@@ -81,7 +100,8 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: AlignOp
     if (d >= INF) continue;
     if (i < n) upd(i + 1, j, d + 1, "del");
     if (j < m) upd(i, j + 1, d + 1, "ins");
-    if (i < n && j < m) upd(i + 1, j + 1, d + (eq(i, H[j]) ? 0 : 1), "sub");
+    if (i < n && j < m) upd(i + 1, j + 1, d + (eq(i, H[j]) || part(i, j) ? 0 : 1), "sub");
+    if (j > 0 && j < m && H[j] === H[j - 1]) upd(i, j + 1, d, "dup"); // the recogniser repeated the previous word: ignored
     if (i < n && j + 1 < m && eqCat(i, H[j] + H[j + 1])) upd(i + 1, j + 2, d, "mergeH");
     if (i + 1 < n && j < m && [E[i] + E[i + 1], (ALT[i] ?? E[i]) + (ALT[i + 1] ?? E[i + 1])].includes(H[j])) upd(i + 2, j + 1, d, "mergeE");
   }
@@ -89,11 +109,12 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: AlignOp
   for (let i = 0; i <= n; i++) if (D[i][m] < D[bi][m] || (D[i][m] === D[bi][m] && i > bi)) bi = i;
   const states: WordState[] = new Array(n).fill("pending");
   const extra: string[] = [];
-  let i = bi, j = m, used = -1;
+  let i = bi, j = m, used = -1, partial = false;
   while (i > 0 || j > 0) {
     const b = B[i][j];
-    if (used < 0 && b !== "ins") used = j;
-    if (b === "sub") { states[i - 1] = eq(i - 1, H[j - 1]) ? "ok" : "bad"; i--; j--; }
+    if (used < 0 && b !== "ins" && b !== "dup") used = j;
+    if (b === "dup") { j--; }
+    else if (b === "sub") { states[i - 1] = eq(i - 1, H[j - 1]) ? "ok" : part(i - 1, j - 1) ? "pending" : "bad"; if (part(i - 1, j - 1) && !eq(i - 1, H[j - 1])) partial = true; i--; j--; }
     else if (b === "mergeH") { states[i - 1] = "ok"; i--; j -= 2; }
     else if (b === "mergeE") { states[i - 1] = "ok"; states[i - 2] = "ok"; i -= 2; j--; }
     else if (b === "del") { states[i - 1] = "missing"; i--; }
@@ -103,8 +124,9 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: AlignOp
   // mistakes are only shown once enough further words were heard (unless the recitation is finished)
   if (!o.final) for (let k = Math.max(0, bi - o.delay); k < bi; k++) if (states[k] === "bad" || states[k] === "missing") states[k] = "pending";
   // isolated skipped words are forgiven on easy
-  if (o.forgive > 0 && states.filter((x) => x === "missing").length <= o.forgive) for (let k = 0; k < n; k++) if (states[k] === "missing") states[k] = "skip";
+  // (only 1-2 letter particles: a recogniser drops و / في / من, never a content word)
+  if (o.forgive > 0 && states.filter((x) => x === "missing").length <= o.forgive && states.every((x, k) => x !== "missing" || E[k].length <= 2)) for (let k = 0; k < n; k++) if (states[k] === "missing") states[k] = "skip";
   const matched = states.filter((x) => x === "ok").length;
   const denom = n + (o.extras ? extra.length : 0);
-  return { states, extra, matched, done: bi === n && states.every((x) => x === "ok" || x === "skip"), score: denom ? Math.round((matched / denom) * 100) : 0, reached: bi, used };
+  return { states, extra, matched, done: bi === n && states.every((x) => x === "ok" || x === "skip"), score: denom ? Math.round((matched / denom) * 100) : 0, reached: bi, used, partial };
 }

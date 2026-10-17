@@ -61,11 +61,12 @@ test("score is the share of correct words", () => {
 });
 
 test("strictness: easy forgives one skipped word, medium and hard flag it", () => {
-  const e = words("ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ");
-  const heard = ["الحمد", "رب", "العالمين"];
-  assert.equal(align(e, heard, LEVELS.easy).states[1], "skip");
-  assert.equal(align(e, heard, LEVELS.medium).states[1], "missing");
-  assert.equal(align(e, heard, LEVELS.hard).states[1], "missing");
+  const e = words("لَآ إِكْرَاهَ فِى ٱلدِّينِ");
+  const heard = ["لا", "اكراه", "الدين"]; // recogniser dropped the particle في
+  assert.equal(align(e, heard, { ...LEVELS.easy, final: true }).states[2], "skip");
+  assert.equal(align(e, heard, { ...LEVELS.medium, final: true }).states[2], "missing");
+  assert.equal(align(e, heard, { ...LEVELS.hard, final: true }).states[2], "missing");
+  assert.equal(align(words("ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ"), ["الحمد", "رب", "العالمين"], { ...LEVELS.easy, final: true }).states[1], "missing"); // a content word is never forgiven
 });
 test("strictness: warning delay - easy waits for 2 more words, hard warns at once", () => {
   const e = words("ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ");
@@ -130,12 +131,13 @@ test("tajweed-level variance is NOT accepted on medium/hard", () => {
     assert.ok(!okAll(run(l, words("غَفُورٌ رَّحِيمٌ"), "غفورن رحيم")), l + " tanween nun");
   }
 });
-test("easy still forgives one skipped word, medium/hard do not; several skips fail on easy", () => {
-  const e = words("إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ");
-  assert.ok(okAll(run("easy", e, "اياك نعبد نستعين")));
-  assert.ok(!okAll(run("easy", e, "اياك وياك")));
-  assert.ok(!okAll(run("medium", e, "اياك نعبد نستعين")));
-  assert.ok(!okAll(run("hard", e, "اياك نعبد نستعين")));
+test("easy forgives one dropped 1-2 letter particle only; a skipped content word fails at every level", () => {
+  const e = words("لَآ إِكْرَاهَ فِى ٱلدِّينِ");
+  assert.ok(okAll(run("easy", e, "لا اكراه الدين"))); // recogniser dropped "في"
+  assert.ok(!okAll(run("medium", e, "لا اكراه الدين")));
+  assert.ok(!okAll(run("hard", e, "لا اكراه الدين")));
+  const f = words("إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ");
+  for (const lv of ["easy", "medium", "hard"]) assert.ok(!okAll(run(lv, f, "اياك نعبد نستعين")), lv + " skipped content word");
   assert.ok(!okAll(run("easy", words("ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ"), "الصراط المستقيم عليهم")));
 });
 test("skeleton keeps consonants distinct", async () => {
@@ -143,4 +145,10 @@ test("skeleton keeps consonants distinct", async () => {
   assert.notEqual(skeleton("الصلاه"), skeleton("السلاه"));
   assert.notEqual(skeleton("رب"), skeleton("ملك"));
   assert.equal(skeleton("الرحمن"), skeleton("رحمن"));
+});
+test("recogniser noise: digits for number words, repeated word, split word in progress", () => {
+  const e = words("ثَلَٰثَةَ أَيَّامٍ");
+  for (const lv of ["easy", "medium", "hard"]) { assert.ok(okAll(run(lv, e, "3 ايام")), lv + " digit"); assert.ok(!okAll(run(lv, e, "4 ايام")), lv + " wrong number"); }
+  const f = words("وَٱللَّهُ غَفُورٌ رَّحِيمٌ");
+  for (const lv of ["easy", "medium", "hard"]) assert.ok(okAll(run(lv, f, "والله غفور غفور رحيم")), lv + " stutter");
 });

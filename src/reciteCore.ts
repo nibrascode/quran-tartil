@@ -124,7 +124,7 @@ export class ReciteSession {
       const keep = (x: WordState[]) => x.map((v, i) => (from + i < this.shown && v !== "ok" ? "ok" : v) as WordState);
       let st = keep(r.states);
       let e = this.firstError(st);
-      if (r.reached === norms.length - from) {
+      if (r.reached === norms.length - from && !(r.partial && !final)) {
         const fin = run(from, true); fin.states = keep(fin.states);
         const e2 = this.firstError(fin.states);
         if (e2 < 0) {

@@ -114,6 +114,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   }, [page]); // eslint-disable-line
 
   const begin = useCallback(async (from?: { s: number; a: number } | null, opts?: PracticeOpts) => {
+    if (lis.current) { const old = lis.current; lis.current = null; await old.stop(); } // never two recognisers
     setErr("");
     navRef.current = !from && !opts;
     pendingNav.current = null;
@@ -133,23 +134,27 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
       expected: () => { const x = sess.current; if (!x) return []; return x.ayahs.slice(Math.max(0, x.cursor), x.cursor + 3).flatMap((a) => a.tokens); },
       onWords: feed,
       onNewSession: () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); },
-      onError: (m) => { setErr(m); setMode("off"); },
+      onError: (m) => { setErr(m); modeRef.current = "off"; setMode("off"); },
       onEnd: () => {},
     });
     await lis.current.start();
     setTick((t) => t + 1);
   }, [feed, prefs.recLang, prefs.strict]);
 
-  const pause = useCallback(async () => { clearTimeout(timer.current); await lis.current?.stop(); setMode("paused"); }, []);
+  const pause = useCallback(async () => { clearTimeout(timer.current); modeRef.current = "paused"; setMode("paused"); await lis.current?.stop(); }, []);
   const resume = useCallback(async () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); setMode("on"); modeRef.current = "on"; await lis.current?.start(); }, []);
   const stop = useCallback(async () => {
+    // state first (late results are ignored at once), then tear the recogniser down
     prac.current = null;
     clearTimeout(timer.current);
-    await lis.current?.stop();
+    const l = lis.current;
+    const had = modeRef.current === "on" || modeRef.current === "paused";
+    if (had) modeRef.current = "review";
     sess.current?.finish();
     save();
     setMode(sess.current && sess.current.res.size ? "review" : "off");
     setTick((t) => t + 1);
+    try { await l?.stop(); } catch { /* ignore */ }
   }, [save]);
   /** one ayah back (the current one if it already has progress), to re-recite it */
   const back = useCallback(() => {
@@ -162,6 +167,12 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
   const restart = useCallback(() => { const s = sess.current; if (!s) return; s.seek(s.start, heard.current.length); setTick((t) => t + 1); }, []);
   const close = useCallback(() => { prac.current = null; setMode("off"); sess.current = null; setTick((t) => t + 1); }, []);
   useEffect(() => () => { lis.current?.stop(); }, []);
+  // app sent to the background / screen off / tab hidden: the microphone must not keep running
+  useEffect(() => {
+    const off = () => { if (document.visibilityState === "hidden" && (modeRef.current === "on" || modeRef.current === "paused")) void stop(); };
+    document.addEventListener("visibilitychange", off); window.addEventListener("pagehide", off);
+    return () => { document.removeEventListener("visibilitychange", off); window.removeEventListener("pagehide", off); };
+  }, [stop]);
 
   // paint the page: green = matched, red = different/skipped, hidden (blurred) = not recited yet
   useEffect(() => {
