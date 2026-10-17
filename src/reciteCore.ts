@@ -30,6 +30,9 @@ export class ReciteSession {
   private lastRest: string[] = [];
   private prefixPending = true; // isti'adha / basmala spoken before reciting are skipped, never a mistake
   private prefixFrom = -1;
+  private shown = 0; // words of the current ayah already painted green: never downgraded
+  private lastDisp: WordState[] = []; // norm-level states last shown for the current ayah
+  private overlap = false; // after a recogniser restart: the engine may repeat the last words, they are skipped
 
   constructor(public ayahs: AyahTokens[], public level: Level) {
     this.idx = ayahs.map((a) => a.tokens.map((t, i) => (normalizeAr(t) ? i : -1)).filter((i) => i >= 0));
@@ -45,14 +48,24 @@ export class ReciteSession {
     this.prefixPending = true; this.prefixFrom = heardLen;
   }
   /** a new recogniser session starts counting words from zero again */
-  newRecogniser() { this.consumed = 0; this.lastErr = -1; this.prefixPending = true; this.prefixFrom = 0; }
+  newRecogniser() {
+    this.consumed = 0; this.lastErr = -1; this.prefixFrom = 0;
+    if (this.finished) return;
+    if (this.heldIdx === null) {
+      // resume from the next expected word of the current ayah (a pause or restart is never a skipped word)
+      let pos = 0; while (pos < this.lastDisp.length && this.lastDisp[pos] === "ok") pos++;
+      this.okBefore = this.lastDisp.slice(0, pos); this.base = pos; this.shown = pos;
+      this.prefixPending = pos === 0;
+      this.overlap = pos > 0;
+    } else { this.prefixPending = false; this.overlap = false; }
+  }
 
   private expand(k: number, states: WordState[]): WordState[] {
     const full: WordState[] = this.ayahs[k].tokens.map(() => "skip");
     this.idx[k].forEach((ti, e) => { full[ti] = states[e]; });
     return full;
   }
-  private resetAyah() { this.base = 0; this.okBefore = []; this.heldIdx = null; this.mistakes = 0; this.lastErr = -1; }
+  private resetAyah() { this.shown = 0; this.lastDisp = []; this.overlap = false; this.base = 0; this.okBefore = []; this.heldIdx = null; this.mistakes = 0; this.lastErr = -1; }
   private ayahScore(n: number) { return n ? Math.round((Math.max(0, n - this.mistakes) / n) * 100) : 0; }
   private firstError(st: WordState[]) { return st.findIndex((x) => x === "bad" || x === "missing"); }
 
@@ -62,6 +75,7 @@ export class ReciteSession {
     const disp: WordState[] = [...this.okBefore];
     for (let i = 0; i < states.length; i++) disp.push(i <= upTo || upTo < 0 ? states[i] : "pending");
     while (disp.length < n) disp.push("pending");
+    this.lastDisp = disp; { let c = 0; while (c < disp.length && disp[c] === "ok") c++; this.shown = Math.max(this.shown, c); }
     this.res.set(this.ayahs[k].key, { states: this.expand(k, disp), score: this.ayahScore(n), closed, held: this.heldIdx !== null, mistakes: this.mistakes });
   }
 
@@ -77,6 +91,7 @@ export class ReciteSession {
     while (!this.finished) {
       const k = this.cursor, norms = this.norms[k], n = norms.length;
       if (n === 0) { this.cursor++; this.resetAyah(); closed++; continue; }
+      if (this.overlap && this.heldIdx === null) this.skipOverlap(heard, norms);
       const rest = heard.slice(this.consumed, this.consumed + n + 3); // a burst of words must not be matched against later words of the ayah
       this.lastRest = rest;
       const o = LEVELS[this.level];
@@ -106,10 +121,11 @@ export class ReciteSession {
         this.lastErr = -1;
       }
 
-      let e = this.firstError(r.states);
-      let st = r.states;
+      const keep = (x: WordState[]) => x.map((v, i) => (from + i < this.shown && v !== "ok" ? "ok" : v) as WordState);
+      let st = keep(r.states);
+      let e = this.firstError(st);
       if (r.reached === norms.length - from) {
-        const fin = run(from, true);
+        const fin = run(from, true); fin.states = keep(fin.states);
         const e2 = this.firstError(fin.states);
         if (e2 < 0) {
           // clean to the end of the ayah: close it, leftover words flow on
@@ -128,7 +144,8 @@ export class ReciteSession {
         const newest = e + 1 >= r.reached;
         const trusted = !newest || final || this.lastErr === e || r.reached === norms.length - from;
         this.lastErr = e;
-        this.show(k, e, st, false);
+        if (trusted) this.show(k, e, st, false);
+        else this.show(k, -1, st.map((v, i) => (i >= e ? "pending" : v) as WordState), false); // unconfirmed: neutral, never red
         if (trusted) {
           this.lastHeldState = st[e] as WordState;
           this.heldIdx = from + e;
@@ -150,6 +167,22 @@ export class ReciteSession {
     return closed;
   }
   private lastHeldState: WordState = "bad";
+  /** after a restart the recogniser may repeat the last 1-3 words already recited: skip them (a real next word is never skipped) */
+  private skipOverlap(heard: string[], norms: string[]) {
+    const pos = this.base, len = heard.length - this.consumed;
+    if (len <= 0 || pos <= 0) return;
+    const same = (a: string, b: string) => align([b], [a], { ...LEVELS[this.level], final: true }).states[0] === "ok";
+    const h = heard.slice(this.consumed);
+    if (same(h[0], norms[pos] ?? "")) { this.overlap = false; return; }
+    let skip = 0;
+    for (let d = Math.min(3, pos); d >= 1; d--) {
+      const j = Math.min(d, h.length);
+      let all = true; for (let i = 0; i < j; i++) if (!same(h[i], norms[pos - d + i])) { all = false; break; }
+      if (all) { skip = j; break; }
+    }
+    if (skip) this.consumed += skip;
+    if (h.length > skip) this.overlap = false;
+  }
 
   /** user pressed stop: the current ayah stays as it stands (revealed part only) */
   finish() {

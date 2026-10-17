@@ -89,12 +89,13 @@ test("skipped word: held as missing", () => {
   assert.ok(st[2] === "bad" || st[2] === "missing"); // red either way
   assert.ok(s.held);
 });
-test("hard: red at once, hold needs a second sighting or a final result for the newest word", () => {
+test("hard: an unconfirmed wrong word stays neutral; a second sighting or a final result turns it red and holds", () => {
   const s = new ReciteSession(A, "hard");
   s.feed(W("الحمد لله ملك"));
-  assert.equal(s.res.get("1:2").states[2], "bad");
-  assert.ok(!s.held); // could still be an interim guess
+  assert.equal(s.res.get("1:2").states[2], "pending"); // could still be an interim guess: never red yet
+  assert.ok(!s.held);
   s.feed(W("الحمد لله ملك"), true);
+  assert.equal(s.res.get("1:2").states[2], "bad");
   assert.ok(s.held);
   s.feed(W("الحمد لله ملك رب العالمين"));
   assert.equal(s.cursor, 1);
@@ -141,9 +142,9 @@ test("new recogniser session restarts word counting without losing progress", ()
   s.feed(["الرحمن", "الرحيم"]);
   assert.equal(s.cursor, 2);
 });
-test("stop shows the current ayah as it stands (hard level flags at once)", () => {
+test("stop shows the current ayah as it stands (confirmed mistake is red)", () => {
   const s = new ReciteSession(A, "hard");
-  s.feed(["الحمد", "ملك"]);
+  s.feed(["الحمد", "ملك"], true);
   assert.equal(s.res.get("1:2").states[1], "bad");
 });
 
@@ -223,4 +224,56 @@ test("a wrong word after the isti'adha is still a mistake; the isti'adha words a
   assert.ok(s.events.length >= 1); assert.equal(s.events[0].word, "رَبِّ");
   assert.equal(ignoredPrefix(["الحمد", "لله"], "x"), 0);
   assert.equal(ignoredPrefix(["من", "قبل"], "x"), 0); // "من" alone is not isti'adha
+});
+
+// ---- pauses, recogniser restarts, interim corrections ----
+const B = [{ key: "2:255", tokens: "ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ".split(" ") }, { key: "2:256", tokens: "لَآ إِكْرَاهَ فِى ٱلدِّينِ".split(" ") }];
+const hasBad = (s, key) => s.res.get(key).states.some((x) => x === "bad" || x === "missing");
+for (const lvl of ["easy", "medium", "hard"]) {
+  test(`${lvl}: pause + recogniser restart continues from the next word (no mistake)`, () => {
+    const s = new ReciteSession(B, lvl);
+    s.feed(W("الله لا اله"));
+    s.newRecogniser(); // engine restarted after silence: words count from zero again
+    s.feed(W("الا"), false); s.feed(W("الا هو"), false);
+    assert.ok(!hasBad(s, "2:255"));
+    assert.deepEqual(s.res.get("2:255").states.slice(0, 5), ["ok", "ok", "ok", "ok", "ok"]);
+    s.feed(W("الا هو الحي القيوم"), true);
+    assert.ok(s.res.get("2:255").closed); assert.equal(s.events.length, 0);
+  });
+  test(`${lvl}: restart that repeats the last words is not a mistake`, () => {
+    const s = new ReciteSession(B, lvl);
+    s.feed(W("الله لا اله الا"));
+    s.newRecogniser();
+    s.feed(W("اله")); s.feed(W("اله الا")); s.feed(W("اله الا هو")); s.feed(W("اله الا هو الحي القيوم"), true);
+    assert.ok(s.res.get("2:255").closed); assert.equal(s.events.length, 0); assert.equal(s.res.get("2:255").score, 100);
+  });
+  test(`${lvl}: pause/resume with several restarts in a row`, () => {
+    const s = new ReciteSession(B, lvl);
+    s.feed(W("الله")); s.newRecogniser(); s.newRecogniser();
+    s.feed(W("لا اله")); s.newRecogniser(); s.feed(W("الا هو")); s.newRecogniser(); s.feed(W("الحي القيوم"), true);
+    assert.ok(s.res.get("2:255").closed); assert.equal(s.events.length, 0);
+  });
+  test(`${lvl}: a real mistake after a restart is still caught`, () => {
+    const s = new ReciteSession(B, lvl);
+    s.feed(W("الله لا")); s.newRecogniser(); s.feed(W("سلام كلام طعام"), true); s.feed(W("سلام كلام طعام"), true);
+    assert.ok(s.held);
+  });
+}
+test("interim guesses are never painted red: neutral until confirmed, then a corrected word turns green directly", () => {
+  const s = new ReciteSession(B, "medium");
+  const seen = [];
+  const f = (t, fin = false) => { s.feed(W(t), fin); seen.push(s.res.get("2:255").states.slice()); };
+  f("الله لا"); f("الله لا ابه"); // wrong-looking newest word, unconfirmed
+  assert.ok(!seen.at(-1).some((x) => x === "bad" || x === "missing"), "unconfirmed word must not be red");
+  assert.equal(seen.at(-1)[2], "pending");
+  f("الله لا اله"); f("الله لا اله الا هو الحي القيوم", true);
+  for (const st of seen) assert.ok(!st.some((x) => x === "bad" || x === "missing"), "no red flash at any point");
+  assert.ok(s.res.get("2:255").closed);
+});
+test("a word already green is never downgraded by a later interim", () => {
+  const s = new ReciteSession(B, "hard");
+  s.feed(W("الله لا اله")); assert.deepEqual(s.res.get("2:255").states.slice(0, 3), ["ok", "ok", "ok"]);
+  s.feed(W("الله لو اله")); // recogniser rewrote an earlier word
+  assert.deepEqual(s.res.get("2:255").states.slice(0, 3), ["ok", "ok", "ok"]);
+  assert.ok(!s.held);
 });
