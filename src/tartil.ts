@@ -55,6 +55,8 @@ export function phon(w: string): string {
 }
 /** sound-alike word match (Easy): equal skeletons, or very close skeletons */
 export function phonSame(e: string, h: string): boolean {
+  // idgham / ghunna on short nun words (من، عن، إن): the nun is heard assimilated into the next letter
+  if (e.length === 2 && e[1] === "ن" && h[0] === e[0] && (h.length === 1 || (h.length === 2 && "يرملو".includes(h[1])))) return true;
   if (e.length <= 2 || h.length <= 2) return e.length === h.length && Array.from(e).every((c, i) => (CLASSES[c] ?? c) === (CLASSES[h[i]] ?? h[i]));
   const a = phon(e), b = phon(h);
   if (a === b) return true;
@@ -80,10 +82,11 @@ export type Result = { states: WordState[]; extra: string[]; matched: number; do
  */
 export function align(expectedRaw: string[], heardRaw: string[], optsIn: number | AlignOpts = 0.72): Result {
   const o: AlignOpts = typeof optsIn === "number" ? { ...LEVELS.medium, threshold: optsIn, delay: 0 } : optsIn;
-  const threshold = o.threshold, nc = o.nearCost, mt = Math.max(threshold, 0.8); // merges/splits of words need a closer match
+  const threshold = o.threshold, nc = o.nearCost, mt = Math.max(threshold, 0.85); // merges/splits of words need a closer match
   const E = expectedRaw.map(normalizeAr), H = heardRaw.map(normalizeAr).filter(Boolean);
   const n = E.length, m = H.length;
-  const same = o.phonetic ? (e: string, h: string, t: number, c: number) => sameBase(e, h, t, c) || phonSame(e, h) : sameBase;
+  const same = sameBase; // merges/splits of words use the plain match
+  const sub = o.phonetic ? (e: string, h: string, t: number, c: number) => sameBase(e, h, t, c) || phonSame(e, h) : sameBase;
   const INF = 1e9;
   const D: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(INF));
   const B: string[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(""));
@@ -94,7 +97,7 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: number 
     if (d >= INF) continue;
     if (i < n) upd(i + 1, j, d + 1, "del");
     if (j < m) upd(i, j + 1, d + 1, "ins");
-    if (i < n && j < m) upd(i + 1, j + 1, d + (same(E[i], H[j], threshold, nc) ? 0 : 1), "sub");
+    if (i < n && j < m) upd(i + 1, j + 1, d + (sub(E[i], H[j], threshold, nc) ? 0 : 1), "sub");
     if (i < n && j + 1 < m && same(E[i], H[j] + H[j + 1], mt, nc)) upd(i + 1, j + 2, d, "mergeH");
     if (i + 1 < n && j < m && same(E[i] + E[i + 1], H[j], mt, nc)) upd(i + 2, j + 1, d, "mergeE");
   }
@@ -106,7 +109,7 @@ export function align(expectedRaw: string[], heardRaw: string[], optsIn: number 
   while (i > 0 || j > 0) {
     const b = B[i][j];
     if (used < 0 && b !== "ins") used = j;
-    if (b === "sub") { states[i - 1] = same(E[i - 1], H[j - 1], threshold, nc) ? "ok" : "bad"; i--; j--; }
+    if (b === "sub") { states[i - 1] = sub(E[i - 1], H[j - 1], threshold, nc) ? "ok" : "bad"; i--; j--; }
     else if (b === "mergeH") { states[i - 1] = "ok"; i--; j -= 2; }
     else if (b === "mergeE") { states[i - 1] = "ok"; states[i - 2] = "ok"; i -= 2; j--; }
     else if (b === "del") { states[i - 1] = "missing"; i--; }
