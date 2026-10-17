@@ -17,16 +17,14 @@ jobs:
       - run: npm run build
       - name: Add Android platform (generated, not committed)
         run: npx cap add android
-      - name: Permissions (microphone, notifications, wake lock)
-        run: |
-          f=android/app/src/main/AndroidManifest.xml
-          grep -q RECORD_AUDIO $f || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n</manifest>#' $f
-          grep -q POST_NOTIFICATIONS $f || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n</manifest>#' $f
-          grep -q WAKE_LOCK $f || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.WAKE_LOCK" />\n</manifest>#' $f
+      - name: Permissions (microphone, notifications, vibration, wake lock)
+        run: bash scripts/android-setup.sh
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
+      - name: Verify merged manifest permissions
+        run: bash scripts/android-verify.sh
       - uses: actions/upload-artifact@v4
         with:
           name: quran-tartil-debug-apk
