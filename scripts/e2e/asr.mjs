@@ -1,0 +1,33 @@
+// Speech engine: alternatives are scored against the expected text, no red flash, diagnostics panel.
+import { chromium } from "playwright-core";
+const URL = process.env.URL || "http://127.0.0.1:4180/";
+const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox"] });
+const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();
+await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", "0"); } catch {} }); // audits start in the reader, not on Home
+const showDock = async () => { if (await p.$(".dock.auxhide")) { await p.mouse.click(195, 12); await p.waitForTimeout(450); } };
+const errs = []; p.on("pageerror", (e) => errs.push(e.message));
+await p.addInitScript(() => { window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { window.__rec = this; } abort() {} stop() {} }; window.__said = ""; });
+await p.goto(URL); await p.evaluate(() => { localStorage.setItem("qt.v2", JSON.stringify({ onboarded: true, prefs: { strict: "easy", repeat: 3 } })); localStorage.setItem("page", "1"); localStorage.setItem("lang", "en"); });
+await p.reload({ waitUntil: "networkidle" });
+const say = async (w) => { await p.evaluate((w) => { window.__said += " " + w; window.__rec.onresult({ results: [[{ transcript: window.__said }]] }); }, w); await p.waitForTimeout(1100); };
+const fail = (m) => { console.log("FAIL", m, errs); process.exitCode = 1; };
+const tapAyah = async (a) => { const bx = await p.evaluate((a) => { const all = [...document.querySelectorAll(`.mtext .w.ayah[data-s="1"][data-a="${a}"]`)].filter((e) => { const r = e.getBoundingClientRect(); return r.x + r.width / 2 > 80 && r.x + r.width / 2 < 300; }); const e = all[0]; const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, a); await p.mouse.click(bx.x, bx.y); await p.waitForTimeout(500); };
+const emit = async (alts, fin) => { await p.evaluate(([alts, fin]) => { const r = alts.map((a) => ({ transcript: a[0], confidence: a[1] })); r.isFinal = fin; r.length = alts.length; window.__rec.onresult({ results: [r] }); }, [alts, fin]); await p.waitForTimeout(700); };
+await tapAyah(2);
+await p.click('.asheet .arow:has-text("Recite this ayah")'); await p.waitForTimeout(800);
+let sawBad = false; const watch = setInterval(async () => { try { if (await p.$(".mtext .w.bad")) sawBad = true; } catch {} }, 60);
+await emit([["الحمد لغه رب العالمين", 0.55], ["الحمد لله رب العالمين", 0.4], ["الحمد لله رب", 0.2]], false);
+await emit([["الحمد لغه رب العالمين", 0.55], ["الحمد لله رب العالمين", 0.4]], true);
+await p.waitForTimeout(800); clearInterval(watch);
+const closed = await p.evaluate(() => !!document.querySelector(".ayah.closed") || /100%/.test(document.querySelector(".rstrip")?.textContent || ""));
+if (sawBad) fail("a word flashed red although the expected alternative matched");
+else if (!closed) fail("expected-text alternative was not chosen"); else console.log("OK alternative chosen by expected text, no red");
+const dg = await p.evaluate(() => 0);
+await p.reload({ waitUntil: "networkidle" });
+await showDock(); await p.click("#home-dock ~ .dbtn >> nth=0"); await p.waitForTimeout(300);
+await p.click('[role=tab]:has-text("Settings")'); await p.waitForTimeout(300);
+await p.click('.scard-h:has-text("Speech diagnostics")'); await p.waitForTimeout(600);
+const txt = await p.evaluate(() => document.querySelector("#diag-panel")?.textContent || "");
+if (!/Web Speech API/.test(txt) || !/ar-SA/.test(txt) || !(await p.$("#diag-test"))) fail("diagnostics panel incomplete: " + txt); else console.log("OK diagnostics panel", txt.slice(0, 80));
+if (errs.length) fail("errors"); else console.log("errors []");
+await b.close();

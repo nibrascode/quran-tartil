@@ -47,3 +47,15 @@ Open the mic anywhere and start reciting: isti'adha and basmala are ignored, the
 
 ## Home screen
 The app opens on a Home screen (`src/Home.tsx`): greeting and logo, a "Continue reading" card with khatm progress, the ayah of the day (deterministic per local date, Arabic only), daily-goal and khatm rings with the streak, and quick actions (start tartil, practice due count, surah/page/juz, bookmarks, mistakes, search, settings). The home button in the reader's top bar and dock returns to it. E2E audits skip it with `sessionStorage["qt.home"]="0"`; `scripts/e2e/home.mjs` covers Home itself.
+
+## Speech recognition quality
+What the app does (see `src/speech.ts`, `src/asr.ts`):
+- Web Speech: `continuous`, `interimResults`, `maxAlternatives = 5`. Every result's alternatives are scored against the words expected next (current + following ayahs, imla'i spelling aware); the engine's favourite is replaced only by an alternative that matches strictly more expected words, never on confidence alone.
+- Gapless auto-restart: when the engine ends (silence), it is restarted immediately; the session resumes from the next expected word and skips repeated overlap words (`ReciteSession.newRecogniser`). It gives up only after 6 instant failures in a row.
+- A noise-suppressed, echo-cancelled mic stream (`getUserMedia`) is held next to the recogniser. Note: Chrome's Web Speech API captures audio itself, so this mainly warms up permission/audio path; it is not guaranteed to change what the recogniser hears.
+- Android (Capacitor plugin): `maxResults = 5` alternatives, partial results, no popup, same expected-text scoring.
+- Settings → "Speech diagnostics": engine, locale, average/last confidence, results, auto-restarts, alternatives swapped, last heard text, and a live microphone test.
+
+Honest limits: locales (ar-SA/EG/AE/MA) cannot be compared without real devices, so ar-SA stays the default and the user can switch. Web Speech sends audio to the browser vendor's server (online only); Quranic Arabic is outside what these engines are trained on, and tajweed cannot be judged.
+
+Free stronger fallback: WASM Whisper (e.g. transformers.js / whisper.cpp) was evaluated but NOT integrated. Costs: tiny/base models (40-150 MB) must be downloaded once, and are noticeably worse than Google's Arabic on Quranic text; `small` (~250 MB) is better but far slower than real time on mid-range phones (seconds per utterance), so word-by-word live colouring would lag. It would also add large assets to an offline PWA and the APK. Recommendation: keep the platform recogniser for live use; consider Whisper-small only as an optional, user-downloaded, per-ayah (non-live) "check after reciting" mode.

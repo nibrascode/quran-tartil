@@ -403,3 +403,6 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 @media (min-width:700px) { .hgrid { grid-template-columns:repeat(4, 1fr); } .hq-main { grid-column:1 / -1; } }
 @media (prefers-reduced-motion: reduce) { .home > .home-in > *, .hbar i, .hring .val, .hq-main .hq-i { animation:none !important; } .hcont, .hayah, .hcard, .hq { transition:none !important; } }
 .app.homing > .reader, .app.homing > .bar, .app.homing > .dock, .app.homing > .rstrip, .app.homing > .asheet { visibility:hidden; }
+.diag { display:flex; flex-direction:column; gap:6px; }
+.diag .drow { display:flex; justify-content:space-between; gap:12px; font-size:13.5px; padding:6px 0; border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.diag .drow span { color:var(--muted); } .diag .drow b { text-align:end; overflow-wrap:anywhere; max-width:60%; }

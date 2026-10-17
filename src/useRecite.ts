@@ -130,6 +130,7 @@ export function useRecite(page: number, setPage: (p: number) => void, prefs: Pre
     modeRef.current = "on";
     lis.current = createListener({
       lang: prefs.recLang,
+      expected: () => { const x = sess.current; if (!x) return []; return x.ayahs.slice(Math.max(0, x.cursor), x.cursor + 3).flatMap((a) => a.tokens); },
       onWords: feed,
       onNewSession: () => { sess.current?.newRecogniser(); heard.current = []; stabRef.current.reset(); },
       onError: (m) => { setErr(m); setMode("off"); },

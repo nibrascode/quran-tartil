@@ -45,3 +45,6 @@ jobs:
       - name: Home screen (launch, content, navigation, 5 languages x 3 themes, RTL)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/home.mjs
+      - name: Speech engine (alternatives scored against expected text, diagnostics panel)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/asr.mjs

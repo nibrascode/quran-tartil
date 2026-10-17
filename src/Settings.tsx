@@ -7,6 +7,7 @@ import { canNotify } from "./notify";
 import { Ic } from "./Icons";
 import { haptic } from "./haptic";
 import { exportBackup, mergeBackup, parseBackup } from "./backup";
+import { DiagPanel } from "./Diag";
 import { Capacitor } from "@capacitor/core";
 
 type TT = (typeof T)["en"];
@@ -182,6 +183,10 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
         <Seg label={t.strict} value={p.strict} options={[{ v: "easy", l: t.lenient }, { v: "medium", l: t.normal }, { v: "hard", l: t.strictN }]} onPick={(v) => pref("strict", v)} />
         <p className="sdesc" key={p.strict}>{strictDesc}</p>
         <small className="desc">{t.tartilNote}</small>
+      </Card>
+
+      <Card id="diag" icon="info" tone="b" title={t.hDiagT} open={open === "diag"} toggle={toggle}>
+        {open === "diag" && <DiagPanel lang={lang} locale={p.recLang} />}
       </Card>
 
       <Group>{t.setData}</Group>
