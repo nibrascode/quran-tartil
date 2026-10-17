@@ -1,3 +1,4 @@
+import { Ic } from "./Icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { T, type Lang } from "./i18n";
@@ -92,21 +93,21 @@ export function Tartil({ lang, page, focus, prefs }: { lang: Lang; page: number;
     <div className="tt">
       <p style={{ fontSize: 13, color: "var(--muted)" }}>{t.tartilNote}</p>
       <div className="seg" style={{ alignItems: "center" }}>
-        <button className="ib" disabled={sel <= 0} onClick={() => { stopAll(); setSel(sel - 1); setHeard([]); }}>‹</button>
+        <button className="ib" disabled={sel <= 0} aria-label="‹" onClick={() => { stopAll(); setSel(sel - 1); setHeard([]); }}><span className="mirror"><Ic n="prev" size={18} /></span></button>
         <span>{t.surah} {ay.s}:{ay.a}</span>
-        <button className="ib" disabled={sel >= list.length - 1} onClick={() => { stopAll(); setSel(sel + 1); setHeard([]); }}>›</button>
+        <button className="ib" disabled={sel >= list.length - 1} aria-label="›" onClick={() => { stopAll(); setSel(sel + 1); setHeard([]); }}><span className="mirror flip"><Ic n="prev" size={18} /></span></button>
       </div>
       <div dir="rtl" lang="ar" style={{ fontFamily: "'Amiri Quran', serif", fontSize: 26, lineHeight: 2.2, textAlign: "center" }}>
         {shown.map((w, i) => <span key={i} className={cls(result.states[i], i)}>{w} </span>)}
       </div>
       {supported ? (
-        <button className={"ib " + (on ? "" : "primary")} style={{ width: "100%", marginTop: 12 }} onClick={() => (on ? stopAll() : start())}>{on ? "■ " + t.stop + " · " + t.listening : "🎙 " + t.start}</button>
+        <button className={"ib " + (on ? "" : "primary")} style={{ width: "100%", marginTop: 12 }} onClick={() => (on ? stopAll() : start())}><span className="bi"><Ic n={on ? "stop" : "mic"} size={18} fill={on} />{on ? t.stop + " · " + t.listening : t.start}</span></button>
       ) : <p>{t.tartilUnsupported}</p>}
       {err && <p style={{ color: "#e5484d", fontSize: 13 }} role="alert">{err}</p>}
       {heard.length > 0 && <p style={{ fontSize: 15 }}><b>{t.score}: {result.score}%</b></p>}
       {heard.length > 0 && (
         <p style={{ fontSize: 14 }}>
-          {result.done ? "✓ " + t.correct : bad > 0 ? "⚠ " + t.mistakeWarn + ": " + shown.filter((_, i) => result.states[i] === "bad" || result.states[i] === "missing").join(" · ") : ""}
+          {result.done ? t.correct : bad > 0 ? t.mistakeWarn + ": " + shown.filter((_, i) => result.states[i] === "bad" || result.states[i] === "missing").join(" · ") : ""}
         </p>
       )}
       {rows.length > 0 && (
@@ -120,7 +121,7 @@ export function Tartil({ lang, page, focus, prefs }: { lang: Lang; page: number;
               return (
                 <div key={k} className="li" style={{ cursor: "default" }}>
                   <span className="n" style={{ width: "auto", padding: "0 8px", borderRadius: 12 }}>{k}</span>
-                  <span className="nm" dir="rtl" lang="ar" style={{ fontFamily: "'Amiri Quran', serif", fontSize: 16 }}>{r.wrong.join(" · ") || "✓"}</span>
+                  <span className="nm" dir="rtl" lang="ar" style={{ fontFamily: "'Amiri Quran', serif", fontSize: 16 }}>{r.wrong.join(" · ") || "—"}</span>
                   <button className="score" aria-label={t.retry + " " + k} style={{ background: r.score >= 90 ? "#2faa6a" : r.score >= 60 ? "#d9822b" : "#e5484d" }}
                     onClick={() => { if (pg === page) { const i = list.findIndex((x) => x.s === s && x.a === a); if (i >= 0) { stopAll(); setSel(i); setHeard([]); setTimeout(start, 50); } } }}>{r.score}%</button>
                 </div>

@@ -86,3 +86,20 @@ export function plan(segs: Seg[], W: number, H: number): Plan {
   });
   return { f, rows, lines: rows.length };
 }
+
+/** fixed hand-set structure (pages 1-2 of the Madinah mushaf: 8 rows spread over the whole page, line breaks as printed) */
+export function planFixed(segs: Seg[], textSeg: number, ranges: [number, number][], W: number, H: number): Plan {
+  const w = segs[textSeg].w;
+  const rowsN = segs.length - 1 + ranges.length;
+  const pitch = H / rowsN;
+  let maxEm = 0;
+  ranges.forEach(([a, b]) => { maxEm = Math.max(maxEm, span(w, a, b)); });
+  const f = Math.min(pitch / 1.7, W / (maxEm + 0.1));
+  const cap = W / f;
+  const rows: Plan["rows"] = [];
+  segs.forEach((sg, si) => {
+    if (sg.kind !== "text") { rows.push({ type: sg.kind, seg: si }); return; }
+    ranges.forEach(([a, b]) => rows.push({ type: "line", seg: si, from: a, to: b, centered: span(w, a, b) < cap * 0.8 }));
+  });
+  return { f, rows, lines: rows.length };
+}

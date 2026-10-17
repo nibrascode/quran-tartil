@@ -153,3 +153,34 @@ test("stop with nothing heard for the current ayah does not score it as zero", (
   assert.equal(s.score, 100);
   assert.ok(!s.res.get("1:3")?.closed);
 });
+
+test("mistakes list records the wrong word once per word with a count", () => {
+  const s = new ReciteSession(A, "medium");
+  const h = "الحمد لله ملك العالمين الرحمن".split(" ");
+  s.feed(h);
+  assert.equal(s.events.length, 1);
+  assert.equal(s.events[0].key, "1:2");
+  assert.equal(s.events[0].n, 1);
+  assert.ok(s.events[0].word.includes("رَبِّ"));
+  s.feed([...h, "ملك", "العالمين", "الرحمن"]);
+  assert.equal(s.events.length, 1); // same word, not listed twice
+});
+test("seek goes back to an ayah and drops later progress", () => {
+  const s = new ReciteSession(A, "medium");
+  s.feed("الحمد لله رب العالمين الرحمن".split(" "));
+  assert.equal(s.cursor, 1);
+  s.seek(0, 5);
+  assert.equal(s.cursor, 0);
+  assert.equal(s.res.size, 0);
+  s.feed("الحمد لله رب العالمين الرحمن الرحيم".split(" ").slice(0, 5).concat(["الحمد", "لله", "رب", "العالمين"]));
+  assert.equal(s.cursor, 1);
+});
+test("a burst of many words (silence, then a flood) is matched ayah by ayah", () => {
+  const s = new ReciteSession(A, "medium");
+  s.feed(W("الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين"));
+  assert.ok(s.finished);
+  const t = new ReciteSession(A, "medium");
+  t.feed(W("الحمد لله رب العالمين الرحمن الكريم مالك يوم"));
+  assert.equal(t.cursor, 1);
+  assert.ok(t.held);
+});

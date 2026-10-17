@@ -19,8 +19,10 @@ export type Prefs = {
   keepAwake: boolean;
   recLang: "ar-SA" | "ar-EG" | "ar-AE" | "ar-MA";
   strict: "easy" | "medium" | "hard";
+  haptics: boolean;
+  hide: boolean; // hide-ayahs mode: text hidden, only the ayah markers stay; words appear as they are recited
 };
-export const defaultPrefs = (): Prefs => ({ fontScale: 1, flip: "flip", keepAwake: false, recLang: "ar-SA", strict: "medium" });
+export const defaultPrefs = (): Prefs => ({ fontScale: 1, flip: "flip", keepAwake: false, recLang: "ar-SA", strict: "medium", hide: false, haptics: true });
 export const KEY = "qt.v2";
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export const defaults = (): Settings => ({ bookmarks: [], visited: [], khatms: 0, days: {}, dayPages: [], today: dayKey(), goal: 2, reminder: { on: false, h: 20, m: 0 }, onboarded: false, prefs: defaultPrefs() });

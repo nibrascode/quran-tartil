@@ -1,3 +1,4 @@
+import { Ic } from "./Icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LANGS, T, type Lang } from "./i18n";
 import { LICENSE_BLOCK, PAGES, ayahs, indexOf, pageOfAyah, pageOfJuz, suras, toArabicDigits, firstSuraOfPage } from "./quran";
@@ -54,7 +55,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
   return (
     <div className="scrim" onClick={onClose}>
       <div className="sheet" ref={root} role="dialog" aria-modal="true" aria-label={t.app} onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-head"><h2>{t.app}</h2><button className="ib" onClick={onClose} aria-label={t.close}>✕</button></div>
+        <div className="sheet-head"><h2>{t.app}</h2><button className="ib" onClick={onClose} aria-label={t.close}><Ic n="close" size={18} /></button></div>
         {sub ? (
           <div className="tabs"><button className="tab" onClick={() => setTab("settings")}>← {t.back}</button></div>
         ) : (
@@ -119,7 +120,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
                     <span className="nm"><span className="ar" dir="rtl">{suras[b.s - 1].name}</span><small>{t.page} {b.page}</small>
                       <small dir="rtl" lang="ar" style={{ fontFamily: "'Amiri Quran', serif", fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ayahs[indexOf(b.s, b.a)].t.split(" ").slice(b.a === 1 && b.s !== 1 && b.s !== 9 ? 4 : 0, 9).join(" ")}</small></span>
                   </button>
-                  <button className="ib" aria-label={t.bookmarkRemove} onClick={() => update((s) => toggleBookmark(s, b))}>✕</button>
+                  <button className="ib" aria-label={t.bookmarkRemove} onClick={() => update((s) => toggleBookmark(s, b))}><Ic n="close" size={16} /></button>
                 </div>
               ))}
             </div>

@@ -17,6 +17,10 @@ export class ReciteSession {
   res = new Map<string, AyahRes>();
   private idx: number[][];
   private norms: string[][];
+  /** mistakes (one entry per wrong word, `n` = how many times it was held) */
+  events: { key: string; word: string; n: number }[] = [];
+  /** first ayah of the session (reciting from a chosen ayah) */
+  start = 0;
   private base = 0; // expected word (within the current ayah) where the current attempt starts
   private okBefore: WordState[] = []; // confirmed states of words before `base`
   private heldIdx: number | null = null;
@@ -30,6 +34,12 @@ export class ReciteSession {
   }
   get finished() { return this.cursor >= this.ayahs.length; }
   get held() { return this.heldIdx !== null; }
+  /** jump back/forward to ayah k (re-recite): later results are dropped, only words heard from now on count */
+  seek(k: number, heardLen: number) {
+    k = Math.max(0, Math.min(this.ayahs.length - 1, k));
+    for (let j = k; j < this.ayahs.length; j++) this.res.delete(this.ayahs[j].key);
+    this.cursor = k; this.consumed = heardLen; this.resetAyah();
+  }
   /** a new recogniser session starts counting words from zero again */
   newRecogniser() { this.consumed = 0; this.lastErr = -1; }
 
@@ -57,7 +67,7 @@ export class ReciteSession {
     while (!this.finished) {
       const k = this.cursor, norms = this.norms[k], n = norms.length;
       if (n === 0) { this.cursor++; this.resetAyah(); closed++; continue; }
-      const rest = heard.slice(this.consumed);
+      const rest = heard.slice(this.consumed, this.consumed + n + 3); // a burst of words must not be matched against later words of the ayah
       this.lastRest = rest;
       const o = LEVELS[this.level];
       const run = (from: number, fin: boolean) => align(norms.slice(from), rest, { ...o, final: fin });
@@ -114,6 +124,9 @@ export class ReciteSession {
           this.heldIdx = from + e;
           this.okBefore = [...this.okBefore, ...st.slice(0, e)];
           this.mistakes++;
+          const word = this.ayahs[k].tokens[this.idx[k][from + e]] ?? "";
+          const ev = this.events.find((x) => x.key === this.ayahs[k].key && x.word === word);
+          if (ev) ev.n++; else this.events.push({ key: this.ayahs[k].key, word, n: 1 });
           this.consumed = heard.length;
           const cur = this.res.get(this.ayahs[k].key)!;
           cur.held = true; cur.mistakes = this.mistakes; cur.score = this.ayahScore(n);

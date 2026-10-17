@@ -4,26 +4,12 @@ import { LANGS, T, type Lang } from "./i18n";
 import type { Theme } from "./App";
 import type { Prefs, Settings as St } from "./store";
 import { canNotify } from "./notify";
+import { Ic } from "./Icons";
+import { haptic } from "./haptic";
 
 type TT = (typeof T)["en"];
 
-const PATHS: Record<string, string> = {
-  lang: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c2.5 2.4 3.8 5.4 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.4-3.8-9S9.5 5.4 12 3ZM3.5 9h17M3.5 15h17",
-  theme: "M12 3a9 9 0 1 0 0 18V3Zm0 0a9 9 0 0 1 0 18",
-  turn: "M4 5.5C6.5 4.6 9.5 4.8 12 6.5c2.5-1.7 5.5-1.9 8-1v13c-2.5-.9-5.5-.7-8 1-2.5-1.7-5.5-1.9-8-1v-13ZM12 6.5v13",
-  awake: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6",
-  bell: "M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15L6 16.5ZM10 20.5a2 2 0 0 0 4 0",
-  mic: "M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3ZM5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3",
-  trash: "M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.8 12.5h9.4L17.5 7M10 11v5M14 11v5",
-  lock: "M6.5 10.5h11v9h-11v-9ZM8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14v2.5",
-  info: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 11v5.5M12 7.8v.2",
-  spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3ZM18.5 16l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8Z",
-  check: "M5 12.5l4.5 4.5L19 7.5",
-  close: "M6 6l12 12M18 6L6 18",
-};
-function Ico({ n, size = 20 }: { n: keyof typeof PATHS | string; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={PATHS[n]} /></svg>;
-}
+const Ico = ({ n, size = 20 }: { n: string; size?: number }) => <Ic n={n} size={size} />;
 
 function Card({ id, icon, tone, title, value, open, toggle, children }: { id: string; icon: string; tone?: string; title: string; value?: string; open: boolean; toggle: (id: string) => void; children?: ReactNode }) {
   return (
@@ -31,7 +17,7 @@ function Card({ id, icon, tone, title, value, open, toggle, children }: { id: st
       <button className="scard-h" aria-expanded={open} aria-controls={"c-" + id} onClick={() => toggle(id)}>
         <span className={"ico t-" + (tone || "g")}><Ico n={icon} /></span>
         <span className="tx"><b>{title}</b>{value && <small>{value}</small>}</span>
-        <span className="chev" aria-hidden="true">▾</span>
+        <span className="chev" aria-hidden="true"><Ic n="down" size={18} /></span>
       </button>
       <div className="scard-w" aria-hidden={!open}>
         <div className="scard-i"><div className="scard-b" id={"c-" + id}>{children}</div></div>
@@ -43,7 +29,7 @@ function Card({ id, icon, tone, title, value, open, toggle, children }: { id: st
 function Seg<V extends string | number>({ value, options, onPick, label }: { value: V; options: { v: V; l: string }[]; onPick: (v: V) => void; label: string }) {
   const i = Math.max(0, options.findIndex((o) => o.v === value));
   return (
-    <div className="seg" role="radiogroup" aria-label={label} style={{ ["--n" as string]: options.length, ["--i" as string]: i }}>
+    <div className="segc" role="radiogroup" aria-label={label} style={{ ["--n" as string]: options.length, ["--i" as string]: i }}>
       <span className="thumb" aria-hidden="true" />
       {options.map((o) => (
         <button key={String(o.v)} role="radio" aria-checked={value === o.v} className="so" onClick={() => onPick(o.v)}>{o.l}</button>
@@ -134,7 +120,7 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
         <span className="ico t-b"><Ico n="lang" /></span>
         <span className="tx"><b>{t.language}</b><small>{t.langPick}</small></span>
         <span className="pill">{langName}</span>
-        <span className="chev" aria-hidden="true">›</span>
+        <span className="chev" aria-hidden="true"><Ic n="right" size={18} /></span>
       </button>
       {langOpen && <LangSheet lang={lang} title={t.language} onClose={() => setLangOpen(false)} onPick={(l) => { setLang(l); setLangOpen(false); }} />}
       <Card id="theme" icon="theme" tone="p" title={t.theme} value={themeName} open={open === "theme"} toggle={toggle}>
@@ -156,8 +142,12 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
       <Card id="turn" icon="turn" tone="o" title={t.pageTurn} value={p.flip === "flip" ? t.flipOn : t.flipOff} open={open === "turn"} toggle={toggle}>
         <Seg label={t.pageTurn} value={p.flip} options={[{ v: "flip", l: t.flipOn }, { v: "none", l: t.flipOff }]} onPick={(v) => pref("flip", v)} />
       </Card>
-      <Card id="awake" icon="awake" tone="y" title={t.keepAwake} value={p.keepAwake ? "✓" : "—"} open={open === "awake"} toggle={toggle}>
+      <Card id="awake" icon="awake" tone="y" title={t.keepAwake} value={p.keepAwake ? "●" : "—"} open={open === "awake"} toggle={toggle}>
         <Switch on={p.keepAwake} onChange={(v) => pref("keepAwake", v)} label={t.keepAwake} desc={t.keepAwakeDesc} />
+      </Card>
+
+      <Card id="hap" icon="vibrate" tone="p" title={t.hapticsT} value={p.haptics ? "●" : "—"} open={open === "hap"} toggle={toggle}>
+        <Switch on={p.haptics} onChange={(v) => { pref("haptics", v); if (v) haptic("ok"); }} label={t.hapticsT} desc={t.hapticsD} />
       </Card>
 
       <Group>{t.setApp}</Group>
@@ -195,9 +185,9 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
       </Card>
 
       <Group>{t.setLegal}</Group>
-      <button className="scard-h link" onClick={() => openView("privacy")}><span className="ico t-b"><Ico n="lock" /></span><span className="tx"><b>{t.privacy}</b><small>{t.privacySub}</small></span><span className="chev" aria-hidden="true">›</span></button>
-      <button className="scard-h link" onClick={() => openView("about")}><span className="ico t-g"><Ico n="info" /></span><span className="tx"><b>{t.about}</b><small>{t.aboutSub}</small></span><span className="chev" aria-hidden="true">›</span></button>
-      <button className="scard-h link" onClick={onIntro}><span className="ico t-y"><Ico n="spark" /></span><span className="tx"><b>{t.intro}</b></span><span className="chev" aria-hidden="true">›</span></button>
+      <button className="scard-h link" onClick={() => openView("privacy")}><span className="ico t-b"><Ico n="lock" /></span><span className="tx"><b>{t.privacy}</b><small>{t.privacySub}</small></span><span className="chev" aria-hidden="true"><Ic n="right" size={18} /></span></button>
+      <button className="scard-h link" onClick={() => openView("about")}><span className="ico t-g"><Ico n="info" /></span><span className="tx"><b>{t.about}</b><small>{t.aboutSub}</small></span><span className="chev" aria-hidden="true"><Ic n="right" size={18} /></span></button>
+      <button className="scard-h link" onClick={onIntro}><span className="ico t-y"><Ico n="spark" /></span><span className="tx"><b>{t.intro}</b></span><span className="chev" aria-hidden="true"><Ic n="right" size={18} /></span></button>
     </div>
   );
 }

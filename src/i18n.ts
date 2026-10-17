@@ -126,8 +126,9 @@ const xru: X = {
 };
 const XT: Record<Lang, X> = { az: xaz, en: xen, tr: xtr, ar: xar, ru: xru };
 import { S } from "./i18nSettings";
-type SS = (typeof S)["en"];
-export const T: Record<Lang, Dict & X & SS> = { az: { ...az, ...xaz, ...S.az }, en: { ...en, ...xen, ...S.en }, tr: { ...tr, ...xtr, ...S.tr }, ar: { ...ar, ...xar, ...S.ar }, ru: { ...ru, ...xru, ...S.ru } };
+import { D } from "./i18nDock";
+type SS = (typeof S)["en"] & (typeof D)["en"];
+export const T: Record<Lang, Dict & X & SS> = { az: { ...az, ...xaz, ...S.az, ...D.az }, en: { ...en, ...xen, ...S.en, ...D.en }, tr: { ...tr, ...xtr, ...S.tr, ...D.tr }, ar: { ...ar, ...xar, ...S.ar, ...D.ar }, ru: { ...ru, ...xru, ...S.ru, ...D.ru } };
 void XT;
 export type Key = keyof Dict | keyof X;
 export function detectLang(): Lang {

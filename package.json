@@ -16,6 +16,7 @@
     "@capacitor-community/keep-awake": "^7.1.0",
     "@capacitor-community/speech-recognition": "^7.0.1",
     "@capacitor/clipboard": "^7.0.4",
+    "@capacitor/haptics": "^7.0.5",
     "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/share": "^7.0.4",
     "@fontsource/amiri-quran": "^5.0.0",
