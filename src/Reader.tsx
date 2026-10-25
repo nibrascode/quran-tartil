@@ -1,3 +1,4 @@
+import { playPageTurn } from "./pageSound";
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { Page } from "./Page";
 import { PAGES } from "./quran";
@@ -31,19 +32,25 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
   const flipRef = useRef<Flip | null>(null);
   flipRef.current = flip;
 
+  const flap = useRef<HTMLDivElement>(null);
+  // Paper curl: the lifted sheet folds along a vertical line. Spine on the right, so the left edge lifts and travels right.
+  // q = how far the fold has travelled (0 = flat, 1 = turned). The part left of the fold is the turned flap (paper back),
+  // the under page shows through on the left with a soft shadow at the fold. Only transform/clip-path change -> compositor-friendly.
   const apply = (p: number) => {
     prog.current = p;
-    const f = flipRef.current, o = over.current, sh = shade.current;
+    const f = flipRef.current, o = over.current, sh = shade.current, fl = flap.current;
     if (!f || !o) return;
-    const a = (f.dir === "next" ? p : 1 - p) * MAX_ANGLE;
-    o.style.transform = `rotateY(${a}deg)`;
-    o.style.boxShadow = `${-14 * (1 - Math.abs(a / MAX_ANGLE - 0.5) * 2)}px 0 28px rgba(0,0,0,${0.25 * Math.sin((a / MAX_ANGLE) * Math.PI)})`;
-    if (sh) sh.style.opacity = String(f.dir === "next" ? 0.55 * (1 - p) : 0.55 * p);
+    const W = o.clientWidth || 1;
+    const q = f.dir === "next" ? p : 1 - p;
+    const xf = q * W, fw = Math.min(xf, W - xf);
+    o.style.clipPath = `inset(0 0 0 ${xf}px)`;
+    if (fl) { fl.style.transform = `translateX(${xf}px)`; fl.style.width = fw + "px"; fl.style.opacity = q > 0.002 && q < 0.998 ? "1" : "0"; }
+    if (sh) { sh.style.transform = `translateX(${xf - W}px)`; sh.style.opacity = String(0.9 * Math.sin(Math.PI * Math.min(1, q * 1.4 + 0.05))); }
   };
   useLayoutEffect(() => { if (flip) apply(prog.current); }, [flip]);
 
   const finish = useCallback((commit: boolean, f: Flip) => {
-    if (commit) setPage(f.to);
+    if (commit) { setPage(f.to); playPageTurn(); }
     setFlip(null);
     prog.current = 0;
   }, [setPage]);
@@ -128,9 +135,16 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
       {spread ? (
         <div className="layer"><div className="spread" dir="rtl"><Page page={spreadBase(page)} scale={scale} />{spreadBase(page) + 1 <= PAGES && <Page page={spreadBase(page) + 1} scale={scale} />}</div></div>
       ) : (
-        <div className="layer"><Page page={under} scale={scale} /><div className="shade" ref={shade} /></div>
+        <>
+          {/* the current page and both neighbours stay mounted and laid out (keyed by page number), so a turn only changes
+              which already-measured layer is visible: no reflow or half-fitted text during the turn */}
+          {[page - 1, page, page + 1].concat(flip ? [flip.to - 1, flip.to + 1] : []).filter((n, i, a) => n >= 1 && n <= PAGES && a.indexOf(n) === i).sort((x, y) => (x === overPage ? 1 : 0) - (y === overPage ? 1 : 0)).map((n) => {
+            const role = n === overPage ? "over" : n === under ? "under" : "pre";
+            return <div key={n} className={"layer " + role} ref={role === "over" ? over : undefined} aria-hidden={role === "pre" || undefined}><Page page={n} scale={scale} />{role === "under" && <div className="shade" ref={shade} />}</div>;
+          })}
+          {flip && <div className="flap" ref={flap} aria-hidden="true" />}
+        </>
       )}
-      {flip && !spread && <div className="layer over" ref={over}><Page page={overPage} scale={scale} /></div>}
       <div className="sr-only" aria-live="polite">{page}</div>
     </div>
   );

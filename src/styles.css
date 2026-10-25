@@ -602,3 +602,17 @@ html:root .home2.home2.home2 { background-color:var(--h-bg); }
 :root[data-theme="dark"] .tj-m { color:#d2a77e; } :root[data-theme="dark"] .tj-p { color:#d8b483; } :root[data-theme="dark"] .tj-o { color:#d39689; } :root[data-theme="dark"] .tj-n { color:#c98c86; }
 :root[data-theme="dark"] .tj-q { color:#93b4cf; } :root[data-theme="dark"] .tj-k, :root[data-theme="dark"] .tj-k2 { color:#a3c09d; } :root[data-theme="dark"] .tj-g, :root[data-theme="dark"] .tj-s, :root[data-theme="dark"] .tj-u { color:#88c0b2; } :root[data-theme="dark"] .tj-g2, :root[data-theme="dark"] .tj-j, :root[data-theme="dark"] .tj-r { color:#b4b4c6; } :root[data-theme="dark"] .tj-i { color:#a2b2d8; }
 :root[data-theme="dark"] .tj-h, :root[data-theme="dark"] .tj-x, :root[data-theme="dark"] .tj-l { color:#8f8a7e; }
+/* Landscape reading mode: text only, full screen */
+html.land:not(.land-ui) .page-head, html.land:not(.land-ui) .page-foot, html.land:not(.land-ui) .dock { display:none !important; }
+html.land .frame::before, html.land .frame::after, html.land .side-orn, html.land .page > .orn { display:none !important; }
+html.land .frame { border:none !important; box-shadow:none !important; padding-left:max(10px, env(safe-area-inset-left)) !important; padding-right:max(10px, env(safe-area-inset-right)) !important; }
+html.land.land-ui .page-head { position:fixed; top:0; left:0; right:0; z-index:30; }
+html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-index:30; }
+/* page turn: paper curl */
+.layer.pre { visibility:hidden; pointer-events:none; }
+.layer.over { transform:none !important; box-shadow:none; will-change:clip-path; }
+.reader .shade { inset:0 auto 0 0; width:100%; opacity:0; background:linear-gradient(90deg, rgba(0,0,0,0) 78%, rgba(0,0,0,.10) 93%, rgba(0,0,0,.28) 100%); will-change:transform,opacity; }
+.flap { position:absolute; top:0; bottom:0; left:0; width:0; opacity:0; pointer-events:none; z-index:5; will-change:transform,width;
+  background:linear-gradient(90deg, rgba(0,0,0,.16) 0%, rgba(0,0,0,.04) 6%, rgba(255,255,255,.35) 22%, rgba(0,0,0,0) 55%, rgba(0,0,0,.08) 88%, rgba(0,0,0,.22) 100%), var(--paper, #f6efdc);
+  box-shadow:6px 0 18px rgba(0,0,0,.28); border-radius:0 6px 6px 0 / 0 50% 50% 0; }
+[data-theme="dark"] .flap, .dark .flap { background:linear-gradient(90deg, rgba(0,0,0,.4), rgba(255,255,255,.06) 25%, rgba(0,0,0,0) 55%, rgba(0,0,0,.4)), #1f2a26; }

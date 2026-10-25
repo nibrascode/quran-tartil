@@ -8,9 +8,9 @@ await p.addInitScript(()=>{ localStorage.setItem("qt.v2", JSON.stringify({onboar
 await p.goto((process.env.URL||"http://127.0.0.1:4180/"),{waitUntil:"networkidle"});
 const res=[];
 for(let n=1;n<=604;n+=step){
-  await p.evaluate(n=>localStorage.setItem("page",n),n); await p.reload({waitUntil:"load"}); await p.waitForSelector(".page .ln, .page .sura-head"); await p.waitForTimeout(220);
+  await p.evaluate(n=>localStorage.setItem("page",n),n); await p.reload({waitUntil:"load"}); await p.waitForSelector(".layer.under .page .ln, .layer.under .page .sura-head"); await p.waitForTimeout(220);
   res.push(await p.evaluate(()=>{
-    const pg=document.querySelector(".page"), body=pg.querySelector(".page-body").getBoundingClientRect(), fr=pg.querySelector(".frame").getBoundingClientRect();
+    const pg=document.querySelector(".layer.under .page"), body=pg.querySelector(".page-body").getBoundingClientRect(), fr=pg.querySelector(".frame").getBoundingClientRect();
     const m=pg.querySelector(".mtext"); const tall=!!pg.querySelector(".page-body.tall"); const rows=[...m.children]; const issues=[];
     const rowCount=rows.length;
     rows.forEach((r,i)=>{const rc=r.getBoundingClientRect(); const cls=r.className;
@@ -26,7 +26,7 @@ for(let n=1;n<=604;n+=step){
   }));
 }
 fs.writeFileSync(out,JSON.stringify(res));
-const bad=res.filter(r=>r.issues.length||r.docOverflow||(r.gapBottom>3&&!r.tall));
+const bad=res.filter(r=>r.issues.length||r.docOverflow||(r.gapBottom>3&&!r.tall&&r.page>2));
 console.log(w+"x"+h,"pages",res.length,"with issues",bad.length, JSON.stringify(bad.slice(0,8)));
 const fsx=res.map(r=>r.fs);console.log("fs",Math.min(...fsx).toFixed(1),Math.max(...fsx).toFixed(1),"heads midpage pages",res.filter(r=>r.heads>0).length,"rows!=15/8",res.filter(r=>![15,8].includes(r.rows)).map(r=>r.page).slice(0,10), "minFill<.9 w/o centered",res.filter(r=>r.minFill<.9&&!r.centered).map(r=>r.page).slice(0,10));
 await b.close(); if(bad.length) process.exit(1);

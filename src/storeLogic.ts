@@ -22,6 +22,7 @@ export type Prefs = {
   keepAwake: boolean;
   /** colour tajweed rules (soft palette) on the mushaf pages */
   tajweed?: boolean;
+  pageSound?: boolean;
   recLang: "ar-SA" | "ar-EG" | "ar-AE" | "ar-MA";
   strict: "easy" | "medium" | "hard";
   haptics: boolean;

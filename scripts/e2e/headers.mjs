@@ -16,9 +16,9 @@ await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", 
     for (let s = 1; s <= 114; s++) {
       if (th !== "light" && s % 6 !== 0 && s !== 1 && s !== 114) continue;
       await p.evaluate(([pg, th]) => { localStorage.setItem("page", pg); localStorage.setItem("theme", th); }, [pageOf(s), th]);
-      await p.reload({ waitUntil: "load" }); await p.waitForSelector(".page .ln, .page .sura-head"); await p.waitForTimeout(160);
+      await p.reload({ waitUntil: "load" }); await p.waitForSelector(".layer.under .page .ln, .layer.under .page .sura-head"); await p.waitForTimeout(160);
       const r = await p.evaluate((s) => {
-        const out = []; const pg = document.querySelector(".page"); const fr = pg.querySelector(".frame").getBoundingClientRect(), body = pg.querySelector(".page-body").getBoundingClientRect();
+        const out = []; const pg = document.querySelector(".layer.under .page"); const fr = pg.querySelector(".frame").getBoundingClientRect(), body = pg.querySelector(".page-body").getBoundingClientRect();
         const rows = [...pg.querySelector(".mtext").children]; const tall = !!pg.querySelector(".page-body.tall");
         rows.forEach((row, i) => {
           if (!row.classList.contains("sura-head")) return;

@@ -11,6 +11,7 @@ type Seg = [number, number, string];
 type Row = ["h" | "b", number] | Seg[];
 let DATA: Row[][] | null = null;
 let loading: Promise<Row[][]> | null = null;
+if (typeof document !== "undefined") { document.fonts?.load(`20px "UthmanicHafs"`).catch(() => {}); }
 export function loadMushaf(): Promise<Row[][]> {
   if (DATA) return Promise.resolve(DATA);
   return (loading ||= import("./data/mushaf15.json").then((m) => (DATA = (m.default as unknown) as Row[][])));
@@ -49,6 +50,8 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     const b = box.current, m = meas.current;
     if (!b || !m || !rows) return;
     const run = () => {
+      // never fit with a fallback font: widths would be wrong and the text would visibly reflow once the real font arrives
+      if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return;
       const ws = Array.from(m.children).map((c) => (c as HTMLElement).getBoundingClientRect().width / 100);
       const max = Math.max(...ws.filter((w) => w > 0), 1);
       const W = b.clientWidth - 2, H = b.clientHeight;

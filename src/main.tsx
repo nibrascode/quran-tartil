@@ -1,3 +1,4 @@
+import "./landscape";
 import { createRoot } from "react-dom/client";
 import "@fontsource/amiri-quran/400.css";
 import "./styles.css";
