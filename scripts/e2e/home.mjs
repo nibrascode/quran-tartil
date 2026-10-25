@@ -22,7 +22,7 @@ for (const lang of ["en", "az", "tr", "ar", "ru"]) for (const theme of ["light",
   const r = await p.evaluate(() => { const h = document.querySelector(".home"); const q = (s) => !!document.querySelector(s); const rd = document.querySelector(".reader"); const vis = rd && getComputedStyle(rd).visibility;
     const ids = ["h-continue", "h-ayah", "h-goal", "h-khatm", "h-mic", "h-practice", "h-surah", "h-page", "h-juz", "h-bookmarks", "h-mistakes", "h-search"].filter((i) => !q("#" + i));
     const hs = document.querySelector(".home"); const wide = [...hs.querySelectorAll("*")].filter((e) => { const b = e.getBoundingClientRect(); return b.width && (b.right > innerWidth + 1 || b.left < -1); }).map((e) => e.className).slice(0, 3);
-    return { has: !!h, vis, missing: ids, wide, dir: document.documentElement.dir, due: document.querySelector("#h-practice small").textContent, ay: document.querySelector(".ha-t").textContent.length, sx: hs.scrollWidth - hs.clientWidth }; });
+    return { has: !!h, vis, missing: ids, wide, dir: document.querySelector(".home").dir, due: document.querySelector("#h-practice small").textContent, ay: document.querySelector(".ha-t").textContent.length, sx: hs.scrollWidth - hs.clientWidth }; });
   if (!r.has) fail(`${lang}/${theme}: no home on launch`);
   if (r.vis !== "hidden") fail(`${lang}/${theme}: reader not hidden under home`);
   if (r.missing.length) fail(`${lang}/${theme}: missing ${r.missing}`);

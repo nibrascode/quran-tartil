@@ -41,7 +41,8 @@ export function App() {
   const [mist, setMist] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const shiftRef = useRef(0);
-  const t = T[lang];
+  // the chosen language applies only to Home and Settings; the reader and its menus stay Azerbaijani
+  const t = T.az;
   const spread = useSpread();
   const [pq, setPq] = useState<Queue | null>(null);
   const cleared = useRef<Set<string>>(new Set());
@@ -97,7 +98,7 @@ export function App() {
   const startQueue = (kind: Queue["kind"], keys: string[]) => { if (!keys.length) return; setHome(false); setMenu(null); setSel(null); setBars(false); setPq({ kind, keys, i: 0, started: false }); };
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 1600); };
 
-  useEffect(() => { document.documentElement.lang = lang; document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"; localStorage.setItem("lang", lang); }, [lang]);
+  useEffect(() => { document.documentElement.lang = lang; document.documentElement.dir = "ltr"; localStorage.setItem("lang", lang); }, [lang]);
   useEffect(() => {
     document.documentElement.dataset.theme = theme; localStorage.setItem("theme", theme);
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme]);
@@ -216,7 +217,7 @@ export function App() {
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
         <button className="ib" aria-label={t.settings} onClick={() => setMenu("settings")}><Ic n="sliders" /></button>
       </div>
-      <PageChrome.Provider value={{ lang, juzLabel: t.juz, onBack: goHome, onSettings: () => setMenu("settings"), backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
+      <PageChrome.Provider value={{ lang: "az", juzLabel: t.juz, onBack: goHome, onSettings: () => setMenu("settings"), backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
       {rc.mode !== "off" && (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
@@ -240,7 +241,7 @@ export function App() {
         <div className="asheet" ref={sheetRef} role="region" aria-label={t.selectedAyah + " " + sel.s + ":" + sel.a}>
           <div className="ahead">
             <span className="ref">{sel.s}:{sel.a}</span>
-            <b>{t.ayahTitle.replace("{n}", suraLabel(sel.s, lang === "ar")).replace("{a}", String(sel.a))}</b>
+            <b>{t.ayahTitle.replace("{n}", suraLabel(sel.s, false)).replace("{a}", String(sel.a))}</b>
             <button className="x" aria-label={t.closeA} onClick={() => setSel(null)}><Ic n="close" size={20} /></button>
           </div>
           <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? t.bookmarkRemove : t.bookmarkAdd}</button>
@@ -260,7 +261,7 @@ export function App() {
               const [ms, ma] = m.key.split(":").map(Number);
               return (
                 <button key={m.key + m.word} className="arow mrow" onClick={() => { setMist(false); setPage(pageOfAyah(ms, ma)); setSel({ s: ms, a: ma }); }}>
-                  <span className="ref">{m.key}</span><span className="mw" lang="ar" dir="rtl">{m.word}</span><small>{suraLabel(ms, lang === "ar")}</small>{m.n > 1 && <i className="badge">{t.mistakeTimes.replace("{n}", String(m.n))}</i>}
+                  <span className="ref">{m.key}</span><span className="mw" lang="ar" dir="rtl">{m.word}</span><small>{suraLabel(ms, false)}</small>{m.n > 1 && <i className="badge">{t.mistakeTimes.replace("{n}", String(m.n))}</i>}
                 </button>
               );
             })}
@@ -276,7 +277,7 @@ export function App() {
         onTab={(tb) => setMenu(tb)} />}
       {!st.onboarded && <Onboarding lang={lang} setLang={setLang} onDone={() => update((s) => ({ ...s, onboarded: true }))} />}
       {menu && (
-        <Menu startQueue={startQueue} say={say} tab={menu} setTab={setMenu} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} page={page} st={st} update={update} focusAyah={focusAyah}
+        <Menu startQueue={startQueue} say={say} tab={menu} setTab={setMenu} lang="az" uiLang={lang} setLang={setLang} theme={theme} setTheme={setTheme} page={page} st={st} update={update} focusAyah={focusAyah}
           onGo={(p, a) => { setPage(p); if (a) setSel(a); setMenu(null); setBars(false); setHome(false); }} onClose={() => setMenu(null)} onIntro={() => { setMenu(null); update((s) => ({ ...s, onboarded: false })); }} />
       )}
     </div>

@@ -15,13 +15,15 @@ import type { Queue } from "./App";
 
 export type Tab = "surah" | "juz" | "page" | "search" | "bookmarks" | "progress" | "tartil" | "practice" | "settings" | "about" | "privacy";
 type Props = {
-  tab: Tab; setTab: (t: Tab) => void; lang: Lang; setLang: (l: Lang) => void; theme: Theme; setTheme: (t: Theme) => void; page: number;
+  tab: Tab; setTab: (t: Tab) => void; lang: Lang; uiLang: Lang; setLang: (l: Lang) => void; theme: Theme; setTheme: (t: Theme) => void; page: number;
   st: Settings; update: (f: (s: Settings) => Settings) => void; focusAyah: Sel;
   startQueue: (k: Queue["kind"], keys: string[]) => void; say: (m: string) => void;
   onGo: (p: number, a?: { s: number; a: number }) => void; onClose: () => void; onIntro: () => void;
 };
 
-export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, update, focusAyah, startQueue, say, onGo, onClose, onIntro }: Props) {
+export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, setTheme, page, st, update, focusAyah, startQueue, say, onGo, onClose, onIntro }: Props) {
+  const ui = tab === "settings" || tab === "privacy" || tab === "about";
+  const lang: Lang = ui ? uiLang : readerLang;
   const t = T[lang];
   const [q, setQ] = useState("");
   const [sq, setSq] = useState("");
@@ -30,7 +32,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
   const root = useRef<HTMLDivElement>(null);
   const tabs: Tab[] = ["surah", "juz", "page", "search", "bookmarks", "progress", "tartil", "practice", "settings"];
   const sub = tab === "about" || tab === "privacy";
-  const label = (k: Tab) => ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, practice: t.practiceTab, settings: t.settings, about: t.about, privacy: t.privacy }[k]);
+  const label = (k: Tab) => { const t = T[readerLang]; return ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, practice: t.practiceTab, settings: t.settings, about: t.about, privacy: t.privacy }[k]); };
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase(), n = normalizeAr(q);
     return suras.filter((x) => !s || (n && normalizeAr(x.name).includes(n)) || x.tname.toLowerCase().includes(s) || x.ename.toLowerCase().includes(s) || String(x.i) === s);
@@ -58,7 +60,7 @@ export function Menu({ tab, setTab, lang, setLang, theme, setTheme, page, st, up
 
   return (
     <div className="scrim" onClick={onClose}>
-      <div className="sheet" ref={root} role="dialog" aria-modal="true" aria-label={t.app} onClick={(e) => e.stopPropagation()}>
+      <div className="sheet" dir={ui && lang === "ar" ? "rtl" : "ltr"} ref={root} role="dialog" aria-modal="true" aria-label={t.app} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-head"><h2>{t.app}</h2><button className="ib" onClick={onClose} aria-label={t.close}><Ic n="close" size={18} /></button></div>
         {sub ? (
           <div className="tabs"><button className="tab" onClick={() => setTab("settings")}>← {t.back}</button></div>

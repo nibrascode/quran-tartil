@@ -1,6 +1,6 @@
 export type Lang = "az" | "en" | "tr" | "ar" | "ru";
 export const LANGS: { id: Lang; label: string }[] = [
-  { id: "az", label: "Azərbaycanca" }, { id: "en", label: "English" }, { id: "tr", label: "Türkçe" }, { id: "ar", label: "العربية" }, { id: "ru", label: "Русский" },
+  { id: "az", label: "Azərbaycanca" }, { id: "en", label: "English" }, { id: "ar", label: "العربية" },
 ];
 const en = {
   app: "Quran Tartil", surah: "Surah", juz: "Juz", page: "Page", menu: "Menu", settings: "Settings", about: "About", close: "Close",
@@ -136,7 +136,9 @@ void XT;
 export type Key = keyof Dict | keyof X;
 export function detectLang(): Lang {
   const saved = localStorage.getItem("lang") as Lang | null;
-  if (saved && T[saved]) return saved;
+  // only az / en / ar are offered now: older saved tr / ru fall back to English
+  if (saved === "az" || saved === "en" || saved === "ar") return saved;
+  if (saved && T[saved]) return "en";
   const n = (navigator.language || "en").slice(0, 2).toLowerCase();
-  return (["az", "en", "tr", "ar", "ru"].includes(n) ? n : "en") as Lang;
+  return (["az", "ar"].includes(n) ? n : "en") as Lang;
 }
