@@ -586,3 +586,4 @@ html:root .home2.home2.home2 { background-color:var(--h-bg); }
 .page .page-foot { height:46px; border-radius:22px 22px 0 0; }
 .page .page-foot .page-no { min-width:62px; height:32px; font-size:15px; margin-top:-22px; }
 .mtext.mushaf .sura-head .cart { padding:.42em 2.3em .5em; min-width:62%; box-shadow:0 0 0 1.5px var(--m-gold), 0 0 0 4px var(--m-paper), 0 0 0 5.5px var(--m-gold), 0 4px 10px -3px rgba(0,0,0,.35); }
+.h2ul { width:calc(33.333% - 4px); margin-inline-start:2px; }
