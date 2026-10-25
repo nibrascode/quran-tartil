@@ -270,6 +270,7 @@ export function App() {
       {toast && <div className="toast" role="status">{toast}</div>}
       {home && <Home lang={lang} st={st} page={page}
         onResume={() => { setHome(false); setBars(false); }}
+        onOpen={(p) => { setPage(p); setHome(false); setBars(false); }}
         onMic={() => { setHome(false); setBars(false); rc.begin(); }}
         onAyah={(p, a) => { setPage(p); setSel(a); setHome(false); setBars(false); }}
         onTab={(tb) => setMenu(tb)} />}

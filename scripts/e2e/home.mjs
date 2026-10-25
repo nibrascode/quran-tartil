@@ -11,7 +11,7 @@ const seed = { onboarded: true, goal: 4, today: dk, dayPages: [1, 2, 3], visited
 async function open(w, h, lang, theme, mobile = true) {
   const ctx = await b.newContext({ viewport: { width: w, height: h }, hasTouch: mobile, isMobile: mobile });
   const p = await ctx.newPage(); const errs = []; p.on("pageerror", (e) => errs.push(e.message)); p.on("console", (m) => m.type() === "error" && errs.push(m.text()));
-  await p.addInitScript(() => { window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { window.__started = true; } abort() {} stop() {} }; });
+  await p.addInitScript(() => { try { localStorage.setItem("qt.hmore","1"); } catch {} window.webkitSpeechRecognition = window.SpeechRecognition = class { start() { window.__started = true; } abort() {} stop() {} }; });
   await p.goto(BASE); await p.evaluate(([s, l, t]) => { localStorage.setItem("qt.v2", JSON.stringify(s)); localStorage.setItem("lang", l); localStorage.setItem("theme", t); localStorage.setItem("page", "42"); }, [seed, lang, theme]);
   await p.reload({ waitUntil: "networkidle" }); await p.waitForTimeout(1500);
   return { p, errs, ctx };
