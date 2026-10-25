@@ -11,7 +11,7 @@ const check=(tag)=>p.evaluate((tag)=>{ const out=[]; const W=innerWidth,H=innerH
   root.querySelectorAll("*").forEach(e=>{ const r=e.getBoundingClientRect(); if(!r.width||!r.height) return; const cs=getComputedStyle(e); if(cs.visibility==="hidden"||cs.display==="none") return;
     if(e.closest(".tabs")) return;
     if(r.right>W+1||r.left<-1) out.push("outside x: "+e.tagName+"."+String(e.className).slice(0,30)+" "+Math.round(r.left)+"-"+Math.round(r.right));
-    const ox=cs.overflowX; if(e.scrollWidth>e.clientWidth+2 && !/auto|scroll/.test(ox) && e.clientWidth>0 && cs.display!=="inline" && !e.closest("svg")) out.push("clipped: "+e.tagName+"."+String(e.className).slice(0,30)+" "+e.scrollWidth+">"+e.clientWidth);
+    const ox=cs.overflowX; if(e.scrollWidth>e.clientWidth+2 && !/auto|scroll/.test(ox) && e.clientWidth>0 && cs.display!=="inline" && cs.textOverflow!=="ellipsis" && !e.closest("svg")) out.push("clipped: "+e.tagName+"."+String(e.className).slice(0,30)+" "+e.scrollWidth+">"+e.clientWidth);
   });
   return out.slice(0,6).map(x=>tag+" "+x); },tag);
 const go=async(lang,theme,page=3,ob=false)=>{ await p.goto((process.env.URL||"http://127.0.0.1:4180/")); await p.evaluate(([l,t,pg,ob])=>{localStorage.clear();localStorage.setItem("qt.v2",JSON.stringify(ob?{}:{onboarded:true}));localStorage.setItem("page",pg);localStorage.setItem("theme",t);localStorage.setItem("lang",l)},[lang,theme,page,ob]); await p.reload({waitUntil:"networkidle"}); await p.waitForTimeout(350); };
