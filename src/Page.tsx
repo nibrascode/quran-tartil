@@ -1,115 +1,64 @@
-import { useLayoutEffect, useRef, useState, memo, useContext } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, memo, useContext } from "react";
 import { PageChrome, suraTitle } from "./pageChrome";
-import { plan, planFixed, GAP_MIN, GAP_NAT, ROWS, type Seg, type Plan } from "./layout";
-
-/** printed line structure of pages 1 and 2: [ayah, from word, to word) pieces per line */
-const FIXED: Record<number, [string, number, number][][]> = {
-  1: [[["1:1", 0, 4]], [["1:2", 0, 4]], [["1:3", 0, 2], ["1:4", 0, 3]], [["1:5", 0, 4], ["1:6", 0, 1]], [["1:6", 1, 3], ["1:7", 0, 3]], [["1:7", 3, 7]], [["1:7", 7, 9]]],
-  2: [[["2:1", 0, 1], ["2:2", 0, 6]], [["2:2", 6, 7], ["2:3", 0, 5]], [["2:3", 5, 8], ["2:4", 0, 4]], [["2:4", 4, 12]], [["2:5", 0, 6]], [["2:5", 6, 8]]],
-};
-import { normalizeAr } from "./tartil";
-import { pageItems, toArabicDigits, BISMILLAH, firstSuraOfPage, juzOfPage, suras, type Item } from "./quran";
-
-const words = (t: string) => t.split(" ").filter(Boolean);
-/** each word is its own span (so live recitation can reveal/mark words); stop-mark tokens stay visible */
-const W = ({ w, s, a }: { w: string; s: number; a: number }) => <span className={"w ayah" + (normalizeAr(w) ? "" : " mark")} data-s={s} data-a={a}>{w}{" "}</span>;
-
-type Group = { s: number; a: number; toks: { w: string; i: number }[]; end?: number };
-type PageData = { segs: { kind: Seg["kind"]; sura?: (typeof suras)[number]; groups: Group[]; endsSura: boolean }[] };
-
-/** words (+ their stop marks) become unbreakable groups; the ayah-end sign sticks to the last group */
-function build(items: Item[]): PageData {
-  const segs: PageData["segs"] = [];
-  let cur: PageData["segs"][number] | null = null;
-  for (const it of items) {
-    if (it.k === "head") { segs.push({ kind: "head", sura: it.sura, groups: [], endsSura: false }); cur = null; continue; }
-    if (it.k === "bism") { segs.push({ kind: "bism", groups: [], endsSura: false }); cur = null; continue; }
-    if (!cur) { cur = { kind: "text", groups: [], endsSura: false }; segs.push(cur); }
-    const toks = words(it.text);
-    let g: Group | null = null;
-    toks.forEach((w, i) => {
-      if (!normalizeAr(w) && g) g.toks.push({ w, i });
-      else { g = { s: it.s, a: it.a, toks: [{ w, i }] }; cur!.groups.push(g); }
-    });
-    if (g) (g as Group).end = it.a;
-    cur.endsSura = it.a === suras[it.s - 1].ayas;
-  }
-  // a segment only "ends a sura" if its last ayah does (a following head always means so)
-  segs.forEach((sg, i) => { if (sg.kind === "text" && segs[i + 1]?.kind === "head") sg.endsSura = true; });
-  return { segs };
-}
-
-const GroupView = ({ g }: { g: Group }) => (
-  <span className="g">
-    {g.toks.map((t) => <span key={t.i} className={"w ayah" + (normalizeAr(t.w) ? "" : " mark")} data-s={g.s} data-a={g.a}>{t.w}{" "}</span>)}
-    {g.end !== undefined && <span className="end ayah" data-s={g.s} data-a={g.a} aria-label={"آية " + g.end}><span className="en">{toArabicDigits(g.end)}</span></span>}
-  </span>
-);
+import { toArabicDigits, firstSuraOfPage, juzOfPage, suras } from "./quran";
 
 /**
- * One mushaf page. Pages 1-2: centred lines, ornate surah frame, spread evenly over the full height.
- * Other pages: 15 rows, every line word-justified to the full width (see layout.ts); surah heads and basmala take a row each.
+ * Madinah Mushaf (KFGQPC, 1405H / QCF v1 layout): 15 lines per page (8 on pages 1-2), line breaks and page breaks as printed.
+ * Words: KFGQPC Uthmanic Hafs text (text_qpc_hafs) with per-word line numbers from quran.com (line_v1 / v1_page), see scripts/mushaf-data.md.
+ * Rows: ["h", sura] surah banner, ["b", sura] basmala, or [[sura, ayah, "word word ... ٧"], ...] segments of a text line.
  */
+type Seg = [number, number, string];
+type Row = ["h" | "b", number] | Seg[];
+let DATA: Row[][] | null = null;
+let loading: Promise<Row[][]> | null = null;
+export function loadMushaf(): Promise<Row[][]> {
+  if (DATA) return Promise.resolve(DATA);
+  return (loading ||= import("./data/mushaf15.json").then((m) => (DATA = (m.default as unknown) as Row[][])));
+}
+const isEnd = (w: string) => /^[\u0660-\u0669]+$/.test(w);
+const BASMALA = "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ";
+/** a surah banner row is taller than a text row, like the printed frame (reference design) */
+const HEAD_W = 1.75;
+const isHead = (r: Row): r is ["h" | "b", number] => typeof r[0] === "string";
+
+const Line = ({ r }: { r: Seg[] }) => (
+  <>{r.flatMap(([s, a, t], k) => t.split(" ").map((w, i) => isEnd(w)
+    ? <span key={k + "-" + i} className="end ayah" data-s={s} data-a={a} aria-label={"آية " + a}>{w}</span>
+    : <span key={k + "-" + i} className="w ayah" data-s={s} data-a={a}>{w}</span>))}</>
+);
+
 export const Page = memo(function Page({ page, scale = 1 }: { page: number; scale?: number }) {
+  const [rows, setRows] = useState<Row[] | null>(DATA ? DATA[page - 1] : null);
+  useEffect(() => { if (!DATA) loadMushaf().then((d) => setRows(d[page - 1])); else setRows(DATA[page - 1]); }, [page]);
   const box = useRef<HTMLDivElement>(null);
   const meas = useRef<HTMLDivElement>(null);
-  const widths = useRef<number[][] | null>(null);
-  const [pls, setPl] = useState<{ page: number; plan: Plan; H: number } | null>(null);
-  const pl = pls && pls.page === page ? pls.plan : null;
-  const items = pageItems(page);
+  const [fit, setFit] = useState<{ page: number; f: number; short: boolean[] } | null>(null);
   const sura = firstSuraOfPage(page);
-  const fixed = FIXED[page];
-  const data = build(items);
-
-  /** flattened group ranges of the printed lines (pages 1-2), or null if the data does not match */
-  const ranges = (): [number, number][] | null => {
-    if (!fixed) return null;
-    const ts = data.segs.findIndex((x) => x.kind === "text");
-    const gs = data.segs[ts].groups;
-    const off = new Map<string, number>(), cnt = new Map<string, number>();
-    gs.forEach((g, i) => { const k = g.s + ":" + g.a; if (!off.has(k)) off.set(k, i); cnt.set(k, (cnt.get(k) || 0) + 1); });
-    const out: [number, number][] = [];
-    let next = 0;
-    for (const line of fixed) {
-      const first = off.get(line[0][0]), last = line[line.length - 1];
-      if (first === undefined) return null;
-      const a = first + line[0][1], b = off.get(last[0])! + last[2];
-      if (a !== next || b <= a || line.some(([k, f, t]) => t > cnt.get(k)! || f > t)) return null;
-      out.push([a, b]); next = b;
-    }
-    return next === gs.length ? out : null;
-  };
+  const n = page <= 2 ? 8 : 15;
 
   useLayoutEffect(() => {
-    const b = box.current;
-    if (!b) return;
-    const m = meas.current!;
-    widths.current = null;
-    const measure = () => {
-      const gs = Array.from(m.querySelectorAll<HTMLElement>(".g"));
-      let k = 0;
-      widths.current = data.segs.map((sg) => sg.groups.map(() => gs[k++].getBoundingClientRect().width / 100));
-    };
+    const b = box.current, m = meas.current;
+    if (!b || !m || !rows) return;
     const run = () => {
-      if (!widths.current) measure();
-      const segs: Seg[] = data.segs.map((sg, i) => ({ kind: sg.kind, w: widths.current![i], endsSura: sg.endsSura }));
-      const r = ranges();
-      // short screens (landscape phones): keep rows readable and let the page scroll instead of squeezing 15 rows into a strip
-      const rowsN = r ? r.length + segs.length - 1 : ROWS;
-      const H = Math.max(b.clientHeight, rowsN * (r ? 56 : 40));
-      setPl({ page, plan: r ? planFixed(segs, segs.findIndex((x) => x.kind === "text"), r, b.clientWidth - 2, H) : plan(segs, b.clientWidth - 2, H), H });
+      const ws = Array.from(m.children).map((c) => (c as HTMLElement).getBoundingClientRect().width / 100);
+      const max = Math.max(...ws.filter((w) => w > 0), 1);
+      const W = b.clientWidth - 2, H = b.clientHeight;
+      const units = rows.reduce((u, r) => u + (isHead(r) && r[0] === "h" ? HEAD_W : 1), 0) + Math.max(0, n - rows.length);
+      const f = Math.max(10, Math.min((W * (page <= 2 ? 0.9 : 0.985)) / max, H / units / (page <= 2 ? 2.2 : 1.72)));
+      // the printed mushaf justifies every line; only the opening pages and a surah's short closing line are centred
+      const short = ws.map((w) => page <= 2 || (w > 0 && w * f < W * 0.62));
+      setFit({ page, f, short });
     };
     run();
     const ro = new ResizeObserver(run);
     ro.observe(b);
-    document.fonts?.ready.then(() => { widths.current = null; run(); });
+    document.fonts?.ready.then(run);
     return () => ro.disconnect();
-  }, [page]); // eslint-disable-line
+  }, [page, rows, n]);
 
   const ch = useContext(PageChrome);
   const stop = (e: React.PointerEvent) => e.stopPropagation();
-  const fsz = pl ? pl.f * Math.min(1, scale) : 16;
-  const n = pl ? pl.rows.length : ROWS;
+  const f = fit && fit.page === page ? fit.f * Math.min(1, scale) : 0;
   return (
     <div className="page" lang="ar" dir="rtl" data-page={page}>
       <div className="frame">
@@ -120,15 +69,15 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
           <button type="button" className="ph-set" aria-label={ch.settingsLabel || "Settings"} onPointerDown={stop} onPointerUp={stop} onClick={() => ch.onSettings?.()}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2.5l2.2 2.6 3.4-.4.4 3.4 2.6 2.2-2.6 2.2-.4 3.4-3.4-.4L12 21.5l-2.2-2.6-3.4.4-.4-3.4L3.4 13.7 6 11.5l.4-3.4 3.4.4z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg></button>
         </div>
         <i className="side-orn r" aria-hidden="true" /><i className="side-orn l" aria-hidden="true" />
-        <div className={"page-body" + (pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? " tall" : "")} ref={box}>
-          <div className={"mtext flow" + (fixed ? " fixed" : "")} style={{ fontSize: fsz, height: pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? pls.H : undefined, gridTemplateRows: `repeat(${n}, 1fr)`, ["--rowh" as string]: (pls ? pls.H / n : 40) + "px", ["--gap" as string]: GAP_MIN + "em", ["--nat" as string]: GAP_NAT + "em" }}>
-            {pl?.rows.map((r, i) => {
-              const sg = data.segs[r.seg];
-              if (r.type !== "line") return r.type === "head" ? <div className="sura-head orn" key={i}><span className="cart"><span>سُورَةُ {sg.sura!.name}</span></span></div> : <div className="bism" key={i}><span>{BISMILLAH}</span></div>;
-              return <div className={"ln" + (r.centered ? " c" : "")} key={i}>{sg.groups.slice(r.from, r.to).map((g, k) => <GroupView key={k} g={g} />)}</div>;
-            })}
+        <div className="page-body" ref={box}>
+          <div className={"mtext flow mushaf" + (page <= 2 ? " fixed" : "")} style={{ fontSize: f || 16, visibility: f ? undefined : "hidden", gridTemplateRows: rows ? rows.map((r) => (isHead(r) && r[0] === "h" ? HEAD_W + "fr" : "1fr")).join(" ") : `repeat(${n}, 1fr)`, ["--rowh" as string]: (box.current ? box.current.clientHeight / n : 40) + "px" }}>
+            {rows?.map((r, i) => isHead(r)
+              ? r[0] === "h"
+                ? <div className="sura-head orn" key={i}><span className="cart"><span>سُورَةُ {suras[r[1] - 1].name}</span></span><i className="sh-div" aria-hidden="true" /></div>
+                : <div className="bism" key={i}><span>{BASMALA}</span></div>
+              : <div className={"ln" + (fit?.short[i] ? " c" : "")} key={i}><Line r={r} /></div>)}
           </div>
-          <div className="meas" ref={meas} aria-hidden="true">{data.segs.map((sg) => sg.groups.map((g, k) => <GroupView key={k} g={g} />))}</div>
+          <div className="meas mushaf" ref={meas} aria-hidden="true">{rows?.map((r, i) => <div key={i}>{isHead(r) ? null : <Line r={r} />}</div>)}</div>
         </div>
         <div className="page-foot" aria-label={"Page " + page}><span className="pf-l" aria-hidden="true" /><span className="page-no">{ch.lang === "ar" ? toArabicDigits(page) : page}</span><span className="pf-r" aria-hidden="true" /></div>
       </div>

@@ -28,6 +28,7 @@ jobs:
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/ui.mjs
       - name: Practice flows (repeat, hifz, weak words) with a faked recogniser
+        if: ${{ false }} # microphone features are off for now (src/features.ts RECITE=false)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/practice.mjs
       - name: Backup export/import roundtrip
@@ -40,19 +41,24 @@ jobs:
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/headers.mjs
       - name: Voice navigation + isti'adha/basmala (faked recogniser, 3 levels)
+        if: ${{ false }} # microphone features are off for now (src/features.ts RECITE=false)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/voicenav.mjs
       - name: Home screen (launch, content, navigation, 5 languages x 3 themes, RTL)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/home.mjs
       - name: Speech engine (alternatives scored against expected text, diagnostics panel)
+        if: ${{ false }} # microphone features are off for now (src/features.ts RECITE=false)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/asr.mjs
       - name: Precise engine (fake worker + fake mic, consent/download UI, stop terminates the worker)
+        if: ${{ false }} # microphone features are off for now (src/features.ts RECITE=false)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/precise.mjs
       - name: No-reaction guard (words must change state; silence must be visible)
+        if: ${{ false }} # mic-heavy sweep; re-enable with RECITE (src/features.ts)
         run: node scripts/e2e/react.mjs
       - name: Full QA sweep (screens, languages, mic lifecycle, offline, a11y)
+        if: ${{ false }} # mic-heavy sweep; re-enable with RECITE (src/features.ts)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/qa.mjs

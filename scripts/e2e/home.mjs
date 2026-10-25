@@ -20,15 +20,15 @@ async function open(w, h, lang, theme, mobile = true) {
 for (const lang of ["en", "az", "tr", "ar", "ru"]) for (const theme of ["light", "dark", "sepia"]) {
   const { p, errs, ctx } = await open(390, 844, lang, theme);
   const r = await p.evaluate(() => { const h = document.querySelector(".home"); const q = (s) => !!document.querySelector(s); const rd = document.querySelector(".reader"); const vis = rd && getComputedStyle(rd).visibility;
-    const ids = ["h-continue", "h-ayah", "h-goal", "h-khatm", "h-mic", "h-practice", "h-surah", "h-page", "h-juz", "h-bookmarks", "h-mistakes", "h-search"].filter((i) => !q("#" + i));
+    const ids = ["h-continue", "h-ayah", "h-goal", "h-khatm", "h-surah", "h-page", "h-juz", "h-bookmarks", "h-search"].filter((i) => !q("#" + i));
     const hs = document.querySelector(".home"); const wide = [...hs.querySelectorAll("*")].filter((e) => { const b = e.getBoundingClientRect(); return b.width && (b.right > innerWidth + 1 || b.left < -1); }).map((e) => e.className).slice(0, 3);
-    return { has: !!h, vis, missing: ids, wide, dir: document.querySelector(".home").dir, due: document.querySelector("#h-practice small").textContent, ay: document.querySelector(".ha-t").textContent.length, sx: hs.scrollWidth - hs.clientWidth }; });
+    return { has: !!h, vis, missing: ids, wide, dir: document.querySelector(".home").dir, due: document.querySelector("#h-practice small")?.textContent ?? "", ay: document.querySelector(".ha-t").textContent.length, sx: hs.scrollWidth - hs.clientWidth }; });
   if (!r.has) fail(`${lang}/${theme}: no home on launch`);
   if (r.vis !== "hidden") fail(`${lang}/${theme}: reader not hidden under home`);
   if (r.missing.length) fail(`${lang}/${theme}: missing ${r.missing}`);
   if (r.wide.length || r.sx > 0) fail(`${lang}/${theme}: overflow ${r.wide} ${r.sx}`);
   if (r.dir !== (lang === "ar" ? "rtl" : "ltr")) fail(`${lang}: dir ${r.dir}`);
-  if (!/2/.test(r.due)) fail(`${lang}: due count not shown: ${r.due}`);
+  // practice card is hidden while RECITE is off (src/features.ts)
   if (r.ay < 10) fail(`${lang}: no ayah of the day`);
   if (errs.length) fail(`${lang}/${theme}: errors ${errs}`);
   if (SHOTS) await p.screenshot({ path: `${SHOTS}/home-${lang}-${theme}.png` });
@@ -50,7 +50,7 @@ for (const lang of ["en", "az", "tr", "ar", "ru"]) for (const theme of ["light",
   const sel = await p.evaluate(() => document.querySelector(".asheet .ref")?.textContent);
   console.log("ayah of the day opened", sel);
   await p.click(".asheet .x"); await p.mouse.click(195, 12); await p.waitForTimeout(400); await p.click("#home-btn"); await p.waitForTimeout(400);
-  for (const [id, tab] of [["h-surah", "surah"], ["h-page", "page"], ["h-juz", "juz"], ["h-bookmarks", "bookmarks"], ["h-search", "search"], ["h-practice", "practice"], ["h-mistakes", "practice"], ["h-goal", "progress"]]) {
+  for (const [id, tab] of [["h-surah", "surah"], ["h-page", "page"], ["h-juz", "juz"], ["h-bookmarks", "bookmarks"], ["h-search", "search"], ["h-goal", "progress"]]) {
     await p.click("#" + id); await p.waitForTimeout(350);
     const ok = await p.evaluate((t) => document.querySelector('[role=tab][aria-selected=true]')?.textContent, tab);
     if (!ok) fail("tab not opened from " + id);
@@ -62,8 +62,8 @@ for (const lang of ["en", "az", "tr", "ar", "ru"]) for (const theme of ["light",
   await p.click("#h-surah"); await p.waitForTimeout(350); await p.click(".li >> nth=17"); await p.waitForTimeout(600);
   if (!(await visReader())) fail("jump to surah did not leave home");
   await p.mouse.click(195, 12); await p.click("#home-btn"); await p.waitForTimeout(400);
-  await p.click("#h-mic"); await p.waitForTimeout(600);
-  if (!(await visReader()) || !(await p.evaluate(() => window.__started))) fail("start tartil did not open reader + mic");
+  // microphone features are switched off (src/features.ts RECITE=false): no mic button may be shown
+  if (await p.$("#h-mic, .h2mic, .mic.big")) fail("mic button visible while RECITE is off");
   if (errs.length) fail("flow errors " + errs);
   await ctx.close();
 }

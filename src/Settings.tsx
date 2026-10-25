@@ -1,3 +1,4 @@
+import { RECITE } from "./features";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { LANGS, T, type Lang } from "./i18n";
@@ -177,7 +178,7 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
         <label className="timef">{t.reminderTime}<input className="field" type="time" value={hhmm} onChange={(e) => { const [h, m] = e.target.value.split(":").map(Number); if (!Number.isNaN(h)) applyReminder(st.reminder.on, h, m || 0); }} /></label>
         {(!canNotify() || rmsg) && <small className="desc">{rmsg || t.reminderApp}</small>}
       </Card>
-      <Card id="tartil" icon="mic" tone="g" title={t.tartilOpts} value={`${strictName} · ${dialect}`} open={open === "tartil"} toggle={toggle}>
+      {RECITE && <><Card id="tartil" icon="mic" tone="g" title={t.tartilOpts} value={`${strictName} · ${dialect}`} open={open === "tartil"} toggle={toggle}>
         <b className="sub">{t.recLang}</b>
         <Chips label={t.recLang} value={p.recLang} options={[{ v: "ar-SA", l: t.dSA, sub: "ar-SA" }, { v: "ar-EG", l: t.dEG, sub: "ar-EG" }, { v: "ar-AE", l: t.dAE, sub: "ar-AE" }, { v: "ar-MA", l: t.dMA, sub: "ar-MA" }]} onPick={(v) => pref("recLang", v)} />
         <b className="sub">{t.strict}</b>
@@ -191,7 +192,7 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
       </Card>
       <Card id="diag" icon="info" tone="b" title={t.hDiagT} open={open === "diag"} toggle={toggle}>
         {open === "diag" && <DiagPanel lang={lang} locale={p.recLang} />}
-      </Card>
+      </Card></>}
 
       <Group>{t.setData}</Group>
       <Card id="backup" icon="download" tone="b" title={t.dataT} open={open === "backup"} toggle={toggle}>

@@ -551,3 +551,38 @@ html:root .home2.home2.home2 { background-color:var(--h-bg); }
 :root[data-theme="light"] .h2bar h1, :root[data-theme="sepia"] .h2bar h1 { color:var(--h-tx); }
 html:root .home2.home2.home2 { background-color:var(--h-bg); }
 :root[data-theme="light"] .h2bar h1, :root[data-theme="sepia"] .h2bar h1 { color:var(--h-tx); }
+
+/* ===== Madinah mushaf script: KFGQPC Uthmanic Hafs (v18), printed 15-line layout ===== */
+@font-face { font-family:"UthmanicHafs"; src:url("./fonts/UthmanicHafs1Ver18.woff2") format("woff2"); font-display:block; }
+.mushaf, .page .mushaf .bism, .page .mushaf .sura-head .cart > span { font-family:"UthmanicHafs", "Amiri Quran", serif; }
+.mtext.mushaf { line-height:1.6; }
+.mtext.mushaf .ln { display:flex; justify-content:space-between; align-items:center; gap:0; white-space:nowrap; direction:rtl; }
+.mtext.mushaf .ln.c { justify-content:center; gap:.12em; }
+.meas.mushaf { font-family:"UthmanicHafs", serif; line-height:1.6; }
+.meas.mushaf > div { display:flex; gap:.12em; white-space:nowrap; direction:rtl; }
+.mushaf .w, .mushaf .end { display:inline-block; white-space:nowrap; }
+.page .mushaf .end, .meas.mushaf .end { display:inline-grid; place-items:center; min-width:1.25em; height:1.25em; margin:0 .06em; padding:0 .12em; box-sizing:border-box; font-size:.82em; line-height:1; color:var(--m-num); vertical-align:middle; font-family:"UthmanicHafs", serif; }
+.page .mushaf .end { background-size:100% 100%; }
+.mtext.mushaf .sura-head.orn { font-size:min(.8em, calc(var(--rowh, 48px) * .42)); }
+.mtext.mushaf .bism { font-size:.92em; }
+.mtext.mushaf .bism { font-size:1.05em; }
+.mtext.mushaf .sura-head.orn { font-size:min(.9em, calc(var(--rowh, 48px) * .42)); }
+.page .mushaf .end { min-width:1.45em; height:1.45em; font-size:.8em; }
+.mtext.mushaf .sura-head .cart > span { top:-.12em; }
+/* ---- proportions tuned against the owner's reference (461x1024) ---- */
+.page .page-head { min-height:58px; box-sizing:border-box; font-size:16px; border-radius:0 0 22px 22px; padding-left:14px; padding-right:14px; }
+.page .frame::before, .page .frame::after { content:""; position:absolute; top:70px; bottom:58px; width:1px; background:linear-gradient(transparent, var(--m-gold) 8%, var(--m-gold) 92%, transparent); opacity:.7; pointer-events:none; }
+.page .frame::before { left:7px; } .page .frame::after { right:7px; }
+.side-orn { width:14px; height:44px; margin-top:-22px; }
+.side-orn.r { right:0; } .side-orn.l { left:0; }
+.mtext.mushaf .sura-head.orn { flex-direction:column; justify-content:center; gap:.18em; font-size:min(1em, calc(var(--rowh, 48px) * .62)); background-position:center 42%; }
+.mtext.mushaf .sura-head.orn::before, .mtext.mushaf .sura-head.orn::after { top:42%; }
+.mtext.mushaf .sura-head .cart { height:auto; padding:.28em 2em .36em; min-width:58%; border-radius:.9em; }
+.mtext.mushaf .sura-head .cart > span { top:0; }
+.sh-div { display:block; width:46%; height:.5em; background:radial-gradient(circle, var(--m-gold) 0 .16em, transparent .17em) center/1em 100% no-repeat, linear-gradient(90deg, transparent, var(--m-gold) 30%, var(--m-gold) 70%, transparent) center/100% 1px no-repeat; }
+.mtext.mushaf .bism { position:relative; font-size:.9em; }
+.mtext.mushaf .bism::before, .mtext.mushaf .bism::after { display:block; content:""; flex:0 0 3.2em; height:1px; background:linear-gradient(90deg, transparent, var(--m-gold)); transform:none; position:static; }
+.mtext.mushaf .bism::after { background:linear-gradient(270deg, transparent, var(--m-gold)); }
+.page .page-foot { height:46px; border-radius:22px 22px 0 0; }
+.page .page-foot .page-no { min-width:62px; height:32px; font-size:15px; margin-top:-22px; }
+.mtext.mushaf .sura-head .cart { padding:.42em 2.3em .5em; min-width:62%; box-shadow:0 0 0 1.5px var(--m-gold), 0 0 0 4px var(--m-paper), 0 0 0 5.5px var(--m-gold), 0 4px 10px -3px rgba(0,0,0,.35); }

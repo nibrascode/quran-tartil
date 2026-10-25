@@ -1,3 +1,4 @@
+import { RECITE } from "./features";
 import { Ic } from "./Icons";
 import { normalizeAr } from "./tartil";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -30,7 +31,7 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
   const [num, setNum] = useState(String(page));
   const [rmsg, setRmsg] = useState("");
   const root = useRef<HTMLDivElement>(null);
-  const tabs: Tab[] = ["surah", "juz", "page", "search", "bookmarks", "progress", "tartil", "practice", "settings"];
+  const tabs: Tab[] = (["surah", "juz", "page", "search", "bookmarks", "progress", "tartil", "practice", "settings"] as Tab[]).filter((k) => RECITE || (k !== "tartil" && k !== "practice"));
   const sub = tab === "about" || tab === "privacy";
   const label = (k: Tab) => { const t = T[readerLang]; return ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, practice: t.practiceTab, settings: t.settings, about: t.about, privacy: t.privacy }[k]); };
   const filtered = useMemo(() => {

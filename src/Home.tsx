@@ -1,3 +1,4 @@
+import { RECITE } from "./features";
 import { useMemo, useState } from "react";
 import { suras } from "./quran";
 import { AZ_NAMES } from "./pageChrome";
@@ -70,7 +71,7 @@ export function Home({ lang, st, page, onResume, onOpen, onMic, onAyah, onTab }:
       </header>
       <div className="h2quick">
         <button className="h2cont" id="h-continue" onClick={onResume}><span className="h2c-k">{t.hContinue}</span><b>{nm(sura.i)}</b><small>{t.juz} {num(juzOfPage(page))} · {t.page} {num(page)}</small></button>
-        <button className="h2mic" id="h-mic" aria-label={t.hStart} onClick={onMic}><Ic n="mic" size={24} /></button>
+        {RECITE && <button className="h2mic" id="h-mic" aria-label={t.hStart} onClick={onMic}><Ic n="mic" size={24} /></button>}
         <button className={"h2more" + (more ? " on" : "")} aria-expanded={more} onClick={toggleMore}>{L.more}<Ic n="chev" size={16} /></button>
       </div>
       {more && <div className="home-in h2dash">
@@ -102,13 +103,13 @@ export function Home({ lang, st, page, onResume, onOpen, onMic, onAyah, onTab }:
 
         <h2 className="hsec" style={{ ["--i" as string]: 4 }}>{t.hQuick}</h2>
         <div className="hgrid" style={{ ["--i" as string]: 5 }}>
-          <button className="hq hq-main" id="h-mic" onClick={onMic}><span className="hq-i"><Ic n="mic" size={26} /></span><span className="hq-tx"><b>{t.hStart}</b><small>{t.hStartSub}</small></span></button>
-          {act("p", "layers", t.hPractice, due ? fmt(t.hDue, { n: due }) : t.hNoDue, () => onTab("practice"), "h-practice")}
+          {RECITE && <button className="hq hq-main" id="h-mic" onClick={onMic}><span className="hq-i"><Ic n="mic" size={26} /></span><span className="hq-tx"><b>{t.hStart}</b><small>{t.hStartSub}</small></span></button>}
+          {RECITE && act("p", "layers", t.hPractice, due ? fmt(t.hDue, { n: due }) : t.hNoDue, () => onTab("practice"), "h-practice")}
           {act("sr", "book", t.surah, t.hJump, () => onTab("surah"), "h-surah")}
           {act("pg", "compass", t.page, t.hJump, () => onTab("page"), "h-page")}
           {act("jz", "flag", t.juz, t.hJump, () => onTab("juz"), "h-juz")}
           {act("bm", "bookmark", t.bookmarks, String(st.bookmarks.length), () => onTab("bookmarks"), "h-bookmarks")}
-          {act("ms", "warn", t.hMistakes, weak ? fmt(t.hWeak, { n: weak }) : t.hNoWeak, () => onTab("practice"), "h-mistakes")}
+          {RECITE && act("ms", "warn", t.hMistakes, weak ? fmt(t.hWeak, { n: weak }) : t.hNoWeak, () => onTab("practice"), "h-mistakes")}
           {act("se", "search", t.searchTab, "", () => onTab("search"), "h-search")}
           {act("st", "sliders", t.settings, t.theme + " · " + t.language, () => onTab("settings"), "h-settings")}
         </div>

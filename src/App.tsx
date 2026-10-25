@@ -1,3 +1,4 @@
+import { RECITE } from "./features";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Reader, useSpread } from "./Reader";
@@ -233,8 +234,8 @@ export function App() {
         <button className="dbtn" id="home-dock" aria-label={t.hHome} onClick={goHome}><Ic n="home" /></button>
         <button className="dbtn" aria-label={t.dockSurah} onClick={() => setMenu("surah")}><Ic n="book" /></button>
         <button className={"dbtn" + (st.prefs.hide ? " on" : "")} aria-pressed={st.prefs.hide} aria-label={t.dockHide} onClick={() => { const v = !st.prefs.hide; update((x) => ({ ...x, prefs: { ...x.prefs, hide: v } })); say(v ? t.hideOnMsg : t.hideOffMsg); }}><Ic n={st.prefs.hide ? "eyeoff" : "eye"} /></button>
-        <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
-          onClick={() => (rc.mode === "on" ? rc.pause() : rc.mode === "paused" ? rc.resume() : rc.begin())}><Ic n={rc.mode === "on" ? "pause" : "mic"} size={30} /></button>
+        {RECITE && <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
+          onClick={() => (rc.mode === "on" ? rc.pause() : rc.mode === "paused" ? rc.resume() : rc.begin())}><Ic n={rc.mode === "on" ? "pause" : "mic"} size={30} /></button>}
       </div>
       {rc.err && <div className="toast" role="alert">{/permission|not-allowed|service-not-allowed/.test(rc.err) ? t.hMicDenied : /network/.test(rc.err) ? t.hNetErr : rc.err === "unsupported" ? t.tartilUnsupported : rc.err === "no-audio" ? t.pNoVoice : rc.err === "precise-fallback" ? t.pFellBack : t.reciteFail + ": " + rc.err}</div>}
       {sel && !mist && (
@@ -247,8 +248,8 @@ export function App() {
           <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? t.bookmarkRemove : t.bookmarkAdd}</button>
           <button className="arow" onClick={copy}><Ic n="copy" />{t.copy}</button>
           <button className="arow" onClick={share}><Ic n="share" />{t.share}</button>
-          <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{t.reciteThisAyah}</button>
-          <button className="arow" onClick={() => startQueue("loop", [sel.s + ":" + sel.a])}><Ic n="repeat" />{t.repeatAyah.replace("{n}", String(st.prefs.repeat))}</button>
+          {RECITE && <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{t.reciteThisAyah}</button>}
+          {RECITE && <button className="arow" onClick={() => startQueue("loop", [sel.s + ":" + sel.a])}><Ic n="repeat" />{t.repeatAyah.replace("{n}", String(st.prefs.repeat))}</button>}
           <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? t.hifzIn : t.hifzAddAyah}</button>
         </div>
       )}
