@@ -24,3 +24,7 @@ if ! grep -q "windowBackground" "$st"; then
 fi
 grep -q "windowSoftInputMode" "$f" || sed -i 's#<activity#<activity android:windowSoftInputMode="adjustResize"#' "$f"
 echo "--- theme + activity"; grep -E "windowBackground|statusBarColor|windowSoftInputMode" "$st" "$f"
+
+# Landscape reading mode: hide system bars (immersive) when the phone is turned sideways.
+MA=$(find android/app/src/main/java -name MainActivity.java | head -1)
+cp scripts/native/MainActivity.java "$MA"
