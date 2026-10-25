@@ -542,3 +542,7 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 :root[data-theme="light"] .h2arch, :root[data-theme="sepia"] .h2arch { background:linear-gradient(transparent 55%, var(--h-bg2) 55%); border-bottom:0; }
 :root[data-theme="light"] .h2arch::after, :root[data-theme="sepia"] .h2arch::after { content:""; position:absolute; left:50%; top:4px; width:12px; height:12px; margin-left:-6px; transform:rotate(45deg); background:var(--h-gold); }
 :root[data-theme="light"] .h2arch { box-shadow:inset 0 15px 0 -14px var(--h-gold); }
+.page .sura-head .cart { min-height:0; height:84%; }
+.page .sura-head.orn > .cart { top:0; }
+.page .sura-head .cart > span { top:-.26em; }
+.page .sura-head .cart > span { top:-.32em; }

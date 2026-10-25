@@ -22,14 +22,14 @@ await p.context().addInitScript(() => { try { sessionStorage.setItem("qt.home", 
         const rows = [...pg.querySelector(".mtext").children]; const tall = !!pg.querySelector(".page-body.tall");
         rows.forEach((row, i) => {
           if (!row.classList.contains("sura-head")) return;
-          const rc = row.getBoundingClientRect(), sp = row.querySelector("span").getBoundingClientRect(), nx = rows[i + 1]?.getBoundingClientRect();
+          const rc = row.getBoundingClientRect(), sp = (row.querySelector(".cart > span") || row.querySelector("span")).getBoundingClientRect(), nx = rows[i + 1]?.getBoundingClientRect();
           if (rc.left < fr.left + 1 || rc.right > fr.right - 1) out.push("banner outside frame x");
           if (rc.top < body.top - 1 || (!tall && rc.bottom > body.bottom + 1)) out.push("banner outside body y");
           if (sp.left < rc.left - 1 || sp.right > rc.right + 1 || sp.top < rc.top - 1 || sp.bottom > rc.bottom + 1) out.push(`text outside banner (${Math.round(sp.bottom - rc.bottom)}px)`);
           if (nx && rc.bottom > nx.top + 1) out.push("banner overlaps next row");
           if (row.scrollWidth > row.clientWidth + 1) out.push("banner content clipped (x)");
           { // real glyph ink (the font's line box is much taller than the letters): must sit inside the banner with a margin
-            const sc = getComputedStyle(row.querySelector("span")), cv = document.createElement("canvas").getContext("2d"); cv.font = `${sc.fontSize} ${sc.fontFamily}`; cv.direction = "rtl";
+            const sc = getComputedStyle(row.querySelector(".cart > span") || row.querySelector("span")), cv = document.createElement("canvas").getContext("2d"); cv.font = `${sc.fontSize} ${sc.fontFamily}`; cv.direction = "rtl";
             const tm = cv.measureText(row.textContent), lh = parseFloat(sc.lineHeight) || parseFloat(sc.fontSize);
             const base = sp.top + (sp.height - (tm.fontBoundingBoxAscent + tm.fontBoundingBoxDescent)) / 2 + tm.fontBoundingBoxAscent;
             const inkTop = base - tm.actualBoundingBoxAscent, inkBot = base + tm.actualBoundingBoxDescent, m = Math.max(2, rc.height * 0.1);
