@@ -587,3 +587,18 @@ html:root .home2.home2.home2 { background-color:var(--h-bg); }
 .page .page-foot .page-no { min-width:62px; height:32px; font-size:15px; margin-top:-22px; }
 .mtext.mushaf .sura-head .cart { padding:.42em 2.3em .5em; min-width:62%; box-shadow:0 0 0 1.5px var(--m-gold), 0 0 0 4px var(--m-paper), 0 0 0 5.5px var(--m-gold), 0 4px 10px -3px rgba(0,0,0,.35); }
 .h2ul { width:calc(33.333% - 4px); margin-inline-start:2px; }
+/* opening pages 1-2: centred short lines inside an ornate frame, banner on top (as printed) */
+.mtext.mushaf.fixed { position:relative; margin:4px 9% 8px; padding:4% 6%; border-radius:46% 46% 18% 18% / 16% 16% 8% 8%;
+  border:2px solid var(--m-gold); box-shadow:inset 0 0 0 5px var(--m-paper), inset 0 0 0 6.5px var(--m-gold), inset 0 0 0 12px color-mix(in srgb, var(--m-green) 10%, transparent), 0 6px 18px -10px rgba(0,0,0,.35);
+  background:radial-gradient(70% 55% at 50% 50%, color-mix(in srgb, var(--m-paper) 92%, #fff), color-mix(in srgb, var(--m-gold) 8%, var(--m-paper))); }
+.mtext.mushaf.fixed::before, .mtext.mushaf.fixed::after { content:""; position:absolute; left:50%; width:16px; height:16px; margin-left:-8px; transform:rotate(45deg); background:var(--m-gold); box-shadow:0 0 0 3px var(--m-paper), 0 0 0 4px var(--m-gold); }
+.mtext.mushaf.fixed::before { top:-9px; } .mtext.mushaf.fixed::after { bottom:-9px; }
+.mtext.mushaf.fixed .sura-head.orn { font-size:min(.9em, calc(var(--rowh, 48px) * .55)); }
+.page-body.tall { display:block; overflow-y:auto; }
+/* tajweed: soft, low-saturation palette (readable on cream and on dark) */
+.tj-h, .tj-x, .tj-l { color:color-mix(in srgb, var(--m-ink) 45%, #9a9486); }
+.tj-m { color:#b07a4f; } .tj-p { color:#b98a58; } .tj-o { color:#a8655a; } .tj-n { color:#9c5a55; }
+.tj-q { color:#5f86a6; } .tj-k, .tj-k2 { color:#6f8f6a; } .tj-g, .tj-s, .tj-u { color:#4f8f80; } .tj-g2, .tj-j, .tj-r { color:#8a8a9e; } .tj-i { color:#6c7fae; }
+:root[data-theme="dark"] .tj-m { color:#d2a77e; } :root[data-theme="dark"] .tj-p { color:#d8b483; } :root[data-theme="dark"] .tj-o { color:#d39689; } :root[data-theme="dark"] .tj-n { color:#c98c86; }
+:root[data-theme="dark"] .tj-q { color:#93b4cf; } :root[data-theme="dark"] .tj-k, :root[data-theme="dark"] .tj-k2 { color:#a3c09d; } :root[data-theme="dark"] .tj-g, :root[data-theme="dark"] .tj-s, :root[data-theme="dark"] .tj-u { color:#88c0b2; } :root[data-theme="dark"] .tj-g2, :root[data-theme="dark"] .tj-j, :root[data-theme="dark"] .tj-r { color:#b4b4c6; } :root[data-theme="dark"] .tj-i { color:#a2b2d8; }
+:root[data-theme="dark"] .tj-h, :root[data-theme="dark"] .tj-x, :root[data-theme="dark"] .tj-l { color:#8f8a7e; }

@@ -20,6 +20,8 @@ export type Prefs = {
   fontScale: number; // 0.8 .. 1 (1 = fill the page as much as possible)
   flip: "flip" | "none";
   keepAwake: boolean;
+  /** colour tajweed rules (soft palette) on the mushaf pages */
+  tajweed?: boolean;
   recLang: "ar-SA" | "ar-EG" | "ar-AE" | "ar-MA";
   strict: "easy" | "medium" | "hard";
   haptics: boolean;

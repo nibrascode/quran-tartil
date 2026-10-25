@@ -21,10 +21,19 @@ const BASMALA = "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّ
 const HEAD_W = 1.75;
 const isHead = (r: Row): r is ["h" | "b", number] => typeof r[0] === "string";
 
-const Line = ({ r }: { r: Seg[] }) => (
+/** words carry optional tajweed runs: \uE000 + rule code ... \uE001 (the text between the markers is the exact KFGQPC text) */
+const plain = (w: string) => w.replace(/\uE000.|\uE001/g, "");
+function TjWord({ w }: { w: string }) {
+  const parts: React.ReactNode[] = [];
+  const re = /\uE000(.)([^\uE001]*)\uE001|([^\uE000]+)/g;
+  let m: RegExpExecArray | null, k = 0;
+  while ((m = re.exec(w))) parts.push(m[1] ? <span key={k++} className={"tj tj-" + (m[1] === m[1].toUpperCase() && m[1] !== m[1].toLowerCase() ? m[1].toLowerCase() + "2" : m[1])}>{m[2]}</span> : m[3]);
+  return <>{parts}</>;
+}
+const Line = ({ r, tj }: { r: Seg[]; tj?: boolean }) => (
   <>{r.flatMap(([s, a, t], k) => t.split(" ").map((w, i) => isEnd(w)
     ? <span key={k + "-" + i} className="end ayah" data-s={s} data-a={a} aria-label={"آية " + a}>{w}</span>
-    : <span key={k + "-" + i} className="w ayah" data-s={s} data-a={a}>{w}</span>))}</>
+    : <span key={k + "-" + i} className="w ayah" data-s={s} data-a={a}>{tj && w.includes("\uE000") ? <TjWord w={w} /> : plain(w)}</span>))}</>
 );
 
 export const Page = memo(function Page({ page, scale = 1 }: { page: number; scale?: number }) {
@@ -32,7 +41,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
   useEffect(() => { if (!DATA) loadMushaf().then((d) => setRows(d[page - 1])); else setRows(DATA[page - 1]); }, [page]);
   const box = useRef<HTMLDivElement>(null);
   const meas = useRef<HTMLDivElement>(null);
-  const [fit, setFit] = useState<{ page: number; f: number; short: boolean[] } | null>(null);
+  const [fit, setFit] = useState<{ page: number; f: number; short: boolean[]; tallH: number } | null>(null);
   const sura = firstSuraOfPage(page);
   const n = page <= 2 ? 8 : 15;
 
@@ -44,10 +53,15 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       const max = Math.max(...ws.filter((w) => w > 0), 1);
       const W = b.clientWidth - 2, H = b.clientHeight;
       const units = rows.reduce((u, r) => u + (isHead(r) && r[0] === "h" ? HEAD_W : 1), 0) + Math.max(0, n - rows.length);
-      const f = Math.max(10, Math.min((W * (page <= 2 ? 0.9 : 0.985)) / max, H / units / (page <= 2 ? 2.2 : 1.72)));
+      const byW = (W * (page <= 2 ? 0.66 : 0.985)) / max;
+      // landscape (phone turned sideways): size the text by the width and let the page scroll vertically
+      const land = W > H * 1.15;
+      const lh = page <= 2 ? 2.2 : 1.72;
+      const f = Math.max(10, land ? byW : Math.min(byW, H / units / lh));
+      const tallH = land ? Math.max(H, units * f * lh) : 0;
       // the printed mushaf justifies every line; only the opening pages and a surah's short closing line are centred
       const short = ws.map((w) => page <= 2 || (w > 0 && w * f < W * 0.62));
-      setFit({ page, f, short });
+      setFit({ page, f, short, tallH });
     };
     run();
     const ro = new ResizeObserver(run);
@@ -69,13 +83,13 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
           <button type="button" className="ph-set" aria-label={ch.settingsLabel || "Settings"} onPointerDown={stop} onPointerUp={stop} onClick={() => ch.onSettings?.()}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2.5l2.2 2.6 3.4-.4.4 3.4 2.6 2.2-2.6 2.2-.4 3.4-3.4-.4L12 21.5l-2.2-2.6-3.4.4-.4-3.4L3.4 13.7 6 11.5l.4-3.4 3.4.4z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg></button>
         </div>
         <i className="side-orn r" aria-hidden="true" /><i className="side-orn l" aria-hidden="true" />
-        <div className="page-body" ref={box}>
-          <div className={"mtext flow mushaf" + (page <= 2 ? " fixed" : "")} style={{ fontSize: f || 16, visibility: f ? undefined : "hidden", gridTemplateRows: rows ? rows.map((r) => (isHead(r) && r[0] === "h" ? HEAD_W + "fr" : "1fr")).join(" ") : `repeat(${n}, 1fr)`, ["--rowh" as string]: (box.current ? box.current.clientHeight / n : 40) + "px" }}>
+        <div className={"page-body" + (fit && fit.page === page && fit.tallH > 0 ? " tall" : "")} ref={box}>
+          <div className={"mtext flow mushaf" + (page <= 2 ? " fixed" : "")} style={{ fontSize: f || 16, height: fit && fit.page === page && fit.tallH ? fit.tallH : undefined, visibility: f ? undefined : "hidden", gridTemplateRows: rows ? rows.map((r) => (isHead(r) && r[0] === "h" ? HEAD_W + "fr" : "1fr")).join(" ") : `repeat(${n}, 1fr)`, ["--rowh" as string]: (box.current ? box.current.clientHeight / n : 40) + "px" }}>
             {rows?.map((r, i) => isHead(r)
               ? r[0] === "h"
                 ? <div className="sura-head orn" key={i}><span className="cart"><span>سُورَةُ {suras[r[1] - 1].name}</span></span><i className="sh-div" aria-hidden="true" /></div>
                 : <div className="bism" key={i}><span>{BASMALA}</span></div>
-              : <div className={"ln" + (fit?.short[i] ? " c" : "")} key={i}><Line r={r} /></div>)}
+              : <div className={"ln" + (fit?.short[i] ? " c" : "")} key={i}><Line r={r} tj={ch.tajweed} /></div>)}
           </div>
           <div className="meas mushaf" ref={meas} aria-hidden="true">{rows?.map((r, i) => <div key={i}>{isHead(r) ? null : <Line r={r} />}</div>)}</div>
         </div>
