@@ -8,9 +8,9 @@ await p.addInitScript(()=>{ localStorage.setItem("qt.v2", JSON.stringify({onboar
 await p.goto((process.env.URL||"http://127.0.0.1:4180/"),{waitUntil:"networkidle"});
 const res=[];
 for(let n=1;n<=604;n+=step){
-  await p.evaluate(n=>localStorage.setItem("page",n),n); await p.reload({waitUntil:"load"}); await p.waitForSelector(".layer.under .page .ln, .layer.under .page .sura-head"); await p.waitForTimeout(220);
+  await p.evaluate(n=>localStorage.setItem("page",n),n); await p.reload({waitUntil:"load"}); await p.waitForSelector(".layer:not(.pre):not(.over) .page .ln, .layer:not(.pre):not(.over) .page .sura-head"); await p.waitForTimeout(220);
   res.push(await p.evaluate(()=>{
-    const pg=document.querySelector(".layer.under .page"), body=pg.querySelector(".page-body").getBoundingClientRect(), fr=pg.querySelector(".frame").getBoundingClientRect();
+    const pg=document.querySelector(".layer:not(.pre):not(.over) .page"), body=pg.querySelector(".page-body").getBoundingClientRect(), fr=pg.querySelector(".frame").getBoundingClientRect();
     const m=pg.querySelector(".mtext"); const tall=!!pg.querySelector(".page-body.tall"); const rows=[...m.children]; const issues=[];
     const rowCount=rows.length;
     rows.forEach((r,i)=>{const rc=r.getBoundingClientRect(); const cls=r.className;
