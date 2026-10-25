@@ -547,5 +547,7 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 .page .sura-head .cart > span { top:-.26em; }
 .page .sura-head .cart > span { top:-.32em; }
 .h2p small { white-space:normal; text-overflow:clip; overflow:visible; text-align:center; line-height:1.2; font-size:10.5px; overflow-wrap:anywhere; }
-.home2 { background-color:var(--h-bg); }
+html:root .home2.home2.home2 { background-color:var(--h-bg); }
+:root[data-theme="light"] .h2bar h1, :root[data-theme="sepia"] .h2bar h1 { color:var(--h-tx); }
+html:root .home2.home2.home2 { background-color:var(--h-bg); }
 :root[data-theme="light"] .h2bar h1, :root[data-theme="sepia"] .h2bar h1 { color:var(--h-tx); }
