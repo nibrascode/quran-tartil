@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, useState, memo } from "react";
+import { useLayoutEffect, useRef, useState, memo, useContext } from "react";
+import { PageChrome, suraTitle } from "./pageChrome";
 import { plan, planFixed, GAP_MIN, GAP_NAT, ROWS, type Seg, type Plan } from "./layout";
 
 /** printed line structure of pages 1 and 2: [ayah, from word, to word) pieces per line */
@@ -41,7 +42,7 @@ function build(items: Item[]): PageData {
 const GroupView = ({ g }: { g: Group }) => (
   <span className="g">
     {g.toks.map((t) => <span key={t.i} className={"w ayah" + (normalizeAr(t.w) ? "" : " mark")} data-s={g.s} data-a={g.a}>{t.w}{" "}</span>)}
-    {g.end !== undefined && <span className="end ayah" data-s={g.s} data-a={g.a} aria-label={"آية " + g.end}>{"\u06DD" + toArabicDigits(g.end)}</span>}
+    {g.end !== undefined && <span className="end ayah" data-s={g.s} data-a={g.a} aria-label={"آية " + g.end}><span className="en">{toArabicDigits(g.end)}</span></span>}
   </span>
 );
 
@@ -105,23 +106,31 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     return () => ro.disconnect();
   }, [page]); // eslint-disable-line
 
+  const ch = useContext(PageChrome);
+  const stop = (e: React.PointerEvent) => e.stopPropagation();
   const fsz = pl ? pl.f * Math.min(1, scale) : 16;
   const n = pl ? pl.rows.length : ROWS;
   return (
     <div className="page" lang="ar" dir="rtl" data-page={page}>
       <div className="frame">
-        <div className="page-head" aria-hidden="true"><span>سورة {sura.name}</span><span>الجزء {toArabicDigits(juzOfPage(page))}</span></div>
+        <div className="page-head" dir="ltr">
+          <button type="button" className="ph-back" aria-label={ch.backLabel || "Back"} onPointerDown={stop} onPointerUp={stop} onClick={() => ch.onBack?.()}><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+          <span className="ph-title" dir="auto">{suraTitle(sura.i, ch.lang)}</span>
+          <span className="ph-juz" dir="auto">{ch.juzLabel} {ch.lang === "ar" ? toArabicDigits(juzOfPage(page)) : juzOfPage(page)}</span>
+          <button type="button" className="ph-set" aria-label={ch.settingsLabel || "Settings"} onPointerDown={stop} onPointerUp={stop} onClick={() => ch.onSettings?.()}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2.5l2.2 2.6 3.4-.4.4 3.4 2.6 2.2-2.6 2.2-.4 3.4-3.4-.4L12 21.5l-2.2-2.6-3.4.4-.4-3.4L3.4 13.7 6 11.5l.4-3.4 3.4.4z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg></button>
+        </div>
+        <i className="side-orn r" aria-hidden="true" /><i className="side-orn l" aria-hidden="true" />
         <div className={"page-body" + (pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? " tall" : "")} ref={box}>
           <div className={"mtext flow" + (fixed ? " fixed" : "")} style={{ fontSize: fsz, height: pls && pls.page === page && pls.H > (box.current?.clientHeight ?? 0) + 1 ? pls.H : undefined, gridTemplateRows: `repeat(${n}, 1fr)`, ["--rowh" as string]: (pls ? pls.H / n : 40) + "px", ["--gap" as string]: GAP_MIN + "em", ["--nat" as string]: GAP_NAT + "em" }}>
             {pl?.rows.map((r, i) => {
               const sg = data.segs[r.seg];
-              if (r.type !== "line") return r.type === "head" ? <div className="sura-head orn" key={i}><span>سورة {sg.sura!.name}</span></div> : <div className="bism" key={i}>{BISMILLAH}</div>;
+              if (r.type !== "line") return r.type === "head" ? <div className="sura-head orn" key={i}><span className="cart"><span>سُورَةُ {sg.sura!.name}</span></span></div> : <div className="bism" key={i}><span>{BISMILLAH}</span></div>;
               return <div className={"ln" + (r.centered ? " c" : "")} key={i}>{sg.groups.slice(r.from, r.to).map((g, k) => <GroupView key={k} g={g} />)}</div>;
             })}
           </div>
           <div className="meas" ref={meas} aria-hidden="true">{data.segs.map((sg) => sg.groups.map((g, k) => <GroupView key={k} g={g} />))}</div>
         </div>
-        <div className="page-no">{toArabicDigits(page)}</div>
+        <div className="page-foot" aria-label={"Page " + page}><span className="pf-l" aria-hidden="true" /><span className="page-no">{ch.lang === "ar" ? toArabicDigits(page) : page}</span><span className="pf-r" aria-hidden="true" /></div>
       </div>
     </div>
   );
