@@ -651,3 +651,4 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
   .sheet { max-width:720px; margin-inline:auto; }
   .asheet, .lib-sheet { left:max(0px, calc(50% - 360px)); right:max(0px, calc(50% - 360px)); }
 }
+.page .page-head .ph-title { text-align:left; } /* Arabic name stays next to the back button, not pushed against the juz label */
