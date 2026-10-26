@@ -7,3 +7,9 @@
 
 ## Tajweed
 fetch_t.py downloads `text_uthmani_tajweed` (quran.com API v4); tajweed.py aligns the rule tags onto the QPC Hafs words (difflib) and writes markers U+E000<code>…U+E001 into mushaf15.json. 46633 words marked, 0 text mismatches.
+
+## Text audit (scripts/text-audit.test.mjs, runs in npm test; scripts/e2e/domtext.mjs in CI)
+- References in scripts/ref/: KFGQPC Hafs v18 data (hafsData_v18.json, qurancomplex.gov.sa via github.com/thetruetruth/quran-data-kfgqpc), quran.com text_qpc_hafs, quran.com QCF V1 word layout; Tanzil Uthmani (src/data) for the letter skeleton.
+- Normalised (encoding only): U+00A0 before the ayah number = space; whitespace runs = one space; the ayah number is compared separately.
+- 2026-10-26 fixes: 15:7 لَّوۡمَا, 27:20 and 36:22 مَالِيَ are one word in the KFGQPC text (quran.com word data splits them); the sajda sign ۩ is attached to its word (11 joins). Juz 4 starts at 3:92 and juz 11 at 9:94 as in the Madinah print (Tanzil metadata had 3:93 and 9:93).
+- KFGQPC v18's own page/line fields follow a newer print layout and are not used for lines; lines are checked against QCF V1 (1405H), the layout the app renders.
