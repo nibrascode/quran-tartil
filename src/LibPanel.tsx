@@ -41,9 +41,9 @@ export function LibSettings({ lang }: { lang: string }) {
 
 /** reader sheet: translation or tafsir of the tapped ayah (reader UI is Azerbaijani) */
 const SL = {
-  az: { tr: "Tərcümə", tf: "Təfsir", close: "Bağla", noTr: "Tərcümə hələ endirilməyib.", noTf: "Təfsir hələ endirilməyib.", hint: "Ayarlarda “Tərcümə və təfsir” bölməsindən endirin.", here: "Birini buradan endirin:", go: "Ayarlara keç", ay: "Ayələr" },
-  en: { tr: "Translation", tf: "Tafsir", close: "Close", noTr: "No translation downloaded yet.", noTf: "No tafsir downloaded yet.", hint: "Download one in Settings › Translation & tafsir.", here: "Download one here:", go: "Open Settings", ay: "Ayahs" },
-  ar: { tr: "الترجمة", tf: "التفسير", close: "إغلاق", noTr: "لم تُنزَّل أي ترجمة بعد.", noTf: "لم يُنزَّل أي تفسير بعد.", hint: "نزّلها من الإعدادات › الترجمة والتفسير.", here: "نزّل واحدًا من هنا:", go: "فتح الإعدادات", ay: "الآيات" },
+  az: { all_tr: "Tərcümələr", all_tf: "Təfsirlər", show: "Göstər", cur: "Seçilib", tr: "Tərcümə", tf: "Təfsir", close: "Bağla", noTr: "Tərcümə hələ endirilməyib.", noTf: "Təfsir hələ endirilməyib.", hint: "Ayarlarda “Tərcümə və təfsir” bölməsindən endirin.", here: "Birini buradan endirin:", go: "Ayarlara keç", ay: "Ayələr" },
+  en: { all_tr: "Translations", all_tf: "Tafsirs", show: "Show", cur: "Selected", tr: "Translation", tf: "Tafsir", close: "Close", noTr: "No translation downloaded yet.", noTf: "No tafsir downloaded yet.", hint: "Download one in Settings › Translation & tafsir.", here: "Download one here:", go: "Open Settings", ay: "Ayahs" },
+  ar: { all_tr: "الترجمات", all_tf: "التفاسير", show: "عرض", cur: "المختار", tr: "الترجمة", tf: "التفسير", close: "إغلاق", noTr: "لم تُنزَّل أي ترجمة بعد.", noTf: "لم يُنزَّل أي تفسير بعد.", hint: "نزّلها من الإعدادات › الترجمة والتفسير.", here: "نزّل واحدًا من هنا:", go: "فتح الإعدادات", ay: "الآيات" },
 };
 export function AyahLib({ kind, s, a, onClose, onSettings, lang = "az" }: { kind: "tr" | "tf"; s: number; a: number; onClose: () => void; onSettings: () => void; lang?: string }) {
   const u = SL[(lang as "az") in SL ? (lang as "az") : "en"];
@@ -52,6 +52,8 @@ export function AyahLib({ kind, s, a, onClose, onSettings, lang = "az" }: { kind
   const [pick, setPick] = useState(() => localStorage.getItem("qt.lib." + kind) || "");
   const [e, setE] = useState<{ text: string; from: number; to: number } | null | undefined>(undefined);
   const [tick, setTick] = useState(0);
+  const [all, setAll] = useState(false);
+  const choose = (id: string) => { setPick(id); localStorage.setItem("qt.lib." + kind, id); setAll(false); };
   useEffect(() => { Promise.all(list.map((r) => status(r.id))).then((ns) => setHave(list.filter((_, i) => ns[i] >= 114))); }, [kind, tick]);
   const lt = L[(lang as "az") in L ? (lang as "az") : "en"];
   const cur = have?.find((r) => r.id === pick) || have?.[0];
@@ -60,11 +62,15 @@ export function AyahLib({ kind, s, a, onClose, onSettings, lang = "az" }: { kind
   return (
     <div className="lib-sheet" dir={lang === "ar" ? "rtl" : "ltr"} role="dialog" aria-label={title + " " + s + ":" + a}>
       <div className="ahead"><span className="ref">{s}:{a}</span><b>{title}</b><button className="x" aria-label={u.close} onClick={onClose}>✕</button></div>
-      {have && have.length === 0 && <div className="lib-none"><p>{kind === "tr" ? u.noTr : u.noTf} {u.here}</p>
-        {list.map((r) => <Row key={r.id} r={r} t={lt} onDone={() => setTick((x) => x + 1)} />)}
+      <button className={"ib lib-allbtn" + (all ? " on" : "")} aria-expanded={all || have?.length === 0} onClick={() => setAll((v) => !v)}><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>{kind === "tr" ? u.all_tr : u.all_tf} ({list.length})</button>
+      {have && (all || have.length === 0) && <div className="lib-none lib-all">{have.length === 0 && <p>{kind === "tr" ? u.noTr : u.noTf} {u.here}</p>}
+        {list.map((r) => have.some((h) => h.id === r.id)
+          ? <div className="lib-row" data-id={r.id} key={r.id}><div className="lib-tx"><b dir="auto">{r.name}</b><small dir="auto">{r.by} · {r.size}</small></div>
+              {r.id === cur?.id ? <small className="lib-ok">✓ {u.cur}</small> : <button className="ib" onClick={() => choose(r.id)}>{u.show}</button>}</div>
+          : <Row key={r.id} r={r} t={lt} onDone={() => { choose(r.id); setTick((x) => x + 1); }} />)}
         <button className="ib lib-go" onClick={onSettings}>{u.go}</button></div>}
       {have && have.length > 1 && <div className="lib-tabs" role="tablist">{have.map((r) => <button key={r.id} role="tab" aria-selected={r.id === cur?.id} className={r.id === cur?.id ? "on" : ""} onClick={() => { setPick(r.id); localStorage.setItem("qt.lib." + kind, r.id); }} dir="auto">{r.name}</button>)}</div>}
-      {cur && <div className={"lib-body" + (cur.lang === "ar" ? " ar" : "")} dir={cur.lang === "ar" ? "rtl" : "ltr"} lang={cur.lang}>
+      {cur && !all && <div className={"lib-body" + (cur.lang === "ar" ? " ar" : "")} dir={cur.lang === "ar" ? "rtl" : "ltr"} lang={cur.lang}>
         {e === undefined ? <p>…</p> : !e || !e.text ? <p>—</p> : <>
           {e.from !== e.to && <small className="lib-range">{cur.lang === "ar" ? `الآيات ${e.from}–${e.to}` : `${u.ay} ${e.from}–${e.to}`}</small>}
           <p>{e.text}</p></>}

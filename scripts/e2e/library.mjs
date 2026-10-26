@@ -31,6 +31,33 @@ for (const [label, id, path, pick] of [["Translation", "az.musayev", "tr/az.musa
   console.log(label, id, "downloaded in", ((Date.now() - t0) / 1000).toFixed(1) + "s", "progress", sawProgress, "ok", shown === want);
   await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
 }
+// the Translations list shows only the 2 translations (no tafsirs)
+await openPanel("Translation");
+await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(300);
+const trIds = await p.locator(".lib-sheet .lib-all .lib-row").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+if (trIds !== "az.musayev,ru.kuliev") bad("translation list " + trIds);
+console.log("translation list:", trIds);
+await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
+// with one tafsir downloaded: the "Tafsirs" button lists all three, downloads another in place, shows it and remembers it
+await openPanel("Tafsir");
+await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(300);
+const rows = await p.locator(".lib-sheet .lib-all .lib-row").count();
+const tfIds = await p.locator(".lib-sheet .lib-all .lib-row").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+if (rows !== 3 || tfIds !== "saadi,muyassar,ibnkathir") bad("tafsir list " + tfIds);
+if (!(await p.locator('.lib-sheet .lib-all .lib-row[data-id="ibnkathir"] .lib-ok').count())) bad("Ibn Kathir not marked as current");
+await p.locator('.lib-sheet .lib-all .lib-row[data-id="muyassar"] button').click();
+const t1 = Date.now();
+while (!(await p.locator(".lib-sheet .lib-body p").count()) || (await p.locator(".lib-sheet .lib-body p").first().textContent()) === "…") { if (Date.now() - t1 > 300000) { bad("muyassar did not show"); break; } await p.waitForTimeout(150); }
+const mu = (await p.locator(".lib-sheet .lib-body p").first().textContent()).trim();
+const muW = file("tf/muyassar/29.json"); const muWant = (muW[7] || muW[6]).trim();
+if (mu !== muWant) bad("muyassar text after in-list download differs");
+await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
+await openPanel("Tafsir");
+const again = (await p.locator(".lib-sheet .lib-body p").first().textContent()).trim();
+if (again !== muWant) bad("selected tafsir not remembered");
+const tlist = await p.locator(".lib-sheet .lib-allbtn").textContent();
+console.log("list button:", tlist, "rows", rows, "muyassar shown + remembered", mu === muWant && again === muWant);
+await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
 // all 114 surahs of Ibn Kathir stored; a grouped entry shows its ayah range
 const stored = await p.evaluate(() => new Promise((ok) => { const r = indexedDB.open("qt-lib"); r.onsuccess = () => { const q = r.result.transaction("kv").objectStore("kv").get("ibnkathir:n"); q.onsuccess = () => ok(q.result); }; }));
 if (stored !== 114) bad("ibnkathir stored surahs " + stored);
