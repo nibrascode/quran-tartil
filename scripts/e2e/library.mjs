@@ -20,7 +20,7 @@ const waitText = async (id, label) => { const t0 = Date.now(); let saw = false;
     if (await p.locator(`.lib-sheet .lib-opt[data-id="${id}"] [role=progressbar]`).count()) saw = true;
     if (Date.now() - t0 > 600000) { bad(label + ": download did not finish"); break; } await p.waitForTimeout(150); }
   return { saw, s: ((Date.now() - t0) / 1000).toFixed(1) }; };
-const ensureOpen = async () => { if ((await p.locator(".lib-sheet .lib-allbtn").getAttribute("aria-expanded")) !== "true") await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(150); };
+const ensureOpen = async () => { await p.waitForSelector(".lib-sheet .lib-dd, .lib-sheet .lib-body, .lib-sheet .lib-hint"); if ((await p.locator(".lib-sheet .lib-allbtn").getAttribute("aria-expanded")) !== "true") await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(150); };
 const close = async () => { await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300); };
 for (const [label, id, path, pick] of [["Translation", "az.musayev", "tr/az.musayev.json", (j) => j.v[28][7]], ["Tafsir", "ibnkathir", "tf/ibnkathir/29.json", (j) => j[7]]]) {
   await openPanel(label); await ensureOpen();
