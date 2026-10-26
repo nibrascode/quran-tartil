@@ -15,12 +15,20 @@ for (const [w, h] of [[412, 860], [1280, 800]]) for (const lang of ["ar", "az", 
     if (!(await p.locator(".asheet").count())) { await p.locator('.layer:not(.pre):not(.over) .page .w.ayah[data-s="2"]').nth(5).tap({ force: true }); await p.waitForTimeout(400); }
     if (!(await p.locator(".asheet").count())) { await p.screenshot({ path: "/tmp/noasheet.png" }); console.log("taps", await p.locator('.w.ayah[data-s="2"][data-a="26"]').count()); }
     await p.locator(".asheet .arow", { hasText: LBL[lang][i] }).click({ timeout: 8000 }); await p.waitForSelector(".lib-sheet"); await p.waitForTimeout(400);
-    const ids = await p.locator(".lib-sheet .lib-all .lib-row").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
-    const dl = await p.locator(".lib-sheet .lib-all .lib-row button").count();
+    const sel = ".lib-sheet .lib-dd .lib-opt[data-id]";
+    const ids = await p.locator(sel).evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+    const dl = await p.locator(sel + " .lib-dl").count();
+    const dis = await p.locator(sel + " input[type=checkbox]:disabled").count();
+    const allRow = await p.locator(".lib-sheet .lib-dd .lib-opt.all input").count();
     const txt = await p.locator(".lib-sheet").innerText();
     const want = kind === "tr" ? "az.musayev,ru.kuliev" : "saadi,muyassar,ibnkathir";
-    const ok = ids === want && dl === want.split(",").length && !SETTINGS.test(txt) && (await p.locator(".lib-sheet .lib-allbtn").count()) === 1;
-    if (!ok) { bad++; console.log("FAIL", w + "x" + h, lang, kind, ids, dl, JSON.stringify(txt.slice(0, 160))); }
+    const k = want.split(",").length;
+    const btn = p.locator(".lib-sheet .lib-allbtn");
+    const exp0 = await btn.getAttribute("aria-expanded");
+    await btn.click(); await p.waitForTimeout(150); const closed = (await p.locator(".lib-sheet .lib-dd").count()) === 0 && (await btn.getAttribute("aria-expanded")) === "false";
+    await btn.click(); await p.waitForTimeout(150); const reopened = (await p.locator(".lib-sheet .lib-dd").count()) === 1;
+    const ok = ids === want && dl === k && dis === k && allRow === 1 && exp0 === "true" && closed && reopened && !SETTINGS.test(txt) && (await btn.textContent()).includes("(" + k + ")");
+    if (!ok) { bad++; console.log("FAIL", w + "x" + h, lang, kind, ids, dl, dis, allRow, exp0, closed, reopened, JSON.stringify(txt.slice(0, 160))); }
     else console.log("ok", w + "x" + h, lang, kind, ids);
     await p.screenshot({ path: `/tmp/panel_${w}_${lang}_${kind}.png` });
     await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);

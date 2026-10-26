@@ -663,3 +663,19 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .mushaf .wk > .end { margin:0; }
 .lib-none .lib-go { margin-top:10px; } .lib-none .lib-row { padding:6px 0; }
 .lib-allbtn { align-self:flex-start; display:inline-flex; align-items:center; gap:6px; margin:0 0 8px; } .lib-allbtn.on { background:var(--accent, #1d5a45); color:#fff; } .lib-all { overflow-y:auto; }
+/* ayah panel dropdown: tick to show, small download icon for items not on the device */
+.lib-sheet { overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.lib-sheet .lib-body { overflow:visible; flex:none; }
+.lib-allbtn .chev { margin-inline-start:2px; }
+.lib-dd { border:1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius:12px; padding:2px 10px; margin:0 0 10px; flex:none; }
+.lib-opt { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid color-mix(in srgb, currentColor 10%, transparent); }
+.lib-opt:last-child { border-bottom:0; }
+.lib-opt label { display:flex; align-items:center; gap:10px; flex:1; min-width:0; cursor:pointer; }
+.lib-opt input { width:20px; height:20px; accent-color:var(--accent, #1d5a45); flex:none; margin:0; }
+.lib-opt.off label { cursor:default; } .lib-opt.off .lib-tx b { opacity:.7; }
+.lib-opt .lib-tx { display:flex; flex-direction:column; min-width:0; } .lib-opt .lib-tx small { opacity:.65; font-size:12px; }
+.lib-dl { display:inline-flex; align-items:center; gap:4px; border:1px solid color-mix(in srgb, currentColor 25%, transparent); background:none; color:inherit; border-radius:999px; padding:5px 8px; flex:none; }
+.lib-dl small { font-size:11px; }
+.lib-name { display:block; font-family:system-ui, sans-serif; font-size:13px; color:var(--accent, #1d5a45); margin-top:6px; }
+.lib-sheet .lib-body + .lib-body { border-top:1px solid color-mix(in srgb, currentColor 12%, transparent); padding-top:6px; }
+.lib-hint { opacity:.7; font-size:14px; margin:.3em 0; }

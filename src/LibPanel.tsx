@@ -39,43 +39,81 @@ export function LibSettings({ lang }: { lang: string }) {
   );
 }
 
-/** reader sheet: translation or tafsir of the tapped ayah (reader UI is Azerbaijani) */
+/** reader sheet: translation(s) or tafsir(s) of the tapped ayah. The "Translations (2)" / "Tafsirs (3)" button toggles a dropdown
+ * with a tick per item (plus "All"); items not on the device have a small download icon with progress and become tickable once downloaded.
+ * The body shows every ticked text (stacked with its name when more than one). Ticks are remembered per kind. */
 const SL = {
-  az: { all_tr: "Tərcümələr", all_tf: "Təfsirlər", show: "Göstər", cur: "Seçilib", tr: "Tərcümə", tf: "Təfsir", close: "Bağla", noTr: "Tərcümə hələ endirilməyib.", noTf: "Təfsir hələ endirilməyib.", hint: "Ayarlarda “Tərcümə və təfsir” bölməsindən endirin.", here: "Birini buradan endirin:", go: "Ayarlara keç", ay: "Ayələr" },
-  en: { all_tr: "Translations", all_tf: "Tafsirs", show: "Show", cur: "Selected", tr: "Translation", tf: "Tafsir", close: "Close", noTr: "No translation downloaded yet.", noTf: "No tafsir downloaded yet.", hint: "Download one in Settings › Translation & tafsir.", here: "Download one here:", go: "Open Settings", ay: "Ayahs" },
-  ar: { all_tr: "الترجمات", all_tf: "التفاسير", show: "عرض", cur: "المختار", tr: "الترجمة", tf: "التفسير", close: "إغلاق", noTr: "لم تُنزَّل أي ترجمة بعد.", noTf: "لم يُنزَّل أي تفسير بعد.", hint: "نزّلها من الإعدادات › الترجمة والتفسير.", here: "نزّل واحدًا من هنا:", go: "فتح الإعدادات", ay: "الآيات" },
+  az: { all_tr: "Tərcümələr", all_tf: "Təfsirlər", all: "Hamısı", tr: "Tərcümə", tf: "Təfsir", close: "Bağla", none: "Göstərmək üçün yuxarıdakı siyahıdan birini endirin və seçin.", pickOne: "Siyahıdan birini seçin.", dl: "Endir", stop: "Dayandır", err: "Endirmə alınmadı", ay: "Ayələr" },
+  en: { all_tr: "Translations", all_tf: "Tafsirs", all: "All", tr: "Translation", tf: "Tafsir", close: "Close", none: "Download and tick one in the list above to show it here.", pickOne: "Tick one in the list.", dl: "Download", stop: "Stop", err: "Download failed", ay: "Ayahs" },
+  ar: { all_tr: "الترجمات", all_tf: "التفاسير", all: "الكل", tr: "الترجمة", tf: "التفسير", close: "إغلاق", none: "نزّل واحدًا من القائمة أعلاه وحدّده ليظهر هنا.", pickOne: "حدّد واحدًا من القائمة.", dl: "تنزيل", stop: "إيقاف", err: "تعذر التنزيل", ay: "الآيات" },
 };
-export function AyahLib({ kind, s, a, onClose, lang = "az" }: { kind: "tr" | "tf"; s: number; a: number; onClose: () => void; onSettings: () => void; lang?: string }) {
+type U = (typeof SL)["az"];
+const readTicks = (kind: string): string[] | null => {
+  try { const v = localStorage.getItem("qt.lib." + kind + ".on"); if (v) return JSON.parse(v); } catch { /* */ }
+  const old = localStorage.getItem("qt.lib." + kind); return old ? [old] : null;
+};
+
+function Opt({ r, n, on, u, onTick, onN }: { r: Res; n: number; on: boolean; u: U; onTick: (v: boolean) => void; onN: (n: number) => void }) {
+  const [busy, setBusy] = useState(false), [err, setErr] = useState(false);
+  const done = n >= 114;
+  const go = async () => { setBusy(true); setErr(false); try { await download(r, onN); } catch (e) { if ((e as Error).message !== "stopped") setErr(true); } setBusy(false); const k = await status(r.id); onN(k); if (k >= 114) onTick(true); };
+  const pct = Math.round((n / 114) * 100);
+  return (
+    <div className={"lib-opt" + (done ? "" : " off")} data-id={r.id}>
+      <label><input type="checkbox" checked={done && on} disabled={!done} onChange={(e) => onTick(e.target.checked)} />
+        <span className="lib-tx"><b dir="auto">{r.name}</b><small dir="auto">{r.by} · {r.size}</small>
+          {(busy || (n > 0 && !done)) && <span className="lib-bar" role="progressbar" aria-valuemin={0} aria-valuemax={114} aria-valuenow={n}><i style={{ width: pct + "%" }} /></span>}
+          {err && <small className="lib-err">{u.err}</small>}</span></label>
+      {!done && <button className={"lib-dl" + (busy ? " busy" : "")} aria-label={(busy ? u.stop : u.dl) + " " + r.name} onClick={() => (busy ? stop(r.id) : go())}>
+        {busy || n > 0 ? <small>{pct}%</small> : null}
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">{busy ? <path d="M7 7h10v10H7z" fill="currentColor" /> : <path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}</svg></button>}
+    </div>
+  );
+}
+
+function Text({ r, s, a, u, named }: { r: Res; s: number; a: number; u: U; named: boolean }) {
+  const [e, setE] = useState<{ text: string; from: number; to: number } | null | undefined>(undefined);
+  useEffect(() => { setE(undefined); entry(r.id, s, a).then(setE); }, [r.id, s, a]);
+  return (
+    <div className={"lib-body" + (r.lang === "ar" ? " ar" : "")} data-id={r.id} dir={r.lang === "ar" ? "rtl" : "ltr"} lang={r.lang}>
+      {named && <b className="lib-name" dir="auto">{r.name}</b>}
+      {e === undefined ? <p>…</p> : !e || !e.text ? <p>—</p> : <>
+        {e.from !== e.to && <small className="lib-range">{r.lang === "ar" ? `الآيات ${e.from}–${e.to}` : `${u.ay} ${e.from}–${e.to}`}</small>}
+        <p>{e.text}</p></>}
+      <small className="lib-src" dir="ltr">{r.by} · {r.src}</small>
+    </div>
+  );
+}
+
+export function AyahLib({ kind, s, a, onClose, lang = "az" }: { kind: "tr" | "tf"; s: number; a: number; onClose: () => void; onSettings?: () => void; lang?: string }) {
   const u = SL[(lang as "az") in SL ? (lang as "az") : "en"];
   const list = RESOURCES.filter((r) => r.kind === kind);
-  const [have, setHave] = useState<Res[] | null>(null);
-  const [pick, setPick] = useState(() => localStorage.getItem("qt.lib." + kind) || "");
-  const [e, setE] = useState<{ text: string; from: number; to: number } | null | undefined>(undefined);
-  const [tick, setTick] = useState(0);
-  const [all, setAll] = useState(false);
-  const choose = (id: string) => { setPick(id); localStorage.setItem("qt.lib." + kind, id); setAll(false); };
-  useEffect(() => { Promise.all(list.map((r) => status(r.id))).then((ns) => setHave(list.filter((_, i) => ns[i] >= 114))); }, [kind, tick]);
-  const lt = L[(lang as "az") in L ? (lang as "az") : "en"];
-  const cur = have?.find((r) => r.id === pick) || have?.[0];
-  useEffect(() => { if (!cur) return; setE(undefined); entry(cur.id, s, a).then(setE); }, [cur?.id, s, a]);
+  const [ns, setNs] = useState<Record<string, number> | null>(null);
+  const [ticks, setTicks] = useState<string[] | null>(() => readTicks(kind));
+  const [open, setOpen] = useState<boolean | null>(null);
+  useEffect(() => { Promise.all(list.map((r) => status(r.id))).then((v) => setNs(Object.fromEntries(list.map((r, i) => [r.id, v[i]])))); }, [kind]);
+  const have = ns ? list.filter((r) => ns[r.id] >= 114) : [];
+  // never chosen yet: show the first downloaded one
+  const on = ticks ?? (have[0] ? [have[0].id] : []);
+  const save = (v: string[]) => { setTicks(v); localStorage.setItem("qt.lib." + kind + ".on", JSON.stringify(v)); };
+  const tick = (id: string, v: boolean) => save(v ? [...new Set([...on, id])] : on.filter((x) => x !== id));
+  const shown = have.filter((r) => on.includes(r.id));
+  const isOpen = open ?? (ns !== null && have.length === 0); // nothing on the device yet: the list starts open
+  useEffect(() => { if (ns && open === null) setOpen(have.length === 0); }, [ns !== null]);
+  const allOn = have.length > 0 && have.every((r) => on.includes(r.id));
   const title = kind === "tr" ? u.tr : u.tf;
   return (
     <div className="lib-sheet" dir={lang === "ar" ? "rtl" : "ltr"} role="dialog" aria-label={title + " " + s + ":" + a}>
       <div className="ahead"><span className="ref">{s}:{a}</span><b>{title}</b><button className="x" aria-label={u.close} onClick={onClose}>✕</button></div>
-      <button className={"ib lib-allbtn" + (all ? " on" : "")} aria-expanded={all || have?.length === 0} onClick={() => setAll((v) => !v)}><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>{kind === "tr" ? u.all_tr : u.all_tf} ({list.length})</button>
-      {have && (all || have.length === 0) && <div className="lib-none lib-all">{have.length === 0 && <p>{kind === "tr" ? u.noTr : u.noTf} {u.here}</p>}
-        {list.map((r) => have.some((h) => h.id === r.id)
-          ? <div className="lib-row" data-id={r.id} key={r.id}><div className="lib-tx"><b dir="auto">{r.name}</b><small dir="auto">{r.by} · {r.size}</small></div>
-              {r.id === cur?.id ? <small className="lib-ok">✓ {u.cur}</small> : <button className="ib" onClick={() => choose(r.id)}>{u.show}</button>}</div>
-          : <Row key={r.id} r={r} t={lt} onDone={() => { choose(r.id); setTick((x) => x + 1); }} />)}
-</div>}
-      {have && have.length > 1 && <div className="lib-tabs" role="tablist">{have.map((r) => <button key={r.id} role="tab" aria-selected={r.id === cur?.id} className={r.id === cur?.id ? "on" : ""} onClick={() => { setPick(r.id); localStorage.setItem("qt.lib." + kind, r.id); }} dir="auto">{r.name}</button>)}</div>}
-      {cur && !all && <div className={"lib-body" + (cur.lang === "ar" ? " ar" : "")} dir={cur.lang === "ar" ? "rtl" : "ltr"} lang={cur.lang}>
-        {e === undefined ? <p>…</p> : !e || !e.text ? <p>—</p> : <>
-          {e.from !== e.to && <small className="lib-range">{cur.lang === "ar" ? `الآيات ${e.from}–${e.to}` : `${u.ay} ${e.from}–${e.to}`}</small>}
-          <p>{e.text}</p></>}
-        <small className="lib-src" dir="ltr">{cur.by} · {cur.src}</small>
+      <button className={"ib lib-allbtn" + (isOpen ? " on" : "")} aria-expanded={isOpen} onClick={() => setOpen(!isOpen)}>
+        {kind === "tr" ? u.all_tr : u.all_tf} ({list.length})
+        <svg className="chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d={isOpen ? "M6 15l6-6 6 6" : "M6 9l6 6 6-6"} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+      {isOpen && ns && <div className="lib-dd" role="group">
+        <div className={"lib-opt all" + (have.length ? "" : " off")}><label><input type="checkbox" checked={allOn} disabled={!have.length} onChange={(e) => save(e.target.checked ? have.map((r) => r.id) : [])} /><span className="lib-tx"><b>{u.all}</b></span></label></div>
+        {list.map((r) => <Opt key={r.id} r={r} n={ns[r.id] || 0} on={on.includes(r.id)} u={u} onTick={(v) => tick(r.id, v)} onN={(k) => setNs((m) => ({ ...(m || {}), [r.id]: k }))} />)}
       </div>}
+      {ns && !shown.length && <p className="lib-hint">{have.length ? u.pickOne : u.none}</p>}
+      {shown.map((r) => <Text key={r.id} r={r} s={s} a={a} u={u} named={shown.length > 1} />)}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { playPageTurn } from "./pageSound";
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
-import { Page } from "./Page";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from "react";
+import { Page, SpreadFit } from "./Page";
 import { PAGES } from "./quran";
 
 type Props = { page: number; setPage: (p: number) => void; onTap: (ayah: { s: number; a: number } | null, page?: number) => void; scale?: number; animate?: boolean };
@@ -23,6 +23,13 @@ export const spreadBase = (p: number) => (p % 2 ? p : p - 1);
  */
 export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Props) {
   const spread = useSpread();
+  const [fits, setFits] = useState<Record<number, number>>({});
+  const setSpreadFit = useCallback((pg: number, f: number) => setFits((m) => (Math.abs((m[pg] || 0) - f) < 0.01 ? m : { ...m, [pg]: f })), []);
+  const spreadFit = useMemo(() => {
+    const a = spreadBase(page), ps = [a, a + 1].filter((x) => x <= PAGES && x > 2);
+    const fs = ps.map((x) => fits[x]);
+    return { set: setSpreadFit, f: fs.every((x) => x > 0) ? Math.min(...fs) : 0 };
+  }, [fits, page, setSpreadFit]);
   const [flip, setFlip] = useState<Flip | null>(null);
   /** two-page spread: the turned leaf swings over the spine (CSS animation), drag gives live feedback */
   const [spTurn, setSpTurn] = useState<{ dir: "next" | "prev"; k: number } | null>(null);
@@ -143,7 +150,7 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
   return (
     <div className="reader" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel} role="region" aria-label={`Mushaf ${page}`}>
       {spread ? (
-        <div className="layer"><div ref={spEl} key={spTurn?.k} className={"spread" + (spTurn && animate && !reduced() ? " sp-" + spTurn.dir : "")} dir="rtl"><Page page={spreadBase(page)} scale={scale} />{spreadBase(page) + 1 <= PAGES && <Page page={spreadBase(page) + 1} scale={scale} />}</div></div>
+        <SpreadFit.Provider value={spreadFit}><div className="layer"><div ref={spEl} key={spTurn?.k} className={"spread" + (spTurn && animate && !reduced() ? " sp-" + spTurn.dir : "")} dir="rtl"><Page page={spreadBase(page)} scale={scale} />{spreadBase(page) + 1 <= PAGES && <Page page={spreadBase(page) + 1} scale={scale} />}</div></div></SpreadFit.Provider>
       ) : (
         <>
           {/* the current page and both neighbours stay mounted and laid out (keyed by page number), so a turn only changes

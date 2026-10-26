@@ -14,52 +14,47 @@ const openPanel = async (label) => {
   if (!(await p.locator(".asheet").count())) { await p.locator(L + ' .w.ayah[data-s="29"][data-a="8"]').first().click({ force: true }); await p.waitForTimeout(400); }
   await p.locator(".asheet .arow", { hasText: label }).click(); await p.waitForSelector(".lib-sheet"); await p.waitForTimeout(400);
 };
+const bodyText = async (id) => (await p.locator(`.lib-sheet .lib-body[data-id="${id}"] p`).first().textContent())?.trim();
+const waitText = async (id, label) => { const t0 = Date.now(); let saw = false;
+  while (!(await p.locator(`.lib-sheet .lib-body[data-id="${id}"] p`).count()) || (await bodyText(id)) === "…") {
+    if (await p.locator(`.lib-sheet .lib-opt[data-id="${id}"] [role=progressbar]`).count()) saw = true;
+    if (Date.now() - t0 > 600000) { bad(label + ": download did not finish"); break; } await p.waitForTimeout(150); }
+  return { saw, s: ((Date.now() - t0) / 1000).toFixed(1) }; };
+const ensureOpen = async () => { if ((await p.locator(".lib-sheet .lib-allbtn").getAttribute("aria-expanded")) !== "true") await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(150); };
+const close = async () => { await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300); };
 for (const [label, id, path, pick] of [["Translation", "az.musayev", "tr/az.musayev.json", (j) => j.v[28][7]], ["Tafsir", "ibnkathir", "tf/ibnkathir/29.json", (j) => j[7]]]) {
-  await openPanel(label);
-  if (!(await p.locator(".lib-sheet .lib-none").count())) bad(label + ": no download offer when nothing is downloaded");
-  const t0 = Date.now(); let sawProgress = false;
-  await p.locator(`.lib-sheet .lib-row[data-id="${id}"] button`).click();
-  while (!(await p.locator(".lib-sheet .lib-body p").count()) || (await p.locator(".lib-sheet .lib-body p").first().textContent()) === "…") {
-    if (await p.locator(`.lib-sheet .lib-row[data-id="${id}"] [role=progressbar]`).count()) sawProgress = true;
-    if (Date.now() - t0 > 600000) { bad(label + ": download did not finish"); break; }
-    await p.waitForTimeout(150);
-  }
-  const shown = (await p.locator(".lib-sheet .lib-body p").first().textContent()).trim();
-  const want = pick(file(path)).trim();
-  if (shown !== want) bad(`${label}: 29:8 text differs from the hosted file (${shown.slice(0, 40)} | ${want.slice(0, 40)})`);
-  if (id === "ibnkathir" && !sawProgress) bad("no progress bar seen for Ibn Kathir");
-  console.log(label, id, "downloaded in", ((Date.now() - t0) / 1000).toFixed(1) + "s", "progress", sawProgress, "ok", shown === want);
-  await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
+  await openPanel(label); await ensureOpen();
+  if ((await p.locator(".lib-sheet .lib-dd .lib-opt[data-id] .lib-dl").count()) < 2) bad(label + ": no download icons");
+  await p.locator(`.lib-sheet .lib-opt[data-id="${id}"] .lib-dl`).click();
+  const r = await waitText(id, label);
+  const shown = await bodyText(id), want = pick(file(path)).trim();
+  if (shown !== want) bad(`${label}: 29:8 text differs from the hosted file`);
+  if (!(await p.locator(`.lib-sheet .lib-opt[data-id="${id}"] input`).isChecked())) bad(label + ": not ticked after download");
+  if (id === "ibnkathir" && !r.saw) bad("no progress bar seen for Ibn Kathir");
+  console.log(label, id, "downloaded in", r.s + "s", "progress", r.saw, "ok", shown === want);
+  await close();
 }
-// the Translations list shows only the 2 translations (no tafsirs)
-await openPanel("Translation");
-await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(300);
-const trIds = await p.locator(".lib-sheet .lib-all .lib-row").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
-if (trIds !== "az.musayev,ru.kuliev") bad("translation list " + trIds);
-console.log("translation list:", trIds);
-await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
-// with one tafsir downloaded: the "Tafsirs" button lists all three, downloads another in place, shows it and remembers it
-await openPanel("Tafsir");
-await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(300);
-const rows = await p.locator(".lib-sheet .lib-all .lib-row").count();
-const tfIds = await p.locator(".lib-sheet .lib-all .lib-row").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
-if (rows !== 3 || tfIds !== "saadi,muyassar,ibnkathir") bad("tafsir list " + tfIds);
-if (!(await p.locator('.lib-sheet .lib-all .lib-row[data-id="ibnkathir"] .lib-ok').count())) bad("Ibn Kathir not marked as current");
-await p.locator('.lib-sheet .lib-all .lib-row[data-id="muyassar"] button').click();
-const t1 = Date.now();
-while (!(await p.locator(".lib-sheet .lib-body p").count()) || (await p.locator(".lib-sheet .lib-body p").first().textContent()) === "…") { if (Date.now() - t1 > 300000) { bad("muyassar did not show"); break; } await p.waitForTimeout(150); }
-const mu = (await p.locator(".lib-sheet .lib-body p").first().textContent()).trim();
+// tafsir: download Muyassar too → both ticked and stacked with names; untick Ibn Kathir → only Muyassar; remembered; "All" ticks both
+await openPanel("Tafsir"); await ensureOpen();
+await p.locator('.lib-sheet .lib-opt[data-id="muyassar"] .lib-dl').click(); await waitText("muyassar", "muyassar");
 const muW = file("tf/muyassar/29.json"); const muWant = (muW[7] || muW[6]).trim();
-if (mu !== muWant) bad("muyassar text after in-list download differs");
-await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
-await openPanel("Tafsir");
-const again = (await p.locator(".lib-sheet .lib-body p").first().textContent()).trim();
-if (again !== muWant) bad("selected tafsir not remembered");
-const tlist = await p.locator(".lib-sheet .lib-allbtn").textContent();
-console.log("list button:", tlist, "rows", rows, "muyassar shown + remembered", mu === muWant && again === muWant);
-await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(300);
-// all 114 surahs of Ibn Kathir stored; a grouped entry shows its ayah range
-const stored = await p.evaluate(() => new Promise((ok) => { const r = indexedDB.open("qt-lib"); r.onsuccess = () => { const q = r.result.transaction("kv").objectStore("kv").get("ibnkathir:n"); q.onsuccess = () => ok(q.result); }; }));
-if (stored !== 114) bad("ibnkathir stored surahs " + stored);
-console.log("ibnkathir surahs stored", stored, "errors", errs);
+let bodies = await p.locator(".lib-sheet .lib-body").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+if (bodies !== "muyassar,ibnkathir" || (await p.locator(".lib-sheet .lib-body .lib-name").count()) !== 2) bad("two ticked tafsirs not stacked with names: " + bodies);
+if ((await bodyText("muyassar")) !== muWant) bad("muyassar text differs");
+await p.locator('.lib-sheet .lib-opt[data-id="ibnkathir"] input').uncheck(); await p.waitForTimeout(200);
+bodies = await p.locator(".lib-sheet .lib-body").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+if (bodies !== "muyassar" || (await p.locator(".lib-sheet .lib-body .lib-name").count()) !== 0) bad("untick did not hide Ibn Kathir: " + bodies);
+await p.locator(".lib-sheet .lib-allbtn").click(); await p.waitForTimeout(150);
+if (await p.locator(".lib-sheet .lib-dd").count()) bad("dropdown did not close");
+await close(); await openPanel("Tafsir");
+bodies = await p.locator(".lib-sheet .lib-body").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+if (bodies !== "muyassar") bad("ticks not remembered: " + bodies);
+if (await p.locator(".lib-sheet .lib-dd").count()) bad("dropdown should start closed when something is downloaded");
+await ensureOpen(); await p.locator(".lib-sheet .lib-opt.all input").check(); await p.waitForTimeout(300);
+await p.screenshot({ path: "/tmp/lib_all.png" });
+bodies = await p.locator(".lib-sheet .lib-body").evaluateAll((e) => e.map((x) => x.dataset.id).join(","));
+if (bodies !== "muyassar,ibnkathir") bad("All did not tick every downloaded tafsir: " + bodies);
+console.log("tafsir ticks: stacked/untick/remember/all ok", bodies);
+await close();
+if (errs.length) bad("page errors " + errs.join(" | "));
 await b.close(); if (fail || errs.length) process.exit(1);

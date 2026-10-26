@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, memo, useContext, useId } from "react";
+import { createContext, useEffect, useLayoutEffect, useRef, useState, memo, useContext, useId } from "react";
 import { PageChrome, suraTitle } from "./pageChrome";
 import { Illumination, useOpeningGeom } from "./Opening";
 import { toArabicDigits, firstSuraOfPage, juzOfPage, suras } from "./quran";
@@ -46,10 +46,13 @@ const Line = ({ r, tj }: { r: Seg[]; tj?: boolean }) => {
   return <>{out}</>;
 };
 
+/** two-page spread: both pages report their fitted size and render the smaller one, so the spread has one font size */
+export const SpreadFit = createContext<{ set: (page: number, f: number) => void; f: number } | null>(null);
 export const Page = memo(function Page({ page, scale = 1 }: { page: number; scale?: number }) {
   const [rows, setRows] = useState<Row[] | null>(DATA ? DATA[page - 1] : null);
   useEffect(() => { if (!DATA) loadMushaf().then((d) => setRows(d[page - 1])); else setRows(DATA[page - 1]); }, [page]);
   const box = useRef<HTMLDivElement>(null);
+  const share = useContext(SpreadFit); const shareRef = useRef(share); shareRef.current = share;
   const meas = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState<{ page: number; f: number; short: boolean[]; tallH: number } | null>(null);
   const sura = firstSuraOfPage(page);
@@ -72,8 +75,10 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       const f = Math.max(10, land ? byW : Math.min(byW, H / units / lh));
       const tallH = land ? Math.max(H, units * f * lh) : 0;
       // the printed mushaf justifies every line; only the opening pages and a surah's short closing line are centred
-      const short = ws.map((w) => page <= 2 || (w > 0 && w * f < W * 0.62));
+      const endsSura = (r: Row) => { if (isHead(r) || !r.length) return false; const [ss, aa, t] = r[r.length - 1]; return aa === suras[ss - 1].ayas && isEnd(t.trim().split(/\s+/).pop() || ""); };
+      const short = ws.map((w, i) => page <= 2 || (endsSura(rows[i]) && w > 0 && w * f < W * 0.62));
       setFit({ page, f, short, tallH });
+      shareRef.current?.set(page, f);
     };
     run();
     const ro = new ResizeObserver(run);
@@ -103,7 +108,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     open = { f, lines: lay(f).map((l, j) => ({ y: l.y, w: j === k - 1 ? l.nat : l.a, c: j === k - 1 })) };
   }
   const stop = (e: React.PointerEvent) => e.stopPropagation();
-  const f = fit && fit.page === page ? fit.f * Math.min(1, scale) : 0;
+  const f = fit && fit.page === page && !(share && page > 2 && !share.f) ? Math.min(fit.f, share && share.f > 0 ? share.f : Infinity) * Math.min(1, scale) : 0;
   return (
     <div className="page" lang="ar" dir="rtl" data-page={page}>
       <div className="frame">

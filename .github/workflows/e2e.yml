@@ -40,6 +40,9 @@ jobs:
       - name: Rendered Quran text on all 604 pages equals the audited data (tajweed spans reassemble exactly)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/domtext.mjs
+      - name: Spread pages share one font size and every line is justified (1024x673, 1280x800, all spreads)
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/justify.mjs
       - name: Panels list downloads in place (no Settings empty state), ar/az/en, phone + spread
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/panels.mjs
