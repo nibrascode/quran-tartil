@@ -679,3 +679,7 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .lib-name { display:block; font-family:system-ui, sans-serif; font-size:13px; color:var(--accent, #1d5a45); margin-top:6px; }
 .lib-sheet .lib-body + .lib-body { border-top:1px solid color-mix(in srgb, currentColor 12%, transparent); padding-top:6px; }
 .lib-hint { opacity:.7; font-size:14px; margin:.3em 0; }
+.lib-dd { max-height:46vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.lib-find { width:100%; box-sizing:border-box; margin:8px 0 4px; padding:8px 10px; border-radius:10px; border:1px solid color-mix(in srgb, currentColor 20%, transparent); background:transparent; color:inherit; font:inherit; font-size:14px; }
+.lib-grp { display:block; font-size:12px; font-weight:600; opacity:.7; padding:10px 0 2px; color:var(--accent, #1d5a45); }
+.lib-fn { white-space:pre-wrap; font-size:12.5px; line-height:1.55; opacity:.8; border-inline-start:2px solid color-mix(in srgb, currentColor 20%, transparent); padding-inline-start:8px; margin:0 0 .6em; }

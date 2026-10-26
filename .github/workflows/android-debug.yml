@@ -19,7 +19,7 @@ jobs:
         run: npx cap add android
       - name: Permissions (microphone, notifications, vibration, wake lock)
         run: bash scripts/android-setup.sh
-      - run: rm -rf dist/tf # tafsirs are downloaded on demand from the site, not bundled
+      - run: rm -rf dist/tf dist/tr # translations and tafsirs are downloaded on demand from the site, not bundled
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android

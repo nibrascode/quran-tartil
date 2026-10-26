@@ -56,5 +56,16 @@ bodies = await p.locator(".lib-sheet .lib-body").evaluateAll((e) => e.map((x) =>
 if (bodies !== "muyassar,ibnkathir") bad("All did not tick every downloaded tafsir: " + bodies);
 console.log("tafsir ticks: stacked/untick/remember/all ok", bodies);
 await close();
+// a QuranEnc RTL translation with footnotes: found via search, downloaded per surah, unaltered text, rendered RTL, footnote shown separately
+await openPanel("Translation"); await ensureOpen();
+await p.locator(".lib-sheet .lib-find").fill("Urdu"); await p.waitForTimeout(150);
+await p.locator('.lib-sheet .lib-opt[data-id="urdu_junagarhi"] .lib-dl').click(); await waitText("urdu_junagarhi", "urdu");
+const ur = file("tr/urdu_junagarhi/29.json");
+if ((await bodyText("urdu_junagarhi")) !== ur.t[7].trim()) bad("urdu 29:8 differs from the hosted file");
+if ((await p.locator('.lib-sheet .lib-body[data-id="urdu_junagarhi"]').getAttribute("dir")) !== "rtl") bad("urdu not RTL");
+if (ur.f?.[7] && (await p.locator('.lib-sheet .lib-body[data-id="urdu_junagarhi"] .lib-fn').textContent()) !== ur.f[7]) bad("urdu footnote not shown");
+if (!/QuranEnc\.com — .*\(v\d/.test(await p.locator('.lib-sheet .lib-body[data-id="urdu_junagarhi"] .lib-src').textContent())) bad("QuranEnc credit/version missing");
+console.log("urdu QuranEnc: rtl, footnote", !!ur.f?.[7]);
+await close();
 if (errs.length) bad("page errors " + errs.join(" | "));
 await b.close(); if (fail || errs.length) process.exit(1);

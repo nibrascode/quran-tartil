@@ -1,0 +1,273 @@
+[
+ {
+  "id": "az.musayev",
+  "lang": "az",
+  "lname": "Azərbaycanca",
+  "name": "Əlixan Musayev",
+  "dir": "ltr",
+  "bytes": 943770,
+  "src": "Tanzil.net (az.musayev)"
+ },
+ {
+  "id": "ru.kuliev",
+  "lang": "ru",
+  "lname": "Русский",
+  "name": "Эльмир Кулиев",
+  "dir": "ltr",
+  "bytes": 1430634,
+  "src": "Tanzil.net (ru.kuliev)"
+ },
+ {
+  "id": "turkish_shahin",
+  "lang": "tr",
+  "lname": "Türkçe",
+  "name": "Ali Özek ve diğerleri",
+  "dir": "ltr",
+  "bytes": 936582,
+  "per": true,
+  "ver": "1.0.0",
+  "src": "QuranEnc.com — Turkish Translation - Dr. Ali Ozek and others (v1.0.0, 2017-05-22)"
+ },
+ {
+  "id": "turkish_rwwad",
+  "lang": "tr",
+  "lname": "Türkçe",
+  "name": "Rowwad Tercüme Merkezi",
+  "dir": "ltr",
+  "bytes": 904723,
+  "per": true,
+  "ver": "1.0.4",
+  "src": "QuranEnc.com — Turkish Translation - Rowwad Translation Center (v1.0.4, 2025-09-28)"
+ },
+ {
+  "id": "english_saheeh",
+  "lang": "en",
+  "lname": "English",
+  "name": "Saheeh International",
+  "dir": "ltr",
+  "bytes": 1074963,
+  "per": true,
+  "ver": "1.1.2",
+  "src": "QuranEnc.com — English Translation - Noor International Center (v1.1.2, 2025-06-24)"
+ },
+ {
+  "id": "english_hilali_khan",
+  "lang": "en",
+  "lname": "English",
+  "name": "Muhammad Taqi-ud-Din al-Hilali, Muhammad Muhsin Khan",
+  "dir": "ltr",
+  "bytes": 1586206,
+  "per": true,
+  "ver": "1.1.2",
+  "src": "QuranEnc.com — English Translation - Hilali and Khan (v1.1.2, 2025-09-03)"
+ },
+ {
+  "id": "english_rwwad",
+  "lang": "en",
+  "lname": "English",
+  "name": "Rowwad Translation Center",
+  "dir": "ltr",
+  "bytes": 1120427,
+  "per": true,
+  "ver": "1.0.20",
+  "src": "QuranEnc.com — English Translation - Rowwad Translation Center (v1.0.20, 2026-10-20)"
+ },
+ {
+  "id": "urdu_junagarhi",
+  "lang": "ur",
+  "lname": "اردو",
+  "name": "محمد جوناگڑھی",
+  "dir": "rtl",
+  "bytes": 5833493,
+  "per": true,
+  "ver": "1.1.3",
+  "src": "QuranEnc.com — Urdu Translation - Muhammad Junagarhi (v1.1.3, 2025-08-13)"
+ },
+ {
+  "id": "persian_ih",
+  "lang": "fa",
+  "lname": "فارسی",
+  "name": "مرکز ترجمه رواد",
+  "dir": "rtl",
+  "bytes": 1587085,
+  "per": true,
+  "ver": "1.1.3",
+  "src": "QuranEnc.com — Persian Translation - Rowwad Translation Center (v1.1.3, 2026-02-23)"
+ },
+ {
+  "id": "uzbek_mansour",
+  "lang": "uz",
+  "lname": "Oʻzbekcha",
+  "name": "Алоуддин Мансур",
+  "dir": "ltr",
+  "bytes": 2541389,
+  "per": true,
+  "ver": "1.0.0",
+  "src": "QuranEnc.com — Uzbek Translation - Alaauddin Mansour (v1.0.0, 2025-06-24)"
+ },
+ {
+  "id": "tajik_arifi",
+  "lang": "tg",
+  "lname": "Тоҷикӣ",
+  "name": "Маркази тарҷумаи Равод",
+  "dir": "ltr",
+  "bytes": 1798927,
+  "per": true,
+  "ver": "1.0.2",
+  "src": "QuranEnc.com — Tajiki Translation - Rowwad Translation Center (v1.0.2, 2024-04-23)"
+ },
+ {
+  "id": "kyrgyz_hakimov",
+  "lang": "ky",
+  "lname": "Кыргызча",
+  "name": "Шамсуддин Хакимов",
+  "dir": "ltr",
+  "bytes": 2398886,
+  "per": true,
+  "ver": "1.0.2",
+  "src": "QuranEnc.com — Kyrgyz Translation - Shamsuddin Hakimov (v1.0.2, 2024-02-20)"
+ },
+ {
+  "id": "uyghur_saleh",
+  "lang": "ug",
+  "lname": "ئۇيغۇرچە",
+  "name": "مۇھەممەد سالىھ",
+  "dir": "rtl",
+  "bytes": 2129926,
+  "per": true,
+  "ver": "1.0.2",
+  "src": "QuranEnc.com — Uyghur Translation - Muhammad Saleh (v1.0.2, 2025-09-03)"
+ },
+ {
+  "id": "pashto_rwwad",
+  "lang": "ps",
+  "lname": "پښتو",
+  "name": "د رواد د ژباړې مرکز",
+  "dir": "rtl",
+  "bytes": 1368297,
+  "per": true,
+  "ver": "1.0.1",
+  "src": "QuranEnc.com — Pashto Translation - Rowwad Translation Center (v1.0.1, 2024-02-15)"
+ },
+ {
+  "id": "kurdish_bamoki",
+  "lang": "ku",
+  "lname": "Kurdî",
+  "name": "محمد صالح بامۆکی",
+  "dir": "rtl",
+  "bytes": 1672919,
+  "per": true,
+  "ver": "1.1.1",
+  "src": "QuranEnc.com — Kurdish Translation - Muhammad Salih Bamoki (v1.1.1, 2023-02-16)"
+ },
+ {
+  "id": "hindi_omari",
+  "lang": "hi",
+  "lname": "हिन्दी",
+  "name": "अज़ीज़ुल-हक़ उमरी",
+  "dir": "ltr",
+  "bytes": 3201258,
+  "per": true,
+  "ver": "1.1.5",
+  "src": "QuranEnc.com — Hindi Translation - Azizul Haq Al-Omari (v1.1.5, 2025-08-05)"
+ },
+ {
+  "id": "tamil_omar",
+  "lang": "ta",
+  "lname": "தமிழ்",
+  "name": "உமர் ஷரீஃப்",
+  "dir": "ltr",
+  "bytes": 3515097,
+  "per": true,
+  "ver": "1.0.4",
+  "src": "QuranEnc.com — Tamil Translation - Omar Sharif (v1.0.4, 2026-10-21)"
+ },
+ {
+  "id": "french_rashid",
+  "lang": "fr",
+  "lname": "Français",
+  "name": "Rachid Maach",
+  "dir": "ltr",
+  "bytes": 1219197,
+  "per": true,
+  "ver": "1.0.3",
+  "src": "QuranEnc.com — French Translation - Rachid Maach (v1.0.3, 2026-06-21)"
+ },
+ {
+  "id": "german_bubenheim",
+  "lang": "de",
+  "lname": "Deutsch",
+  "name": "Frank Bubenheim, Nadeem Elyas",
+  "dir": "ltr",
+  "bytes": 959112,
+  "per": true,
+  "ver": "1.1.4",
+  "src": "QuranEnc.com — German Translation - Frank Bubenheim (v1.1.4, 2025-02-03)"
+ },
+ {
+  "id": "dutch_center",
+  "lang": "nl",
+  "lname": "Nederlands",
+  "name": "Rowwad Vertaalcentrum",
+  "dir": "ltr",
+  "bytes": 1070249,
+  "per": true,
+  "ver": "2.0.10",
+  "src": "QuranEnc.com — Dutch Translation - Rowwad Translation Center (v2.0.10, 2025-11-19)"
+ },
+ {
+  "id": "spanish_garcia",
+  "lang": "es",
+  "lname": "Español",
+  "name": "Isa García",
+  "dir": "ltr",
+  "bytes": 1182385,
+  "per": true,
+  "ver": "1.0.2",
+  "src": "QuranEnc.com — Spanish Translation - Isa Garcia (v1.0.2, 2026-02-25)"
+ },
+ {
+  "id": "portuguese_nasr",
+  "lang": "pt",
+  "lname": "Português",
+  "name": "Helmi Nasr",
+  "dir": "ltr",
+  "bytes": 1170183,
+  "per": true,
+  "ver": "1.4.1",
+  "src": "QuranEnc.com — Portuguese Translation - Helmi Nasr (v1.4.1, 2026-02-23)"
+ },
+ {
+  "id": "hausa_gummi",
+  "lang": "ha",
+  "lname": "Hausa",
+  "name": "Abubakar Mahmoud Gumi",
+  "dir": "ltr",
+  "bytes": 1242375,
+  "per": true,
+  "ver": "1.2.2",
+  "src": "QuranEnc.com — Hausa Translation - Abu Bakr Jumi (v1.2.2, 2025-06-26)"
+ },
+ {
+  "id": "somali_yacob",
+  "lang": "so",
+  "lname": "Soomaali",
+  "name": "Cabdullaahi Xasan Yacquub",
+  "dir": "ltr",
+  "bytes": 1117653,
+  "per": true,
+  "ver": "1.0.26",
+  "src": "QuranEnc.com — Somali Translation - Abdullah Hasan Yaqoub (v1.0.26, 2025-09-04)"
+ },
+ {
+  "id": "japanese_saeedsato",
+  "lang": "ja",
+  "lname": "日本語",
+  "name": "サイード佐藤",
+  "dir": "ltr",
+  "bytes": 2618927,
+  "per": true,
+  "ver": "1.0.13",
+  "src": "QuranEnc.com — Japanese Translation - Saeed Sato (v1.0.13, 2026-06-24)"
+ }
+]

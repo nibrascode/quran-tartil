@@ -1,0 +1,186 @@
+{
+ "english_hilali_khan": {
+  "title": "English Translation - Hilali and Khan",
+  "version": "1.1.2",
+  "last_update": 1756933433,
+  "lang": "en",
+  "dir": "ltr",
+  "description": "Translated by Taqi-ud-Din al-Hilali and Muhammad Muhsin Khan."
+ },
+ "english_saheeh": {
+  "title": "English Translation - Noor International Center",
+  "version": "1.1.2",
+  "last_update": 1750772247,
+  "lang": "en",
+  "dir": "ltr",
+  "description": "Issued by Noor International Center."
+ },
+ "english_rwwad": {
+  "title": "English Translation - Rowwad Translation Center",
+  "version": "1.0.20",
+  "last_update": 1792534351,
+  "lang": "en",
+  "dir": "ltr",
+  "description": "Translated by the team of the Rowwad Translation Center, in cooperation with the Rabwah Dawah Association, the Islamic Content Service Association in Languages, and the IslamHouse.com website."
+ },
+ "urdu_junagarhi": {
+  "title": "Urdu Translation - Muhammad Junagarhi",
+  "version": "1.1.3",
+  "last_update": 1755085049,
+  "lang": "ur",
+  "dir": "rtl",
+  "description": "Translated by Muhammad Ibrahim Junagarhi, developed under the supervision of the Rowwad Translation Center. The original translation is available for the purpose of expressing opinion, evaluation, and continuous development."
+ },
+ "german_bubenheim": {
+  "title": "German Translation - Frank Bubenheim",
+  "version": "1.1.4",
+  "last_update": 1738581834,
+  "lang": "de",
+  "dir": "ltr",
+  "description": "Translated by ‘Abdullah as-Sāmit (Frank Bubenheim) and Dr. Nadim Elias."
+ },
+ "spanish_garcia": {
+  "title": "Spanish Translation - Isa Garcia",
+  "version": "1.0.2",
+  "last_update": 1772054067,
+  "lang": "es",
+  "dir": "ltr",
+  "description": "Translated by Muhammad Isa Garcia"
+ },
+ "hausa_gummi": {
+  "title": "Hausa Translation - Abu Bakr Jumi",
+  "version": "1.2.2",
+  "last_update": 1750944776,
+  "lang": "ha",
+  "dir": "ltr",
+  "description": "Translated by Abu Bakr Mahmoud Jumi, developed under the supervision of the Rowwad Translation Center. The original translation is available for the purpose of expressing opinion, evaluation, and continuous development."
+ },
+ "uyghur_saleh": {
+  "title": "Uyghur Translation - Muhammad Saleh",
+  "version": "1.0.2",
+  "last_update": 1756933089,
+  "lang": "ug",
+  "dir": "rtl",
+  "description": "Translated by Muhammad Saleh, developed under the supervision of the Rowwad Translation Center. The original translation is available for the purpose of expressing opinion, evaluation, and continuous development."
+ },
+ "turkish_shahin": {
+  "title": "Turkish Translation - Dr. Ali Ozek and others",
+  "version": "1.0.0",
+  "last_update": 1495486800,
+  "lang": "tr",
+  "dir": "ltr",
+  "description": "Translated by Ali Ozek and others, developed under the supervision of Rowad Translation Center. The original translation is available for expressing opinion, evaluation, and continuous development."
+ },
+ "turkish_rwwad": {
+  "title": "Turkish Translation - Rowwad Translation Center",
+  "version": "1.0.4",
+  "last_update": 1759071052,
+  "lang": "tr",
+  "dir": "ltr",
+  "description": "Translated by the team of the Rowwad Translation Center, in cooperation with the Rabwah Dawah Association, the Islamic Content Service Association in Languages, and the IslamHouse.com website."
+ },
+ "persian_ih": {
+  "title": "Persian Translation - Rowwad Translation Center",
+  "version": "1.1.3",
+  "last_update": 1771883634,
+  "lang": "fa",
+  "dir": "rtl",
+  "description": "Translated by the team of the Rowwad Translation Center, in cooperation with the Rabwah Dawah Association, the Islamic Content Service Association in Languages, and the IslamHouse.com website."
+ },
+ "tajik_arifi": {
+  "title": "Tajiki Translation - Rowwad Translation Center",
+  "version": "1.0.2",
+  "last_update": 1713872419,
+  "lang": "tg",
+  "dir": "ltr",
+  "description": "Translated by the team of the Rowwad Translation Center, in cooperation with the Rabwah Dawah Association, the Islamic Content Service Association in Languages, and the IslamHouse.com website."
+ },
+ "pashto_rwwad": {
+  "title": "Pashto Translation - Rowwad Translation Center",
+  "version": "1.0.1",
+  "last_update": 1707999381,
+  "lang": "ps",
+  "dir": "rtl",
+  "description": "Translated by the team of the Rowwad Translation Center, in cooperation with the Rabwah Dawah Association, the Islamic Content Service Association in Languages, and the IslamHouse.com website."
+ },
+ "dutch_center": {
+  "title": "Dutch Translation - Rowwad Translation Center",
+  "version": "2.0.10",
+  "last_update": 1763559803,
+  "lang": "nl",
+  "dir": "ltr",
+  "description": "Issued by the Dutch Islamic Center and developed under the supervision of Rowwad Translation Center"
+ },
+ "uzbek_mansour": {
+  "title": "Uzbek Translation - Alaauddin Mansour",
+  "version": "1.0.0",
+  "last_update": 1750751975,
+  "lang": "uz",
+  "dir": "ltr",
+  "description": "Translated by Alaauddin Mansour. Developed under the supervision of Rowwad Translation Center. The original translation is available for the purpose of expressing opinion, evaluation, and continuous development."
+ },
+ "kyrgyz_hakimov": {
+  "title": "Kyrgyz Translation - Shamsuddin Hakimov",
+  "version": "1.0.2",
+  "last_update": 1708440100,
+  "lang": "ky",
+  "dir": "ltr",
+  "description": "Translated by Shamsuddin Hakimov Abdulkhaliq and developed under the supervision of Rowwad Translation Center"
+ },
+ "kurdish_bamoki": {
+  "title": "Kurdish Translation - Muhammad Salih Bamoki",
+  "version": "1.1.1",
+  "last_update": 1676535258,
+  "lang": "ku",
+  "dir": "rtl",
+  "description": "Translated by Muhammad Salih Bamoki. Developed under the supervision of the Rowwad Translation Center. The original translation is available for the purpose of expressing opinion, evaluation, and continuous development."
+ },
+ "hindi_omari": {
+  "title": "Hindi Translation - Azizul Haq Al-Omari",
+  "version": "1.1.5",
+  "last_update": 1754421301,
+  "lang": "hi",
+  "dir": "ltr",
+  "description": "Translated by Azizul Haq Al-Omari"
+ },
+ "tamil_omar": {
+  "title": "Tamil Translation - Omar Sharif",
+  "version": "1.0.4",
+  "last_update": 1792595421,
+  "lang": "ta",
+  "dir": "ltr",
+  "description": "Translated by Shaykh Omar Sharif ibn Abdussalam"
+ },
+ "somali_yacob": {
+  "title": "Somali Translation - Abdullah Hasan Yaqoub",
+  "version": "1.0.26",
+  "last_update": 1756974933,
+  "lang": "so",
+  "dir": "ltr",
+  "description": "Translated by Abdullah Hasan Yaqoub"
+ },
+ "japanese_saeedsato": {
+  "title": "Japanese Translation - Saeed Sato",
+  "version": "1.0.13",
+  "last_update": 1782308017,
+  "lang": "ja",
+  "dir": "ltr",
+  "description": "Translated by Saeed Sato, developed under the supervision of the Rowwad Translation Center. The original translation is available for the purpose of expressing opinion, evaluation, and continuous development."
+ },
+ "french_rashid": {
+  "title": "French Translation - Rachid Maach",
+  "version": "1.0.3",
+  "last_update": 1782043143,
+  "lang": "fr",
+  "dir": "ltr",
+  "description": "Translated by Rashid Ma’ash"
+ },
+ "portuguese_nasr": {
+  "title": "Portuguese Translation - Helmi Nasr",
+  "version": "1.4.1",
+  "last_update": 1771850195,
+  "lang": "pt",
+  "dir": "ltr",
+  "description": "Translated by Dr. Helmi Nasr, developed under the supervision of Rowwad Translation Center"
+ }
+}
