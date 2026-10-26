@@ -652,3 +652,9 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
   .asheet, .lib-sheet { left:max(0px, calc(50% - 360px)); right:max(0px, calc(50% - 360px)); }
 }
 .page .page-head .ph-title { text-align:left; } /* Arabic name stays next to the back button, not pushed against the juz label */
+/* two-page spread turn: next = the new right page lands over the spine, prev = the new left page */
+.spread { transition:transform .12s ease-out; }
+.spread.sp-next .page:first-child, .spread.sp-prev .page:last-child { animation:spLeaf .42s cubic-bezier(.25,.8,.3,1) both; backface-visibility:hidden; }
+.spread.sp-next .page:first-child { transform-origin:left center; --sp-a:-150deg; }
+.spread.sp-prev .page:last-child { transform-origin:right center; --sp-a:150deg; }
+@keyframes spLeaf { from { transform:perspective(1800px) rotateY(var(--sp-a)); filter:brightness(.8); } to { transform:perspective(1800px) rotateY(0); filter:none; } }

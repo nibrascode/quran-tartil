@@ -24,6 +24,9 @@ export const spreadBase = (p: number) => (p % 2 ? p : p - 1);
 export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Props) {
   const spread = useSpread();
   const [flip, setFlip] = useState<Flip | null>(null);
+  /** two-page spread: the turned leaf swings over the spine (CSS animation), drag gives live feedback */
+  const [spTurn, setSpTurn] = useState<{ dir: "next" | "prev"; k: number } | null>(null);
+  const spEl = useRef<HTMLDivElement>(null);
   const over = useRef<HTMLDivElement>(null);
   const shade = useRef<HTMLDivElement>(null);
   const prog = useRef(0);
@@ -80,7 +83,7 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
 
   const turn = useCallback((dir: "next" | "prev") => {
     if (flipRef.current) return;
-    if (spread) { const to = spreadBase(page) + (dir === "next" ? 2 : -2); if (to >= 1 && to <= PAGES) setPage(to); return; }
+    if (spread) { const to = spreadBase(page) + (dir === "next" ? 2 : -2); if (to >= 1 && to <= PAGES) { setSpTurn({ dir, k: Date.now() }); setPage(to); playPageTurn(); } return; }
     const f = start(dir);
     if (f) requestAnimationFrame(() => requestAnimationFrame(() => tween(f, 1)));
   }, [start, tween, spread, page, setPage]);
@@ -103,8 +106,9 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
     if (!d.moved && Math.abs(d.dx) > 10 && Math.abs(d.dx) > Math.abs(dy)) {
       d.moved = true;
       (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-      start(d.dx > 0 ? "next" : "prev");
+      if (!spread) start(d.dx > 0 ? "next" : "prev");
     }
+    if (d.moved && spread && spEl.current) spEl.current.style.transform = `translateX(${Math.max(-60, Math.min(60, d.dx * 0.15))}px)`;
     const f = flipRef.current;
     if (d.moved && f) {
       const w = (e.currentTarget as HTMLElement).clientWidth * 0.75;
@@ -115,6 +119,12 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
     const d = drag.current; drag.current = null;
     if (!d) return;
     const f = flipRef.current;
+    if (d.moved && spread) {
+      if (spEl.current) spEl.current.style.transform = "";
+      const fast = Math.abs(d.dx) / Math.max(1, Date.now() - d.t) > 0.5;
+      if (Math.abs(d.dx) > 60 || fast) turn(d.dx > 0 ? "next" : "prev");
+      return;
+    }
     if (d.moved && f) { const fast = Math.abs(d.dx) / Math.max(1, Date.now() - d.t) > 0.5; tween(f, prog.current > 0.3 || fast ? 1 : 0); return; }
     if (Math.abs(d.dx) < 10 && Math.abs(e.clientY - d.y) < 10 && Date.now() - d.t < 500) {
       const r = (e.currentTarget as HTMLElement).getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
@@ -126,14 +136,14 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
       }
     }
   };
-  const cancel = () => { drag.current = null; const f = flipRef.current; if (f) tween(f, 0); };
+  const cancel = () => { drag.current = null; if (spEl.current) spEl.current.style.transform = ""; const f = flipRef.current; if (f) tween(f, 0); };
 
   const under = flip ? (flip.dir === "next" ? flip.to : page) : page;
   const overPage = flip ? (flip.dir === "next" ? page : flip.to) : 0;
   return (
     <div className="reader" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel} role="region" aria-label={`Mushaf ${page}`}>
       {spread ? (
-        <div className="layer"><div className="spread" dir="rtl"><Page page={spreadBase(page)} scale={scale} />{spreadBase(page) + 1 <= PAGES && <Page page={spreadBase(page) + 1} scale={scale} />}</div></div>
+        <div className="layer"><div ref={spEl} key={spTurn?.k} className={"spread" + (spTurn && animate && !reduced() ? " sp-" + spTurn.dir : "")} dir="rtl"><Page page={spreadBase(page)} scale={scale} />{spreadBase(page) + 1 <= PAGES && <Page page={spreadBase(page) + 1} scale={scale} />}</div></div>
       ) : (
         <>
           {/* the current page and both neighbours stay mounted and laid out (keyed by page number), so a turn only changes
