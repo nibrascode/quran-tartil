@@ -683,3 +683,4 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .lib-find { width:100%; box-sizing:border-box; margin:8px 0 4px; padding:8px 10px; border-radius:10px; border:1px solid color-mix(in srgb, currentColor 20%, transparent); background:transparent; color:inherit; font:inherit; font-size:14px; }
 .lib-grp { display:block; font-size:12px; font-weight:600; opacity:.7; padding:10px 0 2px; color:var(--accent, #1d5a45); }
 .lib-fn { white-space:pre-wrap; font-size:12.5px; line-height:1.55; opacity:.8; border-inline-start:2px solid color-mix(in srgb, currentColor 20%, transparent); padding-inline-start:8px; margin:0 0 .6em; }
+.lib-nav { display:inline-flex; gap:6px; } .lib-nav .ib { padding:6px 10px; display:inline-flex; align-items:center; } .lib-nav .ib:disabled { opacity:.35; }

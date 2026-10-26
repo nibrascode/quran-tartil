@@ -276,7 +276,7 @@ export function App() {
           </div>
         </div>
       )}
-      {lib && <AyahLib lang={lang} kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
+      {lib && <AyahLib lang={lang} kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onNav={(ns, na) => { setLib({ kind: lib.kind, s: ns, a: na }); const p = pageOfAyah(ns, na); if (p !== page) setPage(p); setSel({ s: ns, a: na }); }} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
       {toast && <div className="toast" role="status">{toast}</div>}
       {home && <Home lang={lang} st={st} page={page}
         onResume={() => { setHome(false); setBars(false); }}
