@@ -703,3 +703,6 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .lv-see { display:block; margin-top:6px; opacity:.6; font-size:12px; }
 .lv-none { opacity:.7; font-size:14px; text-align:center; padding:6px 10px; }
 .page .page-head .ph-list { background:none; border:0; color:inherit; padding:4px 6px; display:inline-flex; align-items:center; }
+.lv-title { flex:1; display:flex; flex-direction:column; align-items:center; line-height:1.2; } .lv-title b { font-size:16px; } .lv-pno { font-size:12px; opacity:.85; }
+.lv-head { position:relative; z-index:2; flex:none; } .lv-body { touch-action:pan-y; scroll-padding-top:10px; } .lv-card { scroll-margin-top:10px; }
+.lv-tf { touch-action:pan-y; }
