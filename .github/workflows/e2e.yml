@@ -49,6 +49,9 @@ jobs:
       - name: List view (ayah cards with translation / tafsir), toggle from the top bar
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/listview.mjs
+      - name: Notes, translation search, continue, juz goal, hifz, night, share text/image, Arabic labels
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/features.mjs
       - name: Panels list downloads in place (no Settings empty state), ar/az/en, phone + spread
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/panels.mjs
