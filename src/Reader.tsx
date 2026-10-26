@@ -26,7 +26,7 @@ export function Reader({ page, setPage, onTap, scale = 1, animate = true }: Prop
   const [fits, setFits] = useState<Record<number, number>>({});
   const setSpreadFit = useCallback((pg: number, f: number) => setFits((m) => (Math.abs((m[pg] || 0) - f) < 0.01 ? m : { ...m, [pg]: f })), []);
   const spreadFit = useMemo(() => {
-    const a = spreadBase(page), ps = [a, a + 1].filter((x) => x <= PAGES && x > 2);
+    const a = spreadBase(page), ps = [a, a + 1].filter((x) => x <= PAGES);
     const fs = ps.map((x) => fits[x]);
     return { set: setSpreadFit, f: fs.every((x) => x > 0) ? Math.min(...fs) : 0 };
   }, [fits, page, setSpreadFit]);

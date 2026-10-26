@@ -23,7 +23,7 @@ function scallop(cx: number, cy: number, rx: number, ry: number, lobes: number, 
 
 export function Illumination({ w, h, med, id }: { w: number; h: number; med: { cx: number; cy: number; rx: number; ry: number }; id: string }) {
   if (!w || !h) return null;
-  const i1 = Math.min(w, h) * 0.075, i2 = i1 + Math.min(w, h) * 0.06;
+  const i1 = Math.min(w, h) * 0.035, i2 = i1 + Math.min(w, h) * 0.035; // thin bands, as printed: the medallion gets the room
   const { cx, cy, rx, ry } = med;
   return (
     <svg className="opn-ill" width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
@@ -66,11 +66,12 @@ export function useOpeningGeom(page: number) {
     run(); const ro = new ResizeObserver(run); ro.observe(el); return () => ro.disconnect();
   }, [page]);
   const { w, h } = g;
-  const i2 = Math.min(w, h) * 0.135;
+  const i2 = Math.min(w, h) * 0.07;
   const cartH = Math.max(26, Math.min(h * 0.06, 46));
-  const cartY = i2 + h * 0.07;
-  const top = cartY + cartH + h * 0.02, bot = h - i2 - h * 0.04;
-  const med = { cx: w / 2, cy: (top + bot) / 2, rx: (w - 2 * i2) * 0.47, ry: Math.min((bot - top) / 2 * 0.8, (w - 2 * i2) * 0.6) };
+  const cartY = i2 + h * 0.03;
+  const top = cartY + cartH + h * 0.035, bot = h - i2 - h * 0.035;
+  // big medallion: nearly the whole inner panel (the rings above/below need ≈ 0.2 ry)
+  const med = { cx: w / 2, cy: (top + bot) / 2, rx: (w - 2 * i2) * 0.465, ry: Math.min((bot - top) / 2 / 1.12, (w - 2 * i2) * 0.8) };
   return { ref, w, h, med, cartY, cartH };
 }
 

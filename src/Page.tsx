@@ -97,16 +97,21 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     const run = () => { if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return; setOws({ page, ws: Array.from(m.children).map((c) => (c as HTMLElement).offsetWidth / 100) }); };
     run(); document.fonts?.ready.then(run);
   }, [page, rows]);
+  let openOwn = 0;
   let open: { f: number; lines: { y: number; w: number; c: boolean }[] } | null = null;
   if (page <= 2 && rows && ows && ows.page === page && og.w) {
     const idx = rows.map((r, i) => (isHead(r) && r[0] === "h" ? -1 : i)).filter((i) => i >= 0);
     const k = idx.length, { cx, cy, rx, ry } = og.med; void cx;
-    const P = 2.2; // line pitch in em, as printed
-    const lay = (f: number) => idx.map((ri, j) => { const y = cy + (j - (k - 1) / 2) * f * P; const q = (y - cy) / (ry * 1.08); const a = 2 * rx * Math.sqrt(Math.max(0, 1 - q * q)) * 0.9; return { y, a, nat: ows.ws[ri] * f }; });
-    let f = Math.min(og.h, og.w) / 8;
-    while (f > 8 && (lay(f).some((l) => l.nat > l.a) || k * f * P > ry * 1.7)) f *= 0.97;
+    const P = 2.0; // line pitch in em
+    const lay = (f: number) => idx.map((ri, j) => { const y = cy + (j - (k - 1) / 2) * f * P; const q = (y - cy) / (ry * 1.04); const a = 2 * rx * Math.sqrt(Math.max(0, 1 - q * q)) * 0.93; return { y, a, nat: ows.ws[ri] * f }; });
+    let f = Math.min(og.h, og.w) / 6;
+    while (f > 8 && (lay(f).some((l) => l.nat > l.a) || k * f * P > ry * 1.8)) f *= 0.98;
+    openOwn = f;
+    // two-page spread 1|2: both opening pages use the smaller size
+    if (share && share.f > 0) f = Math.min(f, share.f);
     open = { f, lines: lay(f).map((l, j) => ({ y: l.y, w: j === k - 1 ? l.nat : l.a, c: j === k - 1 })) };
   }
+  useEffect(() => { if (page <= 2 && openOwn) shareRef.current?.set(page, openOwn); }, [page, openOwn]);
   const stop = (e: React.PointerEvent) => e.stopPropagation();
   const f = fit && fit.page === page && !(share && page > 2 && !share.f) ? Math.min(fit.f, share && share.f > 0 ? share.f : Infinity) * Math.min(1, scale) : 0;
   return (
@@ -121,7 +126,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
         <i className="side-orn r" aria-hidden="true" /><i className="side-orn l" aria-hidden="true" />
         {page <= 2 ? <div className="page-body opn" ref={(el) => { (box as React.MutableRefObject<HTMLDivElement | null>).current = el; (og.ref as React.MutableRefObject<HTMLDivElement | null>).current = el; }}>
           <Illumination w={og.w} h={og.h} med={og.med} id={uid} />
-          <div className="mtext mushaf opn-t" style={{ fontSize: open ? open.f : 16, visibility: open ? undefined : "hidden" }}>
+          <div className="mtext mushaf opn-t" style={{ fontSize: open ? open.f : 16, visibility: open && !(share && !share.f) ? undefined : "hidden" }}>
             {(() => { let j = 0; return rows?.map((r, i) => {
               if (isHead(r) && r[0] === "h") return <div className="sura-head opn-cart" key={i} style={{ top: og.cartY, height: og.cartH, fontSize: og.cartH * 0.5 }}><span>سُورَةُ {suras[r[1] - 1].name}</span></div>;
               const L = open?.lines[j++]; const st = L ? { top: L.y - (open!.f * 1.0), width: L.w, height: open!.f * 2 } : undefined;
