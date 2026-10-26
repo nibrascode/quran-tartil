@@ -32,11 +32,19 @@ function TjWord({ w }: { w: string }) {
   while ((m = re.exec(w))) parts.push(m[1] ? <span key={k++} className={"tj tj-" + (m[1] === m[1].toUpperCase() && m[1] !== m[1].toLowerCase() ? m[1].toLowerCase() + "2" : m[1])}>{m[2]}</span> : m[3]);
   return <>{parts}</>;
 }
-const Line = ({ r, tj }: { r: Seg[]; tj?: boolean }) => (
-  <>{r.flatMap(([s, a, t], k) => t.split(" ").map((w, i) => isEnd(w)
-    ? <span key={k + "-" + i} className="end ayah" data-s={s} data-a={a} aria-label={"آية " + a}>{w}</span>
-    : <span key={k + "-" + i} className="w ayah" data-s={s} data-a={a}>{tj && w.includes("\uE000") ? <TjWord w={w} /> : plain(w)}</span>))}</>
-);
+/** an ayah-end medallion is kept close to the words on both sides (as printed): previous word + marker + next word form one
+ *  justification unit, so the line's free space goes between ordinary words, never around the markers */
+const Line = ({ r, tj }: { r: Seg[]; tj?: boolean }) => {
+  const toks = r.flatMap(([s, a, t], k) => t.split(" ").map((w, i) => isEnd(w)
+    ? { end: true, el: <span key={k + "-" + i} className="end ayah" data-s={s} data-a={a} aria-label={"آية " + a}>{w}</span> }
+    : { end: false, el: <span key={k + "-" + i} className="w ayah" data-s={s} data-a={a}>{tj && w.includes("\uE000") ? <TjWord w={w} /> : plain(w)}</span> }));
+  const out: React.ReactNode[] = [];
+  for (let i = 0; i < toks.length; ) {
+    let j = i + 1; while (j < toks.length && (toks[j - 1].end || toks[j].end)) j++;
+    out.push(j - i > 1 ? <span className="wk" key={"g" + i}>{toks.slice(i, j).map((t) => t.el)}</span> : toks[i].el); i = j;
+  }
+  return <>{out}</>;
+};
 
 export const Page = memo(function Page({ page, scale = 1 }: { page: number; scale?: number }) {
   const [rows, setRows] = useState<Row[] | null>(DATA ? DATA[page - 1] : null);
@@ -53,7 +61,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     const run = () => {
       // never fit with a fallback font: widths would be wrong and the text would visibly reflow once the real font arrives
       if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return;
-      const ws = Array.from(m.children).map((c) => (c as HTMLElement).getBoundingClientRect().width / 100);
+      const ws = Array.from(m.children).map((c) => (c as HTMLElement).offsetWidth / 100);
       const max = Math.max(...ws.filter((w) => w > 0), 1);
       const cs = getComputedStyle(b); const W = b.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2, H = b.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
       const units = rows.reduce((u, r) => u + (isHead(r) && r[0] === "h" ? HEAD_W : 1), 0) + Math.max(0, n - rows.length);
@@ -81,7 +89,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
   useLayoutEffect(() => {
     if (page > 2 || !rows) return;
     const m = meas.current; if (!m) return;
-    const run = () => { if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return; setOws({ page, ws: Array.from(m.children).map((c) => (c as HTMLElement).getBoundingClientRect().width / 100) }); };
+    const run = () => { if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return; setOws({ page, ws: Array.from(m.children).map((c) => (c as HTMLElement).offsetWidth / 100) }); };
     run(); document.fonts?.ready.then(run);
   }, [page, rows]);
   let open: { f: number; lines: { y: number; w: number; c: boolean }[] } | null = null;

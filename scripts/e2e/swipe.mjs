@@ -2,7 +2,7 @@
 import { chromium } from "playwright-core";
 const URL = process.env.URL || "http://127.0.0.1:4180/";
 const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox"] });
-const sizes = (process.env.S || "390x844,768x1024,800x1280,834x1194,1024x768,1280x800").split(",");
+const sizes = (process.env.S || "390x844,768x1024,800x1280,834x1194,1024x768,1024x673,1280x800").split(",");
 let bad = 0;
 for (const s of sizes) {
   const [w, h] = s.split("x").map(Number);
@@ -23,6 +23,9 @@ for (const s of sizes) {
   const step = spread ? 2 : 1;
   const p0 = await pg();
   await swipe(w * 0.25, w * 0.8); const p1 = await pg();        // left-to-right = next
+  // both pages of a spread must be fitted alike after a turn (regression: the turning leaf was measured mid-animation)
+  const fsz = await p.evaluate(() => [...document.querySelectorAll(".layer:not(.pre):not(.over) .page .mtext")].map((m) => parseFloat(m.style.fontSize)));
+  if (spread && Math.min(...fsz) < Math.max(...fsz) * 0.85) { bad++; console.log(s, "spread pages fitted differently", fsz); }
   await swipe(w * 0.8, w * 0.25); const p2 = await pg();        // right-to-left = previous
   await tap(w * 0.06); const p3 = await pg();                   // left edge = next
   await tap(w * 0.94); const p4 = await pg();                   // right edge = previous

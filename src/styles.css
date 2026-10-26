@@ -643,7 +643,7 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 /* tablets: keep the printed proportions (text block ≈ 0.64 × its height) instead of stretching lines across a wide screen */
 @media (min-width:600px) and (min-height:600px) {
   .page .frame { container-type:size; }
-  .page .page-body:not(.opn):not(.tall) { padding-inline:max(0px, calc((100cqw - 0.66 * (100cqh - 112px)) / 2 - 12px)); }
+  .page .page-body:not(.opn):not(.tall) { padding-inline:max(0px, calc((100cqw - 0.74 * (100cqh - 112px)) / 2 - 14px)); }
 }
 /* tablets: readable column widths for home and sheets instead of full-width stretching */
 @media (min-width:700px) {
@@ -658,3 +658,6 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .spread.sp-next .page:first-child { transform-origin:left center; --sp-a:-150deg; }
 .spread.sp-prev .page:last-child { transform-origin:right center; --sp-a:150deg; }
 @keyframes spLeaf { from { transform:perspective(1800px) rotateY(var(--sp-a)); filter:brightness(.8); } to { transform:perspective(1800px) rotateY(0); filter:none; } }
+/* ayah medallion with its neighbouring words: tight, print-like spacing on both sides */
+.mushaf .wk { display:inline-flex; align-items:center; gap:.14em; white-space:nowrap; direction:rtl; }
+.mushaf .wk > .end { margin:0; }
