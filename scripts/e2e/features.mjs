@@ -66,8 +66,22 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
   await p.locator(".ph-hifz:visible").first().click(); await p.waitForTimeout(500);
   const vis = () => p.evaluate((sel) => { const pg = [...document.querySelectorAll(sel)].find((x) => x.querySelector('.w.ayah[data-s="2"][data-a="4"]')); const ws = !pg ? [] : [...pg.querySelectorAll('.w.ayah[data-s="2"][data-a="4"]')]; return ws.map((w) => getComputedStyle(w).color === "rgba(0, 0, 0, 0)" ? 0 : 1).join(""); }, L.split(",")[0].trim() + ", .spread .page");
   const v0 = await vis(); if (!/^10+$/.test(v0)) bad(lang + ": hifz not first-word-only " + v0);
-  await tapAyah(4).catch(() => {}); await p.locator(`.w.ayah[data-s="2"][data-a="4"]`).first().click({ force: true }).catch(() => {}); await p.waitForTimeout(300);
-  if (/0/.test(await vis())) bad(lang + ": tap did not reveal " + (await vis()));
+  if (await p.locator(".ph-hifz:visible circle").count()) bad(lang + ": hifz icon is still an eye");
+  await p.locator(`.w.ayah[data-s="2"][data-a="4"]`).first().click({ force: true }); await p.waitForTimeout(300);
+  const nx = p.locator(".hz-next"); const NX = { en: "Continue", az: "Davam", ar: "متابعة" }[lang];
+  if (!(await nx.count()) || !(await nx.textContent()).includes(NX)) bad(lang + ": no Continue button");
+  else {
+    const v1 = await vis(); if (v1 !== "1" + "0".repeat(v1.length - 1)) bad(lang + ": tap revealed more than the first word " + v1);
+    await nx.click(); await p.waitForTimeout(150); if (!(await vis()).startsWith("110")) bad(lang + ": Continue did not reveal word 2: " + (await vis()));
+    for (let i = 0; i < 40 && (await nx.textContent()).includes("2:4"); i++) await nx.click();
+    if (/0/.test(await vis())) bad(lang + ": ayah not fully revealed " + (await vis()));
+    if (!(await nx.textContent()).includes("2:5")) bad(lang + ": did not move to the next ayah: " + (await nx.textContent()));
+    for (let i = 0; i < 40 && (await nx.textContent()).includes("2:5"); i++) await nx.click();
+    await p.waitForTimeout(900);
+    const on6 = await p.evaluate(() => [...document.querySelectorAll('.layer:not(.pre):not(.over) .page .w.ayah[data-s="2"][data-a="6"], .spread .page .w.ayah[data-s="2"][data-a="6"]')].some((e) => e.getBoundingClientRect().width > 0));
+    if (!(await nx.textContent()).includes("2:6") || !on6) bad(lang + ": did not cross to the next page (2:6) " + (await nx.textContent()));
+  }
+  await p.evaluate(() => localStorage.setItem("page", "2")); await p.reload({ waitUntil: "networkidle" }); await p.waitForTimeout(1000);
   // hifz in the list view
   if (await p.locator(".asheet").count()) await p.locator(".asheet .x").click();
   await p.locator(".ph-list:visible").first().click(); await p.waitForSelector(".lv .lv-card");
