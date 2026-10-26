@@ -11,6 +11,7 @@ import { exportBackup, mergeBackup, parseBackup } from "./backup";
 import { DiagPanel } from "./Diag";
 import { PreciseCard } from "./PreciseCard";
 import { Capacitor } from "@capacitor/core";
+import { LibSettings } from "./LibPanel";
 
 type TT = (typeof T)["en"];
 
@@ -172,6 +173,10 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
 
       <Card id="hap" icon="vibrate" tone="p" title={t.hapticsT} value={p.haptics ? "●" : "—"} open={open === "hap"} toggle={toggle}>
         <Switch on={p.haptics} onChange={(v) => { pref("haptics", v); if (v) haptic("ok"); }} label={t.hapticsT} desc={t.hapticsD} />
+      </Card>
+
+      <Card id="lib" icon="book" tone="b" title={({ az: "Tərcümə və təfsir", ar: "الترجمة والتفسير", en: "Translation & tafsir" } as Record<string, string>)[lang] || "Translation & tafsir"} open={open === "lib"} toggle={toggle}>
+        {open === "lib" && <LibSettings lang={lang} />}
       </Card>
 
       <Group>{t.setApp}</Group>

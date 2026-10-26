@@ -16,6 +16,7 @@ import { haptic, setHaptics } from "./haptic";
 import { pageOfAyah } from "./quran";
 import { markRead, toggleBookmark, useSettings, dayKey } from "./store";
 import { mergeWeak, clearWeak, weakAyahs, addCards, review, dueKeys, PASS_SCORE } from "./practice";
+import { AyahLib } from "./LibPanel";
 
 export type Theme = "light" | "dark" | "sepia";
 const THEME_COLOR: Record<Theme, string> = { light: "#f6efdc", dark: "#0f1412", sepia: "#e9d9b4" };
@@ -190,6 +191,7 @@ export function App() {
     return () => { dead = true; h?.remove(); };
   }, []);
   const sura = useMemo(() => firstSuraOfPage(page), [page]);
+  const [lib, setLib] = useState<{ kind: "tr" | "tf"; s: number; a: number } | null>(null);
   const isBm = sel ? st.bookmarks.some((b) => b.s === sel.s && b.a === sel.a) : false;
 
   async function copy() {
@@ -247,6 +249,8 @@ export function App() {
             <button className="x" aria-label={t.closeA} onClick={() => setSel(null)}><Ic n="close" size={20} /></button>
           </div>
           <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? t.bookmarkRemove : t.bookmarkAdd}</button>
+          <button className="arow" onClick={() => setLib({ kind: "tr", s: sel.s, a: sel.a })}><Ic n="book" />Tərcümə</button>
+          <button className="arow" onClick={() => setLib({ kind: "tf", s: sel.s, a: sel.a })}><Ic n="info" />Təfsir</button>
           <button className="arow" onClick={copy}><Ic n="copy" />{t.copy}</button>
           <button className="arow" onClick={share}><Ic n="share" />{t.share}</button>
           {RECITE && <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{t.reciteThisAyah}</button>}
@@ -270,6 +274,7 @@ export function App() {
           </div>
         </div>
       )}
+      {lib && <AyahLib kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
       {toast && <div className="toast" role="status">{toast}</div>}
       {home && <Home lang={lang} st={st} page={page}
         onResume={() => { setHome(false); setBars(false); }}

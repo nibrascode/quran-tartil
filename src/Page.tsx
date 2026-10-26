@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState, memo, useContext } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, memo, useContext, useId } from "react";
 import { PageChrome, suraTitle } from "./pageChrome";
+import { Illumination, useOpeningGeom } from "./Opening";
 import { toArabicDigits, firstSuraOfPage, juzOfPage, suras } from "./quran";
 
 /**
@@ -74,6 +75,25 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
   }, [page, rows, n]);
 
   const ch = useContext(PageChrome);
+  const og = useOpeningGeom(page);
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const [ows, setOws] = useState<{ page: number; ws: number[] } | null>(null);
+  useLayoutEffect(() => {
+    if (page > 2 || !rows) return;
+    const m = meas.current; if (!m) return;
+    const run = () => { if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return; setOws({ page, ws: Array.from(m.children).map((c) => (c as HTMLElement).getBoundingClientRect().width / 100) }); };
+    run(); document.fonts?.ready.then(run);
+  }, [page, rows]);
+  let open: { f: number; lines: { y: number; w: number; c: boolean }[] } | null = null;
+  if (page <= 2 && rows && ows && ows.page === page && og.w) {
+    const idx = rows.map((r, i) => (isHead(r) && r[0] === "h" ? -1 : i)).filter((i) => i >= 0);
+    const k = idx.length, { cx, cy, rx, ry } = og.med; void cx;
+    const P = 2.2; // line pitch in em, as printed
+    const lay = (f: number) => idx.map((ri, j) => { const y = cy + (j - (k - 1) / 2) * f * P; const q = (y - cy) / (ry * 1.08); const a = 2 * rx * Math.sqrt(Math.max(0, 1 - q * q)) * 0.9; return { y, a, nat: ows.ws[ri] * f }; });
+    let f = Math.min(og.h, og.w) / 8;
+    while (f > 8 && (lay(f).some((l) => l.nat > l.a) || k * f * P > ry * 1.7)) f *= 0.97;
+    open = { f, lines: lay(f).map((l, j) => ({ y: l.y, w: j === k - 1 ? l.nat : l.a, c: j === k - 1 })) };
+  }
   const stop = (e: React.PointerEvent) => e.stopPropagation();
   const f = fit && fit.page === page ? fit.f * Math.min(1, scale) : 0;
   return (
@@ -86,6 +106,17 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
           <button type="button" className="ph-set" aria-label={ch.settingsLabel || "Settings"} onPointerDown={stop} onPointerUp={stop} onClick={() => ch.onSettings?.()}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2.5l2.2 2.6 3.4-.4.4 3.4 2.6 2.2-2.6 2.2-.4 3.4-3.4-.4L12 21.5l-2.2-2.6-3.4.4-.4-3.4L3.4 13.7 6 11.5l.4-3.4 3.4.4z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg></button>
         </div>
         <i className="side-orn r" aria-hidden="true" /><i className="side-orn l" aria-hidden="true" />
+        {page <= 2 ? <div className="page-body opn" ref={(el) => { (box as React.MutableRefObject<HTMLDivElement | null>).current = el; (og.ref as React.MutableRefObject<HTMLDivElement | null>).current = el; }}>
+          <Illumination w={og.w} h={og.h} med={og.med} id={uid} />
+          <div className="mtext mushaf opn-t" style={{ fontSize: open ? open.f : 16, visibility: open ? undefined : "hidden" }}>
+            {(() => { let j = 0; return rows?.map((r, i) => {
+              if (isHead(r) && r[0] === "h") return <div className="sura-head opn-cart" key={i} style={{ top: og.cartY, height: og.cartH, fontSize: og.cartH * 0.5 }}><span>سُورَةُ {suras[r[1] - 1].name}</span></div>;
+              const L = open?.lines[j++]; const st = L ? { top: L.y - (open!.f * 1.0), width: L.w, height: open!.f * 2 } : undefined;
+              return isHead(r) ? <div className="bism opn-l c" key={i} style={st}><span>{BASMALA}</span></div>
+                : <div className={"ln opn-l" + (L?.c ? " c" : "")} key={i} style={st}><Line r={r} tj={ch.tajweed} /></div>; }); })()}
+          </div>
+          <div className="meas mushaf" ref={meas} aria-hidden="true">{rows?.map((r, i) => <div key={i}>{isHead(r) ? (r[0] === "b" ? <span>{BASMALA}</span> : null) : <Line r={r} />}</div>)}</div>
+        </div> :
         <div className={"page-body" + (fit && fit.page === page && fit.tallH > 0 ? " tall" : "")} ref={box}>
           <div className={"mtext flow mushaf" + (page <= 2 ? " fixed" : "")} style={{ fontSize: f || 16, height: fit && fit.page === page && fit.tallH ? fit.tallH : undefined, visibility: f ? undefined : "hidden", gridTemplateRows: rows ? rows.map((r) => (isHead(r) && r[0] === "h" ? HEAD_W + "fr" : "1fr")).join(" ") : `repeat(${n}, 1fr)`, ["--rowh" as string]: (box.current ? box.current.clientHeight / n : 40) + "px" }}>
             {rows?.map((r, i) => isHead(r)
@@ -95,7 +126,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
               : <div className={"ln" + (fit?.short[i] ? " c" : "")} key={i}><Line r={r} tj={ch.tajweed} /></div>)}
           </div>
           <div className="meas mushaf" ref={meas} aria-hidden="true">{rows?.map((r, i) => <div key={i}>{isHead(r) ? null : <Line r={r} />}</div>)}</div>
-        </div>
+        </div>}
         <div className="page-foot" aria-label={"Page " + page}><span className="pf-l" aria-hidden="true" /><span className="page-no">{ch.lang === "ar" ? toArabicDigits(page) : page}</span><span className="pf-r" aria-hidden="true" /></div>
       </div>
     </div>

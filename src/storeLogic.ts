@@ -15,6 +15,8 @@ export type Settings = {
   weak: Weak[]; // words got wrong while reciting
   hifz: Hifz; // memorization cards (spaced repetition)
   prefs: Prefs;
+  /** one-time settings migrations applied (1: tajweed colours on by default) */
+  mig?: number;
 };
 export type Prefs = {
   fontScale: number; // 0.8 .. 1 (1 = fill the page as much as possible)
@@ -29,13 +31,13 @@ export type Prefs = {
   repeat: number; // ayah repeat count (1..10)
   hide: boolean; // hide-ayahs mode: text hidden, only the ayah markers stay; words appear as they are recited
 };
-export const defaultPrefs = (): Prefs => ({ fontScale: 1, flip: "flip", keepAwake: false, recLang: "ar-SA", strict: "medium", hide: false, haptics: true, repeat: 3 });
+export const defaultPrefs = (): Prefs => ({ fontScale: 1, flip: "flip", keepAwake: false, recLang: "ar-SA", strict: "medium", hide: false, haptics: true, repeat: 3, tajweed: true });
 export const KEY = "qt.v2";
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-export const defaults = (): Settings => ({ bookmarks: [], visited: [], khatms: 0, days: {}, dayPages: [], today: dayKey(), goal: 2, reminder: { on: false, h: 20, m: 0 }, onboarded: false, weak: [], hifz: {}, prefs: defaultPrefs() });
+export const defaults = (): Settings => ({ bookmarks: [], visited: [], khatms: 0, days: {}, dayPages: [], today: dayKey(), goal: 2, reminder: { on: false, h: 20, m: 0 }, onboarded: false, weak: [], hifz: {}, prefs: defaultPrefs(), mig: 1 });
 
 export function load(): Settings {
-  try { const j = JSON.parse(localStorage.getItem(KEY) || "{}"); const pr = { ...defaultPrefs(), ...(j.prefs || {}) } as Prefs; pr.strict = (({ lenient: "easy", normal: "medium", strict: "hard" } as Record<string, Prefs["strict"]>)[pr.strict as string] ?? pr.strict) as Prefs["strict"]; return { ...defaults(), ...j, prefs: pr }; } catch { return defaults(); }
+  try { const j = JSON.parse(localStorage.getItem(KEY) || "{}"); const pr = { ...defaultPrefs(), ...(j.prefs || {}) } as Prefs; pr.strict = (({ lenient: "easy", normal: "medium", strict: "hard" } as Record<string, Prefs["strict"]>)[pr.strict as string] ?? pr.strict) as Prefs["strict"]; if (!j.mig || j.mig < 1) { pr.tajweed = true; j.mig = 1; } return { ...defaults(), ...j, prefs: pr }; } catch { return defaults(); }
 }
 
 /** Pure: mark a page as read (khatm + daily). */
