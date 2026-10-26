@@ -23,7 +23,7 @@ for (const [w, h] of [[412, 860], [1280, 800]]) for (const lang of ["ar", "az", 
     const dis = await p.locator(sel + " input[type=checkbox]:disabled").count();
     const allRow = await p.locator(".lib-sheet .lib-dd .lib-opt.all input").count();
     const txt = await p.locator(".lib-sheet").innerText();
-    const want = kind === "tr" ? TRIDS : "saadi,muyassar,ibnkathir";
+    const want = kind === "tr" ? TRIDS : "saadi,muyassar,mukhtasar,ibnkathir,baghawi,samani,aysar,tabari,irab_muyassar,irab_darwish,jadwal";
     const k = want.split(",").length;
     const btn = p.locator(".lib-sheet .lib-allbtn");
     const exp0 = await btn.getAttribute("aria-expanded");
@@ -32,6 +32,7 @@ for (const [w, h] of [[412, 860], [1280, 800]]) for (const lang of ["ar", "az", 
     let srch = true;
     if (kind === "tr") { await p.locator(".lib-sheet .lib-find").fill("اردو"); await p.waitForTimeout(150); srch = (await p.locator(sel).evaluateAll((e) => e.map((x) => x.dataset.id).join(","))) === "urdu_junagarhi" && (await p.locator(".lib-sheet .lib-grp").count()) === 1; await p.locator(".lib-sheet .lib-find").fill(""); await p.waitForTimeout(100);
       srch &&= (await p.locator(".lib-sheet .lib-grp").count()) >= 20; }
+    if (kind === "tf") srch = (await p.locator(".lib-sheet .lib-grp").count()) === 2;
     const ok = srch && ids === want && dl === k && dis === k && allRow === 1 && exp0 === "true" && closed && reopened && !SETTINGS.test(txt) && (await btn.textContent()).includes("(" + k + ")");
     if (!ok) { bad++; console.log("FAIL", w + "x" + h, lang, kind, ids, dl, dis, allRow, exp0, closed, reopened, JSON.stringify(txt.slice(0, 160))); }
     else console.log("ok", w + "x" + h, lang, kind, ids);

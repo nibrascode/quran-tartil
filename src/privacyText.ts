@@ -41,7 +41,7 @@ export const PRIVACY: Record<string, { name: string; title: string; updatedLabel
    ],
    [
     "Translations and tafsirs",
-    "Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from QuranEnc.com, used unaltered with each publisher and version credited (e.g. King Fahd Complex, Rowwad Translation Center, Saheeh International), and from Tanzil.net for Musayev and Kuliev; tafsir texts from Quran.com). Nothing about you or your reading is sent."
+    "Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from QuranEnc.com, used unaltered with each publisher and version credited (e.g. King Fahd Complex, Rowwad Translation Center, Saheeh International), and from Tanzil.net for Musayev and Kuliev; tafsir texts from Quran.com and, for al-Mukhtasar, al-Baghawi, al-Sam'ani, Aysar al-Tafasir, al-Tabari and the i'rab works (al-I'rab al-Muyassar, Darwish, al-Jadwal by Mahmud Safi), from QUL (qul.tarteel.ai, Tarteel) via the spa5k/tafsir_api mirror). Nothing about you or your reading is sent."
    ],
    [
     "Contact and changes",
@@ -88,7 +88,7 @@ export const PRIVACY: Record<string, { name: string; title: string; updatedLabel
    ],
    [
     "Tərcümə və təfsirlər",
-    "Tərcümə və təfsirlər yalnız “Endir” düyməsinə (Ayarlarda və ya ayə panelində) toxunanda endirilir, cihazınızda saxlanır və orada silinə bilər. Hamısı tətbiqin öz saytından gəlir (GitHub Pages; tərcümə mətnləri QuranEnc.com-dan dəyişdirilmədən, naşir və versiya göstərilməklə (məs. Kral Fəhd Kompleksi, Rəvvad Tərcümə Mərkəzi, Saheeh International), Musayev və Quliyev isə Tanzil.net-dən; təfsir mətnləri Quran.com-dan). Sizin və ya oxumağınız haqqında heç nə göndərilmir."
+    "Tərcümə və təfsirlər yalnız “Endir” düyməsinə (Ayarlarda və ya ayə panelində) toxunanda endirilir, cihazınızda saxlanır və orada silinə bilər. Hamısı tətbiqin öz saytından gəlir (GitHub Pages; tərcümə mətnləri QuranEnc.com-dan dəyişdirilmədən, naşir və versiya göstərilməklə (məs. Kral Fəhd Kompleksi, Rəvvad Tərcümə Mərkəzi, Saheeh International), Musayev və Quliyev isə Tanzil.net-dən; təfsir mətnləri Quran.com-dan; əl-Muxtəsər, Bəğavi, Səmani, Eysərut-Təfasir, Təbəri və i'rab əsərləri (əl-İ'rabul-Müyəssər, Dərviş, Mahmud Safinin əl-Cədvəli) isə QUL-dan (qul.tarteel.ai, Tarteel), spa5k/tafsir_api güzgüsü vasitəsilə). Sizin və ya oxumağınız haqqında heç nə göndərilmir."
    ],
    [
     "Əlaqə və dəyişikliklər",
@@ -135,7 +135,7 @@ export const PRIVACY: Record<string, { name: string; title: string; updatedLabel
    ],
    [
     "Translations and tafsirs",
-    "Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from QuranEnc.com, used unaltered with each publisher and version credited (e.g. King Fahd Complex, Rowwad Translation Center, Saheeh International), and from Tanzil.net for Musayev and Kuliev; tafsir texts from Quran.com). Nothing about you or your reading is sent."
+    "Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from QuranEnc.com, used unaltered with each publisher and version credited (e.g. King Fahd Complex, Rowwad Translation Center, Saheeh International), and from Tanzil.net for Musayev and Kuliev; tafsir texts from Quran.com and, for al-Mukhtasar, al-Baghawi, al-Sam'ani, Aysar al-Tafasir, al-Tabari and the i'rab works (al-I'rab al-Muyassar, Darwish, al-Jadwal by Mahmud Safi), from QUL (qul.tarteel.ai, Tarteel) via the spa5k/tafsir_api mirror). Nothing about you or your reading is sent."
    ],
    [
     "İletişim ve değişiklikler",
@@ -182,7 +182,7 @@ export const PRIVACY: Record<string, { name: string; title: string; updatedLabel
    ],
    [
     "الترجمات والتفاسير",
-    "تُنزَّل الترجمات والتفاسير فقط عند الضغط على «تنزيل» (في الإعدادات أو في لوحة الآية)، وتُحفظ على جهازك ويمكن حذفها من هناك. وكلها من موقع التطبيق نفسه (GitHub Pages؛ نصوص الترجمات من QuranEnc.com دون تغيير مع ذكر الناشر والإصدار (مثل مجمع الملك فهد ومركز رواد للترجمة وصحيح إنترناشيونال)، ومن Tanzil.net لترجمتي موساييف وكولييف؛ ونصوص التفاسير من Quran.com). لا يُرسل أي شيء عنك أو عن قراءتك."
+    "تُنزَّل الترجمات والتفاسير فقط عند الضغط على «تنزيل» (في الإعدادات أو في لوحة الآية)، وتُحفظ على جهازك ويمكن حذفها من هناك. وكلها من موقع التطبيق نفسه (GitHub Pages؛ نصوص الترجمات من QuranEnc.com دون تغيير مع ذكر الناشر والإصدار (مثل مجمع الملك فهد ومركز رواد للترجمة وصحيح إنترناشيونال)، ومن Tanzil.net لترجمتي موساييف وكولييف؛ ونصوص التفاسير من Quran.com، أما المختصر والبغوي والسمعاني وأيسر التفاسير والطبري وكتب الإعراب (الإعراب الميسر، ودرويش، والجدول لمحمود صافي) فمن QUL (qul.tarteel.ai، Tarteel) عبر مرآة spa5k/tafsir_api). لا يُرسل أي شيء عنك أو عن قراءتك."
    ],
    [
     "التواصل والتغييرات",
@@ -229,7 +229,7 @@ export const PRIVACY: Record<string, { name: string; title: string; updatedLabel
    ],
    [
     "Translations and tafsirs",
-    "Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from QuranEnc.com, used unaltered with each publisher and version credited (e.g. King Fahd Complex, Rowwad Translation Center, Saheeh International), and from Tanzil.net for Musayev and Kuliev; tafsir texts from Quran.com). Nothing about you or your reading is sent."
+    "Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from QuranEnc.com, used unaltered with each publisher and version credited (e.g. King Fahd Complex, Rowwad Translation Center, Saheeh International), and from Tanzil.net for Musayev and Kuliev; tafsir texts from Quran.com and, for al-Mukhtasar, al-Baghawi, al-Sam'ani, Aysar al-Tafasir, al-Tabari and the i'rab works (al-I'rab al-Muyassar, Darwish, al-Jadwal by Mahmud Safi), from QUL (qul.tarteel.ai, Tarteel) via the spa5k/tafsir_api mirror). Nothing about you or your reading is sent."
    ],
    [
     "Контакты и изменения",

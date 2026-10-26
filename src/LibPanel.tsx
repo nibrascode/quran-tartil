@@ -3,9 +3,9 @@ import { suras } from "./quran";
 import { RESOURCES, download, entry, note, remove, status, stop, type Res } from "./library";
 
 const L = {
-  az: { dl: "Endir", del: "Sil", stop: "Dayandır", ready: "Endirilib", err: "Endirmə alınmadı. İnternetı yoxlayın.", tr: "Tərcümələr", tf: "Təfsirlər", src: "Mənbə", note: "Yalnız siz toxunanda endirilir və cihazda saxlanır.", sure: "Silinsin?" },
-  en: { dl: "Download", del: "Delete", stop: "Stop", ready: "Downloaded", err: "Download failed. Check the connection.", tr: "Translations", tf: "Tafsirs", src: "Source", note: "Downloaded only when you tap, stored on this device.", sure: "Delete?" },
-  ar: { dl: "تنزيل", del: "حذف", stop: "إيقاف", ready: "تم التنزيل", err: "تعذر التنزيل. تحقق من الاتصال.", tr: "الترجمات", tf: "التفاسير", src: "المصدر", note: "يُنزَّل عند الضغط فقط ويُحفظ على الجهاز.", sure: "حذف؟" },
+  az: { dl: "Endir", del: "Sil", stop: "Dayandır", ready: "Endirilib", err: "Endirmə alınmadı. İnternetı yoxlayın.", tr: "Tərcümələr", tf: "Təfsirlər", irab: "İ'rab", src: "Mənbə", note: "Yalnız siz toxunanda endirilir və cihazda saxlanır.", sure: "Silinsin?" },
+  en: { dl: "Download", del: "Delete", stop: "Stop", ready: "Downloaded", err: "Download failed. Check the connection.", tr: "Translations", tf: "Tafsirs", irab: "I'rab (grammar)", src: "Source", note: "Downloaded only when you tap, stored on this device.", sure: "Delete?" },
+  ar: { dl: "تنزيل", del: "حذف", stop: "إيقاف", ready: "تم التنزيل", err: "تعذر التنزيل. تحقق من الاتصال.", tr: "الترجمات", tf: "التفاسير", irab: "الإعراب", src: "المصدر", note: "يُنزَّل عند الضغط فقط ويُحفظ على الجهاز.", sure: "حذف؟" },
 };
 
 function Row({ r, t, onDone }: { r: Res; t: (typeof L)["az"]; onDone?: () => void }) {
@@ -35,7 +35,9 @@ export function LibSettings({ lang }: { lang: string }) {
       <b className="sub">{t.tr}</b>
       {RESOURCES.filter((r) => r.kind === "tr").map((r, i, l) => <Fragment key={r.id}>{r.lname !== l[i - 1]?.lname && <small className="lib-grp" dir="auto">{r.lname}</small>}<Row r={r} t={t} /></Fragment>)}
       <b className="sub">{t.tf}</b>
-      {RESOURCES.filter((r) => r.kind === "tf").map((r) => <Row key={r.id} r={r} t={t} />)}
+      {RESOURCES.filter((r) => r.kind === "tf" && r.grp !== "irab").map((r) => <Row key={r.id} r={r} t={t} />)}
+      <b className="sub">{t.irab}</b>
+      {RESOURCES.filter((r) => r.grp === "irab").map((r) => <Row key={r.id} r={r} t={t} />)}
     </div>
   );
 }
@@ -44,9 +46,9 @@ export function LibSettings({ lang }: { lang: string }) {
  * with a tick per item (plus "All"); items not on the device have a small download icon with progress and become tickable once downloaded.
  * The body shows every ticked text (stacked with its name when more than one). Ticks are remembered per kind. */
 const SL = {
-  az: { all_tr: "Tərcümələr", all_tf: "Təfsirlər", all: "Hamısı", tr: "Tərcümə", tf: "Təfsir", close: "Bağla", none: "Göstərmək üçün yuxarıdakı siyahıdan birini endirin və seçin.", pickOne: "Siyahıdan birini seçin.", dl: "Endir", stop: "Dayandır", err: "Endirmə alınmadı", ay: "Ayələr", find: "Axtar (dil, tərcüməçi)", notes: "Qeydlər", prev: "Əvvəlki ayə", next: "Növbəti ayə" },
-  en: { all_tr: "Translations", all_tf: "Tafsirs", all: "All", tr: "Translation", tf: "Tafsir", close: "Close", none: "Download and tick one in the list above to show it here.", pickOne: "Tick one in the list.", dl: "Download", stop: "Stop", err: "Download failed", ay: "Ayahs", find: "Search (language, translator)", notes: "Notes", prev: "Previous ayah", next: "Next ayah" },
-  ar: { all_tr: "الترجمات", all_tf: "التفاسير", all: "الكل", tr: "الترجمة", tf: "التفسير", close: "إغلاق", none: "نزّل واحدًا من القائمة أعلاه وحدّده ليظهر هنا.", pickOne: "حدّد واحدًا من القائمة.", dl: "تنزيل", stop: "إيقاف", err: "تعذر التنزيل", ay: "الآيات", find: "بحث (اللغة، المترجم)", notes: "الحواشي", prev: "الآية السابقة", next: "الآية التالية" },
+  az: { all_tr: "Tərcümələr", all_tf: "Təfsirlər", all: "Hamısı", tr: "Tərcümə", tf: "Təfsir", close: "Bağla", none: "Göstərmək üçün yuxarıdakı siyahıdan birini endirin və seçin.", pickOne: "Siyahıdan birini seçin.", dl: "Endir", stop: "Dayandır", err: "Endirmə alınmadı", ay: "Ayələr", find: "Axtar (dil, tərcüməçi)", notes: "Qeydlər", gTf: "Təfsirlər", gIrab: "İ'rab", prev: "Əvvəlki ayə", next: "Növbəti ayə" },
+  en: { all_tr: "Translations", all_tf: "Tafsirs", all: "All", tr: "Translation", tf: "Tafsir", close: "Close", none: "Download and tick one in the list above to show it here.", pickOne: "Tick one in the list.", dl: "Download", stop: "Stop", err: "Download failed", ay: "Ayahs", find: "Search (language, translator)", notes: "Notes", gTf: "Tafsirs", gIrab: "I'rab (grammar)", prev: "Previous ayah", next: "Next ayah" },
+  ar: { all_tr: "الترجمات", all_tf: "التفاسير", all: "الكل", tr: "الترجمة", tf: "التفسير", close: "إغلاق", none: "نزّل واحدًا من القائمة أعلاه وحدّده ليظهر هنا.", pickOne: "حدّد واحدًا من القائمة.", dl: "تنزيل", stop: "إيقاف", err: "تعذر التنزيل", ay: "الآيات", find: "بحث (اللغة، المترجم)", notes: "الحواشي", gTf: "التفاسير", gIrab: "الإعراب", prev: "الآية السابقة", next: "الآية التالية" },
 };
 type U = (typeof SL)["az"];
 const readTicks = (kind: string): string[] | null => {
@@ -131,7 +133,7 @@ export function AyahLib({ kind, s, a, onClose, onNav, lang = "az" }: { kind: "tr
       {isOpen && ns && <div className="lib-dd" role="group">
         <div className={"lib-opt all" + (have.length ? "" : " off")}><label><input type="checkbox" checked={allOn} disabled={!have.length} onChange={(e) => save(e.target.checked ? have.map((r) => r.id) : [])} /><span className="lib-tx"><b>{u.all}</b></span></label></div>
         {list.length > 6 && <input className="lib-find" type="search" value={q} placeholder={u.find} aria-label={u.find} onChange={(e) => setQ(e.target.value)} />}
-        {list.filter((r) => !q.trim() || [r.name, r.lname, r.lang, r.id, r.src].join(" ").toLocaleLowerCase().includes(q.trim().toLocaleLowerCase())).map((r, i, l) => <Fragment key={r.id}>{kind === "tr" && r.lname !== l[i - 1]?.lname && <div className="lib-grp" dir="auto">{r.lname}</div>}<Opt r={r} n={ns[r.id] || 0} on={on.includes(r.id)} u={u} onTick={(v) => tick(r.id, v)} onN={(k) => setNs((m) => ({ ...(m || {}), [r.id]: k }))} /></Fragment>)}
+        {list.filter((r) => !q.trim() || [r.name, r.lname, r.lang, r.id, r.src].join(" ").toLocaleLowerCase().includes(q.trim().toLocaleLowerCase())).map((r, i, l) => <Fragment key={r.id}>{kind === "tr" ? r.lname !== l[i - 1]?.lname && <div className="lib-grp" dir="auto">{r.lname}</div> : r.grp !== l[i - 1]?.grp && <div className="lib-grp" dir="auto">{r.grp === "irab" ? u.gIrab : u.gTf}</div>}<Opt r={r} n={ns[r.id] || 0} on={on.includes(r.id)} u={u} onTick={(v) => tick(r.id, v)} onN={(k) => setNs((m) => ({ ...(m || {}), [r.id]: k }))} /></Fragment>)}
       </div>}
       {ns && !shown.length && <p className="lib-hint">{have.length ? u.pickOne : u.none}</p>}
       {shown.map((r) => <Text key={r.id} r={r} s={s} a={a} u={u} named={shown.length > 1} onRange={onRange} />)}

@@ -7,14 +7,22 @@ import TR from "./data/translations.json";
 
 /** translations: Tanzil (Musayev, Kuliev: one file) and QuranEnc.com (unaltered text + footnotes, per surah: public/tr/<key>/<s>.json).
  * lname = the language's own name (the list is grouped by it), by = translator / publisher */
-export type Res = { id: string; kind: "tr" | "tf"; name: string; by: string; lang: string; lname?: string; dir?: "rtl" | "ltr"; per?: boolean; ver?: string; size: string; src: string; qc?: number };
+export type Res = { id: string; kind: "tr" | "tf"; name: string; by: string; lang: string; lname?: string; grp?: "tf" | "irab"; dir?: "rtl" | "ltr"; per?: boolean; ver?: string; size: string; src: string; qc?: number };
 const mb = (b: number) => "≈ " + (b / 1e6).toFixed(1) + " MB";
 export const RESOURCES: Res[] = [
   ...(TR as { id: string; lang: string; lname: string; name: string; dir: string; bytes: number; per?: boolean; ver?: string; src: string }[]).map((t): Res => ({
     id: t.id, kind: "tr", name: t.name, by: t.lname, lname: t.lname, lang: t.lang, dir: t.dir === "rtl" ? "rtl" : "ltr", per: t.per, ver: t.ver, size: mb(t.bytes), src: t.src })),
-  { id: "saadi", kind: "tf", name: "تيسير الكريم الرحمن", by: "السعدي", lang: "ar", dir: "rtl", size: "≈ 6 MB", src: "Quran.com (tafsir 91), hosted on our site", qc: 91 },
-  { id: "muyassar", kind: "tf", name: "التفسير الميسر", by: "مجمع الملك فهد", lang: "ar", dir: "rtl", size: "≈ 2 MB", src: "Quran.com (tafsir 16), hosted on our site", qc: 16 },
-  { id: "ibnkathir", kind: "tf", name: "تفسير ابن كثير", by: "ابن كثير", lang: "ar", dir: "rtl", size: "≈ 15 MB", src: "Quran.com (tafsir 14), hosted on our site", qc: 14 },
+  { id: "saadi", kind: "tf", grp: "tf", name: "تيسير الكريم الرحمن", by: "السعدي", lang: "ar", dir: "rtl", size: "≈ 6 MB", src: "Quran.com (tafsir 91), hosted on our site", qc: 91 },
+  { id: "muyassar", kind: "tf", grp: "tf", name: "التفسير الميسر", by: "مجمع الملك فهد", lang: "ar", dir: "rtl", size: "≈ 2 MB", src: "Quran.com (tafsir 16), hosted on our site", qc: 16 },
+  { id: "mukhtasar", kind: "tf", grp: "tf", name: "المختصر في تفسير القرآن الكريم", by: "مركز تفسير للدراسات القرآنية", lang: "ar", dir: "rtl", size: "≈ 1.9 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "ibnkathir", kind: "tf", grp: "tf", name: "تفسير ابن كثير", by: "ابن كثير", lang: "ar", dir: "rtl", size: "≈ 15 MB", src: "Quran.com (tafsir 14), hosted on our site", qc: 14 },
+  { id: "baghawi", kind: "tf", grp: "tf", name: "معالم التنزيل (تفسير البغوي)", by: "البغوي", lang: "ar", dir: "rtl", size: "≈ 14.5 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "samani", kind: "tf", grp: "tf", name: "تفسير السمعاني", by: "أبو المظفر السمعاني", lang: "ar", dir: "rtl", size: "≈ 7 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "aysar", kind: "tf", grp: "tf", name: "أيسر التفاسير", by: "أبو بكر جابر الجزائري", lang: "ar", dir: "rtl", size: "≈ 6.8 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "tabari", kind: "tf", grp: "tf", name: "جامع البيان (تفسير الطبري)", by: "ابن جرير الطبري", lang: "ar", dir: "rtl", size: "≈ 37 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "irab_muyassar", kind: "tf", grp: "irab", name: "الإعراب الميسر", by: "مركز تفسير للدراسات القرآنية", lang: "ar", dir: "rtl", size: "≈ 6.3 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "irab_darwish", kind: "tf", grp: "irab", name: "إعراب القرآن وبيانه", by: "محيي الدين درويش", lang: "ar", dir: "rtl", size: "≈ 11.5 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
+  { id: "jadwal", kind: "tf", grp: "irab", name: "الجدول في إعراب القرآن", by: "محمود صافي", lang: "ar", dir: "rtl", size: "≈ 10.7 MB", src: "QUL (qul.tarteel.ai) via spa5k/tafsir_api, hosted on our site" },
 ];
 
 /** files are served by our own site (GitHub Pages); the Android app fetches them from there too (tafsirs are not bundled in the APK) */
