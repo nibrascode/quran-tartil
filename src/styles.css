@@ -706,3 +706,11 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .lv-title { flex:1; display:flex; flex-direction:column; align-items:center; line-height:1.2; } .lv-title b { font-size:16px; } .lv-pno { font-size:12px; opacity:.85; }
 .lv-head { position:relative; z-index:2; flex:none; } .lv-body { touch-action:pan-y; scroll-padding-top:10px; } .lv-card { scroll-margin-top:10px; }
 .lv-tf { touch-action:pan-y; }
+.note-ed { padding:6px 0; } .note-ed textarea { width:100%; box-sizing:border-box; resize:vertical; min-height:70px; font:inherit; }
+.note-btns { display:flex; gap:8px; margin-top:6px; } .anote { flex-wrap:wrap; } .anote-t { flex-basis:100%; opacity:.7; font-size:13px; white-space:pre-wrap; }
+.bm-note { white-space:pre-wrap; opacity:.8; font-size:13px; color:var(--accent, #1d5a45); }
+/* hifz view: only the first word of every ayah, tap reveals the ayah (medallions stay) */
+.hifz-v .page .w.ayah:not(.hf):not(.rv), .hifz-v .page .w.ayah:not(.hf):not(.rv) * { color:transparent !important; text-shadow:none !important; }
+.hifz-v .page .w.ayah:not(.hf):not(.rv) { background:repeating-linear-gradient(0deg, transparent 0 46%, color-mix(in srgb, var(--fg, #14110b) 10%, transparent) 46% 54%, transparent 54% 100%); border-radius:3px; }
+.lv.hifz-v .lv-ar:not(.rv) .lv-rest { color:transparent; background:color-mix(in srgb, currentColor 6%, transparent); border-radius:4px; }
+.lv.hifz-v .lv-ar:not(.rv) .lv-rest { color:transparent; } .lv.hifz-v .lv-ar { cursor:pointer; }

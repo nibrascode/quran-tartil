@@ -1,7 +1,7 @@
 // Home screen strings (5 languages).
 const en = {
   hMorning: "Good morning", hAfternoon: "Good afternoon", hEvening: "Good evening", hSalaam: "السلام عليكم",
-  hContinue: "Continue reading", hResume: "Resume", hPageOf: "Page {p} of {n}", hKhatmBar: "{n}% of this khatm",
+  hContinue: "Continue where you left off", hResume: "Resume", hPageOf: "Page {p} of {n}", hKhatmBar: "{n}% of this khatm",
   hAyahDay: "Ayah of the day", hTapOpen: "Tap to open",
   hGoal: "Daily goal", hGoalOf: "{n} / {g} pages", hGoalDone: "Goal reached", hStreak: "{n}-day streak", hStreakNone: "Start your streak today",
   hKhatm: "Khatm", hKhatmSub: "{k} completed", hPagesLeft: "{n} pages left",
@@ -13,7 +13,7 @@ const en = {
 type D = typeof en;
 const az: D = {
   hMorning: "Sabahınız xeyir", hAfternoon: "Günortanız xeyir", hEvening: "Axşamınız xeyir", hSalaam: "السلام عليكم",
-  hContinue: "Oxumağa davam et", hResume: "Davam et", hPageOf: "Səhifə {p} / {n}", hKhatmBar: "Bu xətmin {n}%-i",
+  hContinue: "Qaldığınız yerdən davam edin", hResume: "Davam et", hPageOf: "Səhifə {p} / {n}", hKhatmBar: "Bu xətmin {n}%-i",
   hAyahDay: "Günün ayəsi", hTapOpen: "Açmaq üçün toxunun",
   hGoal: "Gündəlik hədəf", hGoalOf: "{n} / {g} səhifə", hGoalDone: "Hədəfə çatdınız", hStreak: "{n} günlük seriya", hStreakNone: "Bu gün seriyaya başlayın",
   hKhatm: "Xətm", hKhatmSub: "{k} tamamlandı", hPagesLeft: "{n} səhifə qaldı",
@@ -35,7 +35,7 @@ const tr: D = {
 };
 const ar: D = {
   hMorning: "صباح الخير", hAfternoon: "طاب يومك", hEvening: "مساء الخير", hSalaam: "السلام عليكم",
-  hContinue: "تابع القراءة", hResume: "متابعة", hPageOf: "صفحة {p} من {n}", hKhatmBar: "{n}% من هذه الختمة",
+  hContinue: "تابع من حيث توقفت", hResume: "متابعة", hPageOf: "صفحة {p} من {n}", hKhatmBar: "{n}% من هذه الختمة",
   hAyahDay: "آية اليوم", hTapOpen: "المس للفتح",
   hGoal: "الهدف اليومي", hGoalOf: "{n} / {g} صفحات", hGoalDone: "تحقق الهدف", hStreak: "{n} أيام متتالية", hStreakNone: "ابدأ سلسلتك اليوم",
   hKhatm: "الختمة", hKhatmSub: "اكتمل {k}", hPagesLeft: "متبقي {n} صفحة",

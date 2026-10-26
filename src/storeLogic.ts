@@ -1,7 +1,7 @@
 import type { Weak, Hifz } from "./practice";
 const PAGES = 604; // Madinah mushaf
 
-export type Bookmark = { s: number; a: number; page: number; ts: number };
+export type Bookmark = { s: number; a: number; page: number; ts: number; note?: string };
 export type Settings = {
   bookmarks: Bookmark[];
   visited: number[]; // pages read in the current khatm
@@ -19,6 +19,7 @@ export type Settings = {
   mig?: number;
 };
 export type Prefs = {
+  hifzView?: boolean; // hifz view: only the first word of each ayah is shown, tap to reveal
   fontScale: number; // 0.8 .. 1 (1 = fill the page as much as possible)
   flip: "flip" | "none";
   keepAwake: boolean;
@@ -71,3 +72,11 @@ export const toggleBookmark = (st: Settings, b: Omit<Bookmark, "ts">): Settings 
   return { ...st, bookmarks: has ? st.bookmarks.filter((x) => !(x.s === b.s && x.a === b.a)) : [{ ...b, ts: Date.now() }, ...st.bookmarks] };
 };
 
+
+/** a note keeps (or creates) the bookmark of its ayah; an empty note removes only the note */
+export const setNote = (st: Settings, b: Omit<Bookmark, "ts" | "note">, note: string): Settings => {
+  const n = note.trim();
+  const has = st.bookmarks.find((x) => x.s === b.s && x.a === b.a);
+  if (has) return { ...st, bookmarks: st.bookmarks.map((x) => (x === has ? { ...x, note: n || undefined } : x)) };
+  return n ? { ...st, bookmarks: [{ ...b, ts: Date.now(), note: n }, ...st.bookmarks] } : st;
+};

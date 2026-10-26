@@ -7,6 +7,8 @@ import { LICENSE_BLOCK, PAGES, ayahs, indexOf, pageOfAyah, pageOfJuz, suras, toA
 import type { Theme, Sel } from "./App";
 import { Tartil } from "./Tartil";
 import { search } from "./search";
+import { searchTranslations } from "./library";
+import { xt } from "./i18nExtra";
 import { streak, toggleBookmark, type Settings } from "./store";
 import { canNotify, setReminder } from "./notify";
 import { SettingsView } from "./Settings";
@@ -33,12 +35,15 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
   const root = useRef<HTMLDivElement>(null);
   const tabs: Tab[] = (["surah", "juz", "page", "search", "bookmarks", "progress", "tartil", "practice", "settings"] as Tab[]).filter((k) => RECITE || (k !== "tartil" && k !== "practice"));
   const sub = tab === "about" || tab === "privacy";
-  const label = (k: Tab) => { const t = T[readerLang]; return ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, practice: t.practiceTab, settings: t.settings, about: t.about, privacy: t.privacy }[k]); };
+  const label = (k: Tab) => { const t = T[uiLang]; return ({ surah: t.surah, juz: t.juz, page: t.page, search: t.searchTab, bookmarks: t.bookmarks, progress: t.progress, tartil: t.tartil, practice: t.practiceTab, settings: t.settings, about: t.about, privacy: t.privacy }[k]); };
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase(), n = normalizeAr(q);
     return suras.filter((x) => !s || (n && normalizeAr(x.name).includes(n)) || x.tname.toLowerCase().includes(s) || x.ename.toLowerCase().includes(s) || String(x.i) === s);
   }, [q]);
   const hits = useMemo(() => search(sq), [sq]);
+  const [trHits, setTrHits] = useState<Awaited<ReturnType<typeof searchTranslations>> | null>(null);
+  useEffect(() => { setTrHits(null); if (tab !== "search" || sq.trim().length < 3 || /^[\s\d:.\-٠-٩]+$/.test(sq)) return; let live = true; const h = setTimeout(() => searchTranslations(sq).then((r) => live && setTrHits(r)), 250); return () => { live = false; clearTimeout(h); }; }, [sq, tab]);
+  const xl = xt(lang);
 
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
@@ -106,7 +111,7 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
           {tab === "search" && (
             <>
               <input className="field" dir="auto" placeholder={t.searchPh} aria-label={t.searchTab} value={sq} onChange={(e) => setSq(e.target.value)} autoFocus />
-              {sq.trim().length >= 2 && hits.length === 0 && <p>{t.noResults}</p>}
+              {sq.trim().length >= 2 && hits.length === 0 && !trHits?.length && <p>{t.noResults}</p>}
               <div className="list">
                 {hits.map((h) => (
                   <button key={h.s + ":" + h.a} className="li" onClick={() => onGo(h.page, { s: h.s, a: h.a })}>
@@ -115,6 +120,12 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
                   </button>
                 ))}
               </div>
+              {trHits && trHits.length > 0 && <><b className="sub tr-hits-h">{xl.trHits} ({trHits.length})</b>
+                <div className="list tr-hits">{trHits.map((h) => (
+                  <button key={h.id + h.s + ":" + h.a} className="li tr-hit" onClick={() => onGo(pageOfAyah(h.s, h.a), { s: h.s, a: h.a })}>
+                    <span className="n" style={{ width: "auto", padding: "0 8px", borderRadius: 12 }}>{h.s}:{h.a}</span>
+                    <span className="nm"><small>{h.name}</small><span dir="auto" style={{ fontSize: 14 }}>{h.text.length > 220 ? h.text.slice(0, 220) + "…" : h.text}</span></span>
+                  </button>))}</div></>}
             </>
           )}
           {tab === "bookmarks" && (
@@ -125,7 +136,8 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
                   <button className="li" style={{ flex: 1 }} onClick={() => onGo(b.page, { s: b.s, a: b.a })}>
                     <span className="n">{b.s}:{b.a}</span>
                     <span className="nm"><span className="ar" dir="rtl">{suras[b.s - 1].name}</span><small>{t.page} {b.page}</small>
-                      <small dir="rtl" lang="ar" style={{ fontFamily: "'Amiri Quran', serif", fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ayahs[indexOf(b.s, b.a)].t.split(" ").slice(b.a === 1 && b.s !== 1 && b.s !== 9 ? 4 : 0, 9).join(" ")}</small></span>
+                      <small dir="rtl" lang="ar" style={{ fontFamily: "'Amiri Quran', serif", fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ayahs[indexOf(b.s, b.a)].t.split(" ").slice(b.a === 1 && b.s !== 1 && b.s !== 9 ? 4 : 0, 9).join(" ")}</small>
+                      {b.note && <small className="bm-note" dir="auto">✎ {b.note}</small>}</span>
                   </button>
                   <button className="ib" aria-label={t.bookmarkRemove} onClick={() => update((s) => toggleBookmark(s, b))}><Ic n="close" size={16} /></button>
                 </div>
@@ -139,7 +151,9 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
                 <div className="card"><div className="ring" style={{ ["--p" as string]: khatmPct }}><span>{khatmPct}%</span></div><div><b>{t.khatm}</b><small>{read}/{PAGES} {t.pagesRead}</small><small>{t.khatmsDone}: {st.khatms}</small></div></div>
                 <div className="card wide" style={{ display: "block" }}>
                   <label htmlFor="goal">{t.goalPages}</label>
-                  <div className="seg" id="goal" role="group" aria-label={t.goalPages}>{[1, 2, 4, 5, 10, 20].map((n) => <button key={n} className="tab" aria-selected={st.goal === n} onClick={() => update((s) => ({ ...s, goal: n }))}>{n}</button>)}</div>
+                  <div className="seg" id="goal" role="group" aria-label={t.goalPages}>{[1, 2, 4, 5, 10].map((n) => <button key={n} className="tab" aria-selected={st.goal === n} onClick={() => update((s) => ({ ...s, goal: n }))}>{n}</button>)}</div>
+                  <div className="seg goal-juz" role="group" aria-label={xl.goalUnit + " (" + xl.juzU + ")"}>{[1, 2, 3].map((j) => <button key={j} className="tab" data-juz={j} aria-selected={st.goal === j * 20} onClick={() => update((s) => ({ ...s, goal: j * 20 }))}>{j} {xl.juzU}</button>)}</div>
+                  <small className="goal-now">{xl.goalUnit}: {st.goal % 20 === 0 ? st.goal / 20 + " " + xl.juzU + " (" + st.goal + " " + xl.pagesU + ")" : st.goal + " " + xl.pagesU}</small>
                   <button className="ib primary" style={{ width: "100%" }} onClick={() => onGo(page)}>{t.continueFrom} {page}</button>
                 </div>
                 <div className="card wide" style={{ display: "block" }}>

@@ -15,7 +15,8 @@ const LV = {
 };
 type Txt = { r: Res; t: string[]; f: string[] };
 
-export function ListView({ page: page0, lang, onClose }: { page: number; lang: string; onClose: (page: number) => void }) {
+export function ListView({ page: page0, lang, onClose, hifz = false }: { page: number; lang: string; onClose: (page: number) => void; hifz?: boolean }) {
+  const [rv, setRv] = useState<Set<string>>(() => new Set());
   const u = LV[(lang as "az") in LV ? (lang as "az") : "en"];
   const [page, setPage] = useState(page0);
   const items = pageItems(page).filter((x): x is Extract<Item, { k: "ayah" }> => x.k === "ayah");
@@ -54,7 +55,7 @@ export function ListView({ page: page0, lang, onClose }: { page: number; lang: s
   const pn = lang === "ar" ? toArabicDigits(page) : String(page);
   const arrow = (d: "l" | "r") => <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d={d === "l" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
   return (
-    <div className="lv" dir={lang === "ar" ? "rtl" : "ltr"} role="region" aria-label={suraTitle(s1, lang) + " · " + pn} data-page={page}>
+    <div className={"lv" + (hifz ? " hifz-v" : "")} dir={lang === "ar" ? "rtl" : "ltr"} role="region" aria-label={suraTitle(s1, lang) + " · " + pn} data-page={page}>
       <div className="lv-head" dir="ltr">
         {/* Mushaf order: the next page is to the left */}
         <button type="button" className="ib lv-pnext" aria-label={u.next} disabled={page >= PAGES} onClick={() => goPage(page + 1)}>{arrow("l")}</button>
@@ -67,7 +68,8 @@ export function ListView({ page: page0, lang, onClose }: { page: number; lang: s
         {items.map(({ s, a, text }) => (
           <div className="lv-card" key={s + ":" + a} data-s={s} data-a={a}>
             <span className="lv-ref" dir="ltr">{s}:{a}</span>
-            <p className="lv-ar" dir="rtl" lang="ar">{text}</p>
+            {hifz ? (() => { const k = s + ":" + a; const i = text.indexOf(" "); return <p className={"lv-ar" + (rv.has(k) ? " rv" : "")} dir="rtl" lang="ar" onClick={() => setRv((m) => { const n = new Set(m); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{i < 0 ? text : <>{text.slice(0, i)} <span className="lv-rest">{text.slice(i + 1)}</span></>}</p>; })()
+              : <p className="lv-ar" dir="rtl" lang="ar">{text}</p>}
             {txt?.[s]?.map(({ r, t, f }) => {
               const e = t[a - 1];
               if (!e) {

@@ -91,3 +91,18 @@ export async function surahTexts(id: string, s: number): Promise<{ t: string[]; 
   if (!t) return null;
   return { t, f: (await get<string[]>(id + ":f:" + s)) || [] };
 }
+
+/** search the downloaded translations (case- and accent-insensitive substring); results in Quran order, per translation */
+const fold = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+export async function searchTranslations(q: string, limit = 60): Promise<{ id: string; name: string; s: number; a: number; text: string }[]> {
+  const n = fold(q.trim()); if (n.length < 3) return [];
+  const out: { id: string; name: string; s: number; a: number; text: string }[] = [];
+  for (const r of RESOURCES.filter((r) => r.kind === "tr")) {
+    if ((await status(r.id)) < 114) continue;
+    for (let s = 1; s <= 114 && out.length < limit; s++) {
+      const v = await get<string[]>(r.id + ":" + s); if (!v) continue;
+      v.forEach((t, i) => { if (out.length < limit && t && fold(t).includes(n)) out.push({ id: r.id, name: (r.lname ? r.lname + " · " : "") + r.name, s, a: i + 1, text: t }); });
+    }
+  }
+  return out;
+}

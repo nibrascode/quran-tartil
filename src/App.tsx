@@ -14,7 +14,9 @@ import { drawBands } from "./band";
 import { Ic } from "./Icons";
 import { haptic, setHaptics } from "./haptic";
 import { pageOfAyah } from "./quran";
-import { markRead, toggleBookmark, useSettings, dayKey } from "./store";
+import { markRead, toggleBookmark, setNote, useSettings, dayKey } from "./store";
+import { xt } from "./i18nExtra";
+import { ayahImage, shareTranslation } from "./shareImage";
 import { mergeWeak, clearWeak, weakAyahs, addCards, review, dueKeys, PASS_SCORE } from "./practice";
 import { suraTitle } from "./pageChrome";
 import { AyahLib } from "./LibPanel";
@@ -119,6 +121,19 @@ export function App() {
     return () => clearTimeout(id);
   }, [page, st.onboarded, update, spread]);
 
+  // hifz view: the first word of each ayah stays visible, revealed ayahs show in full
+  const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
+  const hifzV = !!st.prefs.hifzView;
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>(".page").forEach((pg) => {
+      const seen = new Set<string>();
+      pg.querySelectorAll<HTMLElement>(".w.ayah").forEach((el) => {
+        const k = el.dataset.s + ":" + el.dataset.a;
+        el.classList.toggle("hf", !seen.has(k)); seen.add(k);
+        el.classList.toggle("rv", revealed.has(k));
+      });
+    });
+  });
   // bookmark marks on the DOM (fitted text is not re-laid out)
   useEffect(() => {
     document.querySelectorAll<HTMLElement>(".ayah").forEach((el) => {
@@ -197,6 +212,10 @@ export function App() {
   const [listView, setListView] = useState(() => localStorage.getItem("qt.list") === "1");
   const [lib, setLib] = useState<{ kind: "tr" | "tf"; s: number; a: number } | null>(null);
   const isBm = sel ? st.bookmarks.some((b) => b.s === sel.s && b.a === sel.a) : false;
+  const xl = xt(lang);
+  const curNote = sel ? st.bookmarks.find((b) => b.s === sel.s && b.a === sel.a)?.note || "" : "";
+  const [noteEd, setNoteEd] = useState<string | null>(null);
+  useEffect(() => setNoteEd(null), [sel?.s, sel?.a]);
 
   async function copy() {
     if (!sel) return;
@@ -208,16 +227,27 @@ export function App() {
   }
   async function share() {
     if (!sel) return;
-    const text = ayahShareText(sel.s, sel.a);
+    const tr = await shareTranslation(sel.s, sel.a).catch(() => null);
+    const text = ayahShareText(sel.s, sel.a) + (tr ? "\n\n" + tr.text + "\n— " + (tr.r.lname ? tr.r.lname + ", " : "") + tr.r.name : "");
     try {
       if (Capacitor.isNativePlatform()) { const { Share } = await import("@capacitor/share"); await Share.share({ text }); }
       else if (navigator.share) await navigator.share({ text });
-      else await copy();
-    } catch { /* user cancelled */ }
+      else { await navigator.clipboard.writeText(text); say(t.copied); }
+    } catch (e) { if ((e as Error)?.name !== "AbortError") { try { await navigator.clipboard.writeText(text); say(t.copied); } catch { /* ignore */ } } }
+  }
+  async function shareImg() {
+    if (!sel) return;
+    const tr = await shareTranslation(sel.s, sel.a).catch(() => null);
+    const blob = await ayahImage(sel.s, sel.a, tr, theme === "dark");
+    const file = new File([blob], `quran-${sel.s}-${sel.a}.png`, { type: "image/png" });
+    try {
+      if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+    } catch (e) { if ((e as Error)?.name === "AbortError") return; }
+    const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); say(xl.imgSaved);
   }
 
   return (
-    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (home ? " homing" : "") + ((RECITE && st.prefs.hide) || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
+    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (home ? " homing" : "") + (hifzV ? " hifz-v" : "") + ((RECITE && st.prefs.hide) || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
       <div className={"bar top" + (bars ? "" : " hidden")} aria-hidden={!bars}>
         <button className="ib" id="home-btn" aria-label={t.hHome} onClick={goHome}><Ic n="home" /></button>
         <div className="title"><b>{suraTitle(sura.i, lang)}</b> · {t.juz} {juzOfPage(page)} · {t.page} {page}</div>
@@ -225,7 +255,7 @@ export function App() {
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
         <button className="ib" aria-label={t.settings} onClick={() => setMenu("settings")}><Ic n="sliders" /></button>
       </div>
-      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), onList: () => { setSel(null); setListView(true); localStorage.setItem("qt.list", "1"); }, listLabel: ({ az: "Siyahı görünüşü", ar: "عرض القائمة", en: "List view" } as Record<string, string>)[lang] || "List view", backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
+      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), onHifz: () => { const v = !hifzV; update((x) => ({ ...x, prefs: { ...x.prefs, hifzView: v } })); setRevealed(new Set()); say(v ? xl.hifzOn : xl.hifzOff); }, hifzOn: hifzV, hifzLabel: xl.hifzView, onNight: () => { if (theme === "dark") setTheme(((localStorage.getItem("qt.dayTheme") as Theme) || "light")); else { localStorage.setItem("qt.dayTheme", theme); setTheme("dark"); } }, nightOn: theme === "dark", nightLabel: xl.night, onList: () => { setSel(null); setListView(true); localStorage.setItem("qt.list", "1"); }, listLabel: ({ az: "Siyahı görünüşü", ar: "عرض القائمة", en: "List view" } as Record<string, string>)[lang] || "List view", backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (hifzV && a && !revealed.has(a.s + ":" + a.a)) { setRevealed((r) => new Set(r).add(a.s + ":" + a.a)); return; } if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
       {rc.mode !== "off" && (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
@@ -253,10 +283,17 @@ export function App() {
             <button className="x" aria-label={ta.closeA} onClick={() => setSel(null)}><Ic n="close" size={20} /></button>
           </div>
           <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? ta.bookmarkRemove : ta.bookmarkAdd}</button>
+          {noteEd === null
+            ? <button className="arow anote" onClick={() => setNoteEd(curNote)}><Ic n="copy" />{curNote ? xl.noteEdit : xl.noteAdd}{curNote && <small className="anote-t" dir="auto">{curNote}</small>}</button>
+            : <div className="note-ed"><textarea className="field" dir="auto" rows={3} autoFocus placeholder={xl.notePh} aria-label={xl.note} value={noteEd} onChange={(e) => setNoteEd(e.target.value)} />
+                <div className="note-btns"><button className="ib primary note-save" onClick={() => { update((x) => setNote(x, { s: sel.s, a: sel.a, page }, noteEd)); setNoteEd(null); }}>{xl.save}</button>
+                  {curNote && <button className="ib danger note-del" onClick={() => { update((x) => setNote(x, { s: sel.s, a: sel.a, page }, "")); setNoteEd(null); }}>{xl.del}</button>}
+                  <button className="ib note-cancel" onClick={() => setNoteEd(null)}>{xl.cancel}</button></div></div>}
           <button className="arow" onClick={() => setLib({ kind: "tr", s: sel.s, a: sel.a })}><Ic n="book" />{({ az: "Tərcümə", ar: "الترجمة", en: "Translation" } as Record<string, string>)[lang] || "Translation"}</button>
           <button className="arow" onClick={() => setLib({ kind: "tf", s: sel.s, a: sel.a })}><Ic n="info" />{({ az: "Təfsir", ar: "التفسير", en: "Tafsir" } as Record<string, string>)[lang] || "Tafsir"}</button>
           <button className="arow" onClick={copy}><Ic n="copy" />{ta.copy}</button>
-          <button className="arow" onClick={share}><Ic n="share" />{ta.share}</button>
+          <button className="arow ashare" onClick={share}><Ic n="share" />{xl.shareText}</button>
+          <button className="arow ashare-img" onClick={shareImg}><Ic n="share" />{xl.shareImg}</button>
           {RECITE && <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{ta.reciteThisAyah}</button>}
           {RECITE && <button className="arow" onClick={() => startQueue("loop", [sel.s + ":" + sel.a])}><Ic n="repeat" />{t.repeatAyah.replace("{n}", String(st.prefs.repeat))}</button>}
           {RECITE && <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? ta.hifzIn : ta.hifzAddAyah}</button>}
@@ -278,7 +315,7 @@ export function App() {
           </div>
         </div>
       )}
-      {listView && !home && <ListView page={page} lang={lang} onClose={(p) => { setListView(false); localStorage.setItem("qt.list", "0"); setPage(p); }} />}
+      {listView && !home && <ListView page={page} lang={lang} hifz={hifzV} onClose={(p) => { setListView(false); localStorage.setItem("qt.list", "0"); setPage(p); }} />}
       {lib && <AyahLib lang={lang} kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onNav={(ns, na) => { setLib({ kind: lib.kind, s: ns, a: na }); const p = pageOfAyah(ns, na); if (p !== page) setPage(p); setSel({ s: ns, a: na }); }} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
       {toast && <div className="toast" role="status">{toast}</div>}
       {home && <Home lang={lang} st={st} page={page}
