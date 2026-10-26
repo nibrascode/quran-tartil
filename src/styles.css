@@ -320,8 +320,8 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; ov
 
 /* ---- full-screen reader: edge to edge, no card/frame, dock floats over the page and auto-hides ---- */
 .page { padding:0; background-image:none; }
-.frame { border:0; border-radius:0; box-shadow:none; padding:5px 10px 3px; }
-@media (min-width:600px) { .frame { padding:10px 22px 6px; } }
+.frame { border:0; border-radius:0; box-shadow:none; padding:5px 7px 3px; }
+@media (min-width:600px) { .frame { padding:10px 14px 6px; } }
 @media (max-width:339px) { .frame { padding:4px 8px 2px; } }
 .page-head { font-size:11px; padding:3px 4px 2px; border-bottom:0; margin-bottom:0; opacity:.75; }
 .page-no { font-size:12px; padding:0 0 3px; line-height:1.2; }
@@ -567,7 +567,7 @@ html:root .home2.home2.home2 { background-color:var(--h-bg); }
 .mtext.mushaf .bism { font-size:.92em; }
 .mtext.mushaf .bism { font-size:1.05em; }
 .mtext.mushaf .sura-head.orn { font-size:min(.9em, calc(var(--rowh, 48px) * .42)); }
-.page .mushaf .end { min-width:1.45em; height:1.45em; font-size:.8em; }
+.page .mushaf .end { min-width:1.34em; height:1.4em; font-size:.8em; }
 .mtext.mushaf .sura-head .cart > span { top:-.12em; }
 /* ---- proportions tuned against the owner's reference (461x1024) ---- */
 .page .page-head { min-height:58px; box-sizing:border-box; font-size:16px; border-radius:0 0 22px 22px; padding-left:14px; padding-right:14px; }
@@ -643,7 +643,7 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 /* tablets: keep the printed proportions (text block ≈ 0.64 × its height) instead of stretching lines across a wide screen */
 @media (min-width:600px) and (min-height:600px) {
   .page .frame { container-type:size; }
-  .page .page-body:not(.opn):not(.tall) { padding-inline:max(0px, calc((100cqw - 0.74 * (100cqh - 112px)) / 2 - 14px)); }
+  .page .page-body:not(.opn):not(.tall) { padding-inline:max(0px, calc((100cqw - 0.78 * (100cqh - 112px)) / 2 - 20px)); }
 }
 /* tablets: readable column widths for home and sheets instead of full-width stretching */
 @media (min-width:700px) {
@@ -659,7 +659,7 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .spread.sp-prev .page:last-child { transform-origin:right center; --sp-a:150deg; }
 @keyframes spLeaf { from { transform:perspective(1800px) rotateY(var(--sp-a)); filter:brightness(.8); } to { transform:perspective(1800px) rotateY(0); filter:none; } }
 /* ayah medallion with its neighbouring words: tight, print-like spacing on both sides */
-.mushaf .wk { display:inline-flex; align-items:center; gap:.14em; white-space:nowrap; direction:rtl; }
+.mushaf .wk { display:inline-flex; align-items:center; gap:.07em; white-space:nowrap; direction:rtl; }
 .mushaf .wk > .end { margin:0; }
 .lib-none .lib-go { margin-top:10px; } .lib-none .lib-row { padding:6px 0; }
 .lib-allbtn { align-self:flex-start; display:inline-flex; align-items:center; gap:6px; margin:0 0 8px; } .lib-allbtn.on { background:var(--accent, #1d5a45); color:#fff; } .lib-all { overflow-y:auto; }

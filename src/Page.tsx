@@ -71,7 +71,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       const byW = (W * (page <= 2 ? 0.66 : 0.985)) / max;
       // landscape (phone turned sideways): size the text by the width and let the page scroll vertically
       const land = W > H * 1.15;
-      const lh = page <= 2 ? 2.2 : 1.72;
+      const lh = page <= 2 ? 2.2 : 1.64;
       const f = Math.max(10, land ? byW : Math.min(byW, H / units / lh));
       const tallH = land ? Math.max(H, units * f * lh) : 0;
       // the printed mushaf justifies every line; only the opening pages and a surah's short closing line are centred
