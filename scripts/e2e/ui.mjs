@@ -18,7 +18,7 @@ const go=async(lang,theme,page=3,ob=false)=>{ await p.goto((process.env.URL||"ht
 const langs=["az","en","tr","ar","ru"], themes=["light","dark","sepia"];
 for(const lang of langs) for(const theme of themes){
   await go(lang,theme,1,true); issues.push(...await check(`ob ${lang}/${theme}`)); 
-  for(let i=0;i<2;i++){ await p.click("button.primary"); await p.waitForTimeout(150); issues.push(...await check(`ob${i+2} ${lang}/${theme}`)); }
+  for(let i=0;i<1;i++){ await p.click("button.primary"); await p.waitForTimeout(150); issues.push(...await check(`ob${i+2} ${lang}/${theme}`)); } // onboarding has 2 steps while RECITE=false (mic step hidden)
   await go(lang,theme,50);
   await p.mouse.click(195,12); await p.waitForTimeout(300);
   await p.click(".bar.top .ib >> nth=0"); await p.waitForTimeout(400);

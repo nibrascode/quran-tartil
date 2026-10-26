@@ -16,6 +16,7 @@ import { haptic, setHaptics } from "./haptic";
 import { pageOfAyah } from "./quran";
 import { markRead, toggleBookmark, useSettings, dayKey } from "./store";
 import { mergeWeak, clearWeak, weakAyahs, addCards, review, dueKeys, PASS_SCORE } from "./practice";
+import { suraTitle } from "./pageChrome";
 import { AyahLib } from "./LibPanel";
 
 export type Theme = "light" | "dark" | "sepia";
@@ -213,15 +214,15 @@ export function App() {
   }
 
   return (
-    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (home ? " homing" : "") + (st.prefs.hide || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
+    <div className={"app" + (rc.mode === "on" || rc.mode === "paused" ? " reciting" : "") + (rc.mode !== "off" ? " rec-ui" : "") + (home ? " homing" : "") + ((RECITE && st.prefs.hide) || (pq?.kind === "hifz" && pq.started) ? " hide-ayahs" : "")}>
       <div className={"bar top" + (bars ? "" : " hidden")} aria-hidden={!bars}>
         <button className="ib" id="home-btn" aria-label={t.hHome} onClick={goHome}><Ic n="home" /></button>
-        <div className="title"><b>{sura.name}</b> · {t.juz} {juzOfPage(page)} · {t.page} {page}</div>
+        <div className="title"><b>{suraTitle(sura.i, lang)}</b> · {t.juz} {juzOfPage(page)} · {t.page} {page}</div>
         <button className="ib" aria-label={t.progress} onClick={() => setMenu("progress")}><Ic n="progress" /></button>
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
         <button className="ib" aria-label={t.settings} onClick={() => setMenu("settings")}><Ic n="sliders" /></button>
       </div>
-      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang: "az", juzLabel: t.juz, onBack: goHome, onSettings: () => setMenu("settings"), backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
+      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
       {rc.mode !== "off" && (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
@@ -233,10 +234,10 @@ export function App() {
         </div>
       )}
       <div className={"dock" + (bars || rc.mode !== "off" || sel || mist ? "" : " auxhide")} role="toolbar" aria-label={t.reciteMic}>
-        <button className="dbtn pill" onClick={() => { setSel(null); setMist((m) => !m); }} aria-expanded={mist}>{t.dockMistakes}{rc.mistakes.length > 0 && <i className="badge">{rc.mistakes.reduce((n, m) => n + m.n, 0)}</i>}</button>
+        {RECITE && <button className="dbtn pill" onClick={() => { setSel(null); setMist((m) => !m); }} aria-expanded={mist}>{t.dockMistakes}{rc.mistakes.length > 0 && <i className="badge">{rc.mistakes.reduce((n, m) => n + m.n, 0)}</i>}</button>}
         <button className="dbtn" id="home-dock" aria-label={t.hHome} onClick={goHome}><Ic n="home" /></button>
         <button className="dbtn" aria-label={t.dockSurah} onClick={() => setMenu("surah")}><Ic n="book" /></button>
-        <button className={"dbtn" + (st.prefs.hide ? " on" : "")} aria-pressed={st.prefs.hide} aria-label={t.dockHide} onClick={() => { const v = !st.prefs.hide; update((x) => ({ ...x, prefs: { ...x.prefs, hide: v } })); say(v ? t.hideOnMsg : t.hideOffMsg); }}><Ic n={st.prefs.hide ? "eyeoff" : "eye"} /></button>
+        {RECITE && <button className={"dbtn" + (st.prefs.hide ? " on" : "")} aria-pressed={st.prefs.hide} aria-label={t.dockHide} onClick={() => { const v = !st.prefs.hide; update((x) => ({ ...x, prefs: { ...x.prefs, hide: v } })); say(v ? t.hideOnMsg : t.hideOffMsg); }}><Ic n={st.prefs.hide ? "eyeoff" : "eye"} /></button>}
         {RECITE && <button className={"mic big" + (rc.mode === "on" ? " live" : "")} aria-label={rc.mode === "on" ? t.micPause : rc.mode === "paused" ? t.micResume : t.micStart}
           onClick={() => (rc.mode === "on" ? rc.pause() : rc.mode === "paused" ? rc.resume() : rc.begin())}><Ic n={rc.mode === "on" ? "pause" : "mic"} size={30} /></button>}
       </div>
@@ -255,10 +256,10 @@ export function App() {
           <button className="arow" onClick={share}><Ic n="share" />{t.share}</button>
           {RECITE && <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{t.reciteThisAyah}</button>}
           {RECITE && <button className="arow" onClick={() => startQueue("loop", [sel.s + ":" + sel.a])}><Ic n="repeat" />{t.repeatAyah.replace("{n}", String(st.prefs.repeat))}</button>}
-          <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? t.hifzIn : t.hifzAddAyah}</button>
+          {RECITE && <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? t.hifzIn : t.hifzAddAyah}</button>}
         </div>
       )}
-      {mist && (
+      {RECITE && mist && (
         <div className="asheet" ref={sheetRef} role="region" aria-label={t.mistakesTitle}>
           <div className="ahead"><b>{t.mistakesTitle}</b><button className="x" aria-label={t.closeA} onClick={() => setMist(false)}><Ic n="close" size={20} /></button></div>
           <div className="mlist">

@@ -1,3 +1,4 @@
+import { RECITE } from "./features";
 import { useState } from "react";
 import { Ic } from "./Icons";
 import { LANGS, T, type Lang } from "./i18n";
@@ -8,7 +9,7 @@ export function Onboarding({ lang, setLang, onDone }: { lang: Lang; setLang: (l:
   const steps = [
     { art: "book", h: t.ob1t, b: t.ob1b },
     { art: "bookmark", h: t.ob2t, b: t.ob2b },
-    { art: "mic", h: t.ob3t, b: t.ob3b },
+    ...(RECITE ? [{ art: "mic", h: t.ob3t, b: t.ob3b }] : []),
   ];
   const s = steps[i];
   return (

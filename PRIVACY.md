@@ -4,7 +4,7 @@ Quran Tartil. Contact: nibrascode@gmail.com
 
 ## English: Privacy Policy
 
-Last updated: 2026-10-17
+Last updated: 2026-10-26
 
 ### In short
 
@@ -38,13 +38,17 @@ The Arabic Quran text comes from the Tanzil Project (tanzil.net, CC BY 3.0) and 
 
 The app has no accounts and collects nothing, so there is nothing to sell or share. It is suitable for all ages.
 
+### Translations and tafsirs
+
+Translations and tafsirs are downloaded only when you tap Download in Settings, then stored on your device and can be deleted there. Translations come from this app's own site (GitHub Pages, texts from Tanzil.net). Tafsir downloads connect to api.quran.com (Quran.com), which receives the usual request data such as your IP address under its own privacy policy. Nothing about you or your reading is sent.
+
 ### Contact and changes
 
 Questions: nibrascode@gmail.com. If this policy changes, the new version and date will appear in the app and at the privacy page.
 
 ## Azərbaycanca: Məxfilik Siyasəti
 
-Son yenilənmə: 2026-10-17
+Son yenilənmə: 2026-10-26
 
 ### Qısaca
 
@@ -78,13 +82,17 @@ Veb versiya GitHub Pages ilə təqdim olunur. Hər saytda olduğu kimi, host sta
 
 Tətbiqdə hesab yoxdur və heç nə toplanmır, ona görə satılacaq və ya paylaşılacaq heç nə yoxdur. Bütün yaşlar üçün uyğundur.
 
+### Tərcümə və təfsirlər
+
+Tərcümə və təfsirlər yalnız Ayarlarda “Endir” düyməsinə toxunanda endirilir, cihazınızda saxlanır və orada silinə bilər. Tərcümələr tətbiqin öz saytından (GitHub Pages, mətnlər Tanzil.net-dən) gəlir. Təfsir endirmələri api.quran.com (Quran.com) ünvanına qoşulur; o, IP ünvanı kimi adi sorğu məlumatlarını öz məxfilik siyasəti ilə alır. Sizin və ya oxumağınız haqqında heç nə göndərilmir.
+
 ### Əlaqə və dəyişikliklər
 
 Suallar: nibrascode@gmail.com. Siyasət dəyişsə, yeni versiya və tarix tətbiqdə və məxfilik səhifəsində görünəcək.
 
 ## Türkçe: Gizlilik Politikası
 
-Son güncelleme: 2026-10-17
+Son güncelleme: 2026-10-26
 
 ### Kısaca
 
@@ -118,13 +126,17 @@ Arapça Kur'an metni Tanzil Projesi'nden (tanzil.net, CC BY 3.0) alınmış ve u
 
 Uygulamada hesap yoktur ve hiçbir şey toplanmaz, bu yüzden satılacak veya paylaşılacak bir şey yoktur. Her yaşa uygundur.
 
+### Translations and tafsirs
+
+Translations and tafsirs are downloaded only when you tap Download in Settings, then stored on your device and can be deleted there. Translations come from this app's own site (GitHub Pages, texts from Tanzil.net). Tafsir downloads connect to api.quran.com (Quran.com), which receives the usual request data such as your IP address under its own privacy policy. Nothing about you or your reading is sent.
+
 ### İletişim ve değişiklikler
 
 Sorular: nibrascode@gmail.com. Politika değişirse yeni sürüm ve tarih uygulamada ve gizlilik sayfasında görünür.
 
 ## العربية: سياسة الخصوصية
 
-آخر تحديث: 2026-10-17
+آخر تحديث: 2026-10-26
 
 ### باختصار
 
@@ -158,13 +170,17 @@ Sorular: nibrascode@gmail.com. Politika değişirse yeni sürüm ve tarih uygula
 
 لا حسابات في التطبيق ولا يجمع شيئاً، فلا شيء يُباع أو يُشارَك. مناسب لجميع الأعمار.
 
+### الترجمات والتفاسير
+
+تُنزَّل الترجمات والتفاسير فقط عند الضغط على «تنزيل» في الإعدادات، وتُحفظ على جهازك ويمكن حذفها من هناك. تأتي الترجمات من موقع التطبيق نفسه (GitHub Pages، والنصوص من Tanzil.net). أما تنزيل التفاسير فيتصل بـ api.quran.com (Quran.com) الذي يتلقى بيانات الطلب المعتادة مثل عنوان IP وفق سياسة الخصوصية الخاصة به. لا يُرسل أي شيء عنك أو عن قراءتك.
+
 ### التواصل والتغييرات
 
 للاستفسار: nibrascode@gmail.com. إذا تغيّرت السياسة ستظهر النسخة الجديدة وتاريخها في التطبيق وفي صفحة الخصوصية.
 
 ## Русский: Политика конфиденциальности
 
-Обновлено: 2026-10-17
+Обновлено: 2026-10-26
 
 ### Коротко
 
@@ -197,6 +213,10 @@ Quran Tartil работает офлайн. Нет аккаунтов, рекл�
 ### Дети и продажа данных
 
 В приложении нет аккаунтов, оно ничего не собирает, поэтому нечего продавать или передавать. Подходит для любого возраста.
+
+### Translations and tafsirs
+
+Translations and tafsirs are downloaded only when you tap Download in Settings, then stored on your device and can be deleted there. Translations come from this app's own site (GitHub Pages, texts from Tanzil.net). Tafsir downloads connect to api.quran.com (Quran.com), which receives the usual request data such as your IP address under its own privacy policy. Nothing about you or your reading is sent.
 
 ### Контакты и изменения
 
