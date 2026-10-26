@@ -84,3 +84,10 @@ export async function entry(id: string, s: number, a: number): Promise<{ text: s
 
 /** QuranEnc footnotes of one ayah (shown separately, smaller), "" when none */
 export async function note(id: string, s: number, a: number): Promise<string> { const f = await get<string[]>(id + ":f:" + s); return (f && f[a - 1]) || ""; }
+
+/** whole surah of one resource from the device (list view): entries per ayah ("" = covered by the entry before) and footnotes */
+export async function surahTexts(id: string, s: number): Promise<{ t: string[]; f: string[] } | null> {
+  const t = await get<string[]>(id + ":" + s);
+  if (!t) return null;
+  return { t, f: (await get<string[]>(id + ":f:" + s)) || [] };
+}

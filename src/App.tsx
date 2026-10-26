@@ -18,6 +18,7 @@ import { markRead, toggleBookmark, useSettings, dayKey } from "./store";
 import { mergeWeak, clearWeak, weakAyahs, addCards, review, dueKeys, PASS_SCORE } from "./practice";
 import { suraTitle } from "./pageChrome";
 import { AyahLib } from "./LibPanel";
+import { ListView } from "./ListView";
 
 export type Theme = "light" | "dark" | "sepia";
 const THEME_COLOR: Record<Theme, string> = { light: "#f6efdc", dark: "#0f1412", sepia: "#e9d9b4" };
@@ -193,6 +194,7 @@ export function App() {
     return () => { dead = true; h?.remove(); };
   }, []);
   const sura = useMemo(() => firstSuraOfPage(page), [page]);
+  const [listView, setListView] = useState(() => localStorage.getItem("qt.list") === "1");
   const [lib, setLib] = useState<{ kind: "tr" | "tf"; s: number; a: number } | null>(null);
   const isBm = sel ? st.bookmarks.some((b) => b.s === sel.s && b.a === sel.a) : false;
 
@@ -223,7 +225,7 @@ export function App() {
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
         <button className="ib" aria-label={t.settings} onClick={() => setMenu("settings")}><Ic n="sliders" /></button>
       </div>
-      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
+      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), onList: () => { setSel(null); setListView(true); localStorage.setItem("qt.list", "1"); }, listLabel: ({ az: "Siyahı görünüşü", ar: "عرض القائمة", en: "List view" } as Record<string, string>)[lang] || "List view", backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
       {rc.mode !== "off" && (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
@@ -276,6 +278,7 @@ export function App() {
           </div>
         </div>
       )}
+      {listView && !home && <ListView page={page} lang={lang} onClose={(p) => { setListView(false); localStorage.setItem("qt.list", "0"); setPage(p); }} />}
       {lib && <AyahLib lang={lang} kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onNav={(ns, na) => { setLib({ kind: lib.kind, s: ns, a: na }); const p = pageOfAyah(ns, na); if (p !== page) setPage(p); setSel({ s: ns, a: na }); }} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
       {toast && <div className="toast" role="status">{toast}</div>}
       {home && <Home lang={lang} st={st} page={page}

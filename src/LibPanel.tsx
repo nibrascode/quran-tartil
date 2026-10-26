@@ -51,7 +51,7 @@ const SL = {
   ar: { all_tr: "الترجمات", all_tf: "التفاسير", all: "الكل", tr: "الترجمة", tf: "التفسير", close: "إغلاق", none: "نزّل واحدًا من القائمة أعلاه وحدّده ليظهر هنا.", pickOne: "حدّد واحدًا من القائمة.", dl: "تنزيل", stop: "إيقاف", err: "تعذر التنزيل", ay: "الآيات", find: "بحث (اللغة، المترجم)", notes: "الحواشي", gTf: "التفاسير", gIrab: "الإعراب", prev: "الآية السابقة", next: "الآية التالية" },
 };
 type U = (typeof SL)["az"];
-const readTicks = (kind: string): string[] | null => {
+export const readTicks = (kind: string): string[] | null => {
   try { const v = localStorage.getItem("qt.lib." + kind + ".on"); if (v) return JSON.parse(v); } catch { /* */ }
   const old = localStorage.getItem("qt.lib." + kind); return old ? [old] : null;
 };

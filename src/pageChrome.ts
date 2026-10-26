@@ -2,7 +2,7 @@ import { createContext } from "react";
 import { suras } from "./quran";
 
 /** UI hooks for the in-page mushaf chrome (top bar / bottom band). Pages render without it too (defaults). */
-export type Chrome = { tajweed?: boolean; lang: string; juzLabel: string; onBack?: () => void; onSettings?: () => void; backLabel?: string; settingsLabel?: string };
+export type Chrome = { tajweed?: boolean; lang: string; juzLabel: string; onBack?: () => void; onSettings?: () => void; backLabel?: string; settingsLabel?: string; onList?: () => void; listLabel?: string };
 export const PageChrome = createContext<Chrome>({ lang: "ar", juzLabel: "جزء" });
 
 /** Azerbaijani surah names (UI label only; the Quran text itself is never touched) */
