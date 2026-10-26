@@ -47,6 +47,7 @@ export function App() {
   const shiftRef = useRef(0);
   // the chosen language applies only to Home and Settings; the reader and its menus stay Azerbaijani
   const t = T.az;
+  const ta = T[lang]; // ayah menu follows the app language
   const spread = useSpread();
   const [pq, setPq] = useState<Queue | null>(null);
   const cleared = useRef<Set<string>>(new Set());
@@ -243,20 +244,20 @@ export function App() {
       </div>
       {rc.err && <div className="toast" role="alert">{/permission|not-allowed|service-not-allowed/.test(rc.err) ? t.hMicDenied : /network/.test(rc.err) ? t.hNetErr : rc.err === "unsupported" ? t.tartilUnsupported : rc.err === "no-audio" ? t.pNoVoice : rc.err === "precise-fallback" ? t.pFellBack : t.reciteFail + ": " + rc.err}</div>}
       {sel && !mist && (
-        <div className="asheet" ref={sheetRef} role="region" aria-label={t.selectedAyah + " " + sel.s + ":" + sel.a}>
+        <div className="asheet" dir={lang === "ar" ? "rtl" : "ltr"} ref={sheetRef} role="region" aria-label={ta.selectedAyah + " " + sel.s + ":" + sel.a}>
           <div className="ahead">
             <span className="ref">{sel.s}:{sel.a}</span>
-            <b>{t.ayahTitle.replace("{n}", suraLabel(sel.s, false)).replace("{a}", String(sel.a))}</b>
-            <button className="x" aria-label={t.closeA} onClick={() => setSel(null)}><Ic n="close" size={20} /></button>
+            <b>{ta.ayahTitle.replace("{n}", suraTitle(sel.s, lang)).replace("{a}", String(sel.a))}</b>
+            <button className="x" aria-label={ta.closeA} onClick={() => setSel(null)}><Ic n="close" size={20} /></button>
           </div>
-          <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? t.bookmarkRemove : t.bookmarkAdd}</button>
-          <button className="arow" onClick={() => setLib({ kind: "tr", s: sel.s, a: sel.a })}><Ic n="book" />Tərcümə</button>
-          <button className="arow" onClick={() => setLib({ kind: "tf", s: sel.s, a: sel.a })}><Ic n="info" />Təfsir</button>
-          <button className="arow" onClick={copy}><Ic n="copy" />{t.copy}</button>
-          <button className="arow" onClick={share}><Ic n="share" />{t.share}</button>
-          {RECITE && <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{t.reciteThisAyah}</button>}
+          <button className="arow" aria-pressed={isBm} onClick={() => update((s) => toggleBookmark(s, { s: sel.s, a: sel.a, page }))}><Ic n="bookmark" fill={isBm} />{isBm ? ta.bookmarkRemove : ta.bookmarkAdd}</button>
+          <button className="arow" onClick={() => setLib({ kind: "tr", s: sel.s, a: sel.a })}><Ic n="book" />{({ az: "Tərcümə", ar: "الترجمة", en: "Translation" } as Record<string, string>)[lang] || "Translation"}</button>
+          <button className="arow" onClick={() => setLib({ kind: "tf", s: sel.s, a: sel.a })}><Ic n="info" />{({ az: "Təfsir", ar: "التفسير", en: "Tafsir" } as Record<string, string>)[lang] || "Tafsir"}</button>
+          <button className="arow" onClick={copy}><Ic n="copy" />{ta.copy}</button>
+          <button className="arow" onClick={share}><Ic n="share" />{ta.share}</button>
+          {RECITE && <button className="arow" onClick={() => { const a = sel; setSel(null); rc.begin(a); }}><Ic n="mic" />{ta.reciteThisAyah}</button>}
           {RECITE && <button className="arow" onClick={() => startQueue("loop", [sel.s + ":" + sel.a])}><Ic n="repeat" />{t.repeatAyah.replace("{n}", String(st.prefs.repeat))}</button>}
-          {RECITE && <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? t.hifzIn : t.hifzAddAyah}</button>}
+          {RECITE && <button className="arow" aria-pressed={!!st.hifz[sel.s + ":" + sel.a]} onClick={() => { const k = sel.s + ":" + sel.a; update((x) => ({ ...x, hifz: x.hifz[k] ? (({ [k]: _d, ...r }) => r)(x.hifz) : addCards(x.hifz, [k], dayKey()) })); }}><Ic n="layers" fill={!!st.hifz[sel.s + ":" + sel.a]} />{st.hifz[sel.s + ":" + sel.a] ? ta.hifzIn : ta.hifzAddAyah}</button>}
         </div>
       )}
       {RECITE && mist && (
@@ -275,7 +276,7 @@ export function App() {
           </div>
         </div>
       )}
-      {lib && <AyahLib kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
+      {lib && <AyahLib lang={lang} kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
       {toast && <div className="toast" role="status">{toast}</div>}
       {home && <Home lang={lang} st={st} page={page}
         onResume={() => { setHome(false); setBars(false); }}

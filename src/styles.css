@@ -640,3 +640,14 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .lib-body { overflow-y:auto; -webkit-overflow-scrolling:touch; font-size:16px; line-height:1.7; } .lib-body p { white-space:pre-wrap; margin:.2em 0 .8em; }
 .lib-body.ar { font-family:"Amiri Quran","Amiri","Noto Naskh Arabic",serif; font-size:19px; line-height:2; }
 .lib-range, .lib-src { display:block; opacity:.65; font-size:12px; } .lib-none p { margin:.4em 0 .8em; }
+/* tablets: keep the printed proportions (text block ≈ 0.64 × its height) instead of stretching lines across a wide screen */
+@media (min-width:600px) and (min-height:600px) {
+  .page .frame { container-type:size; }
+  .page .page-body:not(.opn):not(.tall) { padding-inline:max(0px, calc((100cqw - 0.66 * (100cqh - 112px)) / 2 - 12px)); }
+}
+/* tablets: readable column widths for home and sheets instead of full-width stretching */
+@media (min-width:700px) {
+  .home2 > * { width:100%; max-width:760px; margin-inline:auto; box-sizing:border-box; }
+  .sheet { max-width:720px; margin-inline:auto; }
+  .asheet, .lib-sheet { left:max(0px, calc(50% - 360px)); right:max(0px, calc(50% - 360px)); }
+}

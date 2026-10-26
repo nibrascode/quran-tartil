@@ -55,7 +55,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       if (document.fonts && !document.fonts.check('20px "UthmanicHafs"')) return;
       const ws = Array.from(m.children).map((c) => (c as HTMLElement).getBoundingClientRect().width / 100);
       const max = Math.max(...ws.filter((w) => w > 0), 1);
-      const W = b.clientWidth - 2, H = b.clientHeight;
+      const cs = getComputedStyle(b); const W = b.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2, H = b.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
       const units = rows.reduce((u, r) => u + (isHead(r) && r[0] === "h" ? HEAD_W : 1), 0) + Math.max(0, n - rows.length);
       const byW = (W * (page <= 2 ? 0.66 : 0.985)) / max;
       // landscape (phone turned sideways): size the text by the width and let the page scroll vertically
