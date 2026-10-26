@@ -15,7 +15,7 @@ async function start(lang, page, w = 412, h = 860) {
 const ref = (p) => p.locator(".lib-sheet .ahead .ref").textContent();
 const body = async (p, id) => { for (let i = 0; i < 60; i++) { const t = await p.locator(`.lib-sheet .lib-body[data-id="${id}"] p`).first().textContent().catch(() => "…"); if (t && t !== "…") return t.trim(); await p.waitForTimeout(100); } return ""; };
 const tapCenter = async (p) => { const h = await p.evaluateHandle(() => { for (const e of document.querySelectorAll(".w.ayah")) { const r = e.getBoundingClientRect(); if (r.width < 4 || r.top < 200 || r.bottom > innerHeight - 120) continue; if (document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest(".w.ayah") === e) return e; } return null; }); const el = h.asElement(); if (el) await el.click({ force: true }); await p.waitForTimeout(300); };
-const goTo = async (p, want) => { const [ws, wa] = want.split(":").map(Number); for (let i = 0; i < 900; i++) { const [s, a] = (await ref(p)).split(":").map(Number); if (s === ws && a === wa) return true; const fw = s < ws || (s === ws && a < wa); await p.locator(".lib-sheet " + (fw ? ".lib-next" : ".lib-prev")).click(); await p.waitForTimeout(40); } return false; };
+const goTo = async (p, want) => { const [ws, wa] = want.split(":").map(Number); for (let i = 0; i < 900; i++) { const [s, a] = (await ref(p)).split(":").map(Number); if (s === ws && a === wa) return true; const fw = s < ws || (s === ws && a < wa); const before = s + ":" + a; await p.locator(".lib-sheet " + (fw ? ".lib-next" : ".lib-prev")).click(); for (let k = 0; k < 100 && (await ref(p)) === before; k++) await p.waitForTimeout(20); } return false; };
 const open = async (p, label, sa) => { if (sa) await p.locator(`${L} .w.ayah[data-s="${sa[0]}"][data-a="${sa[1]}"]`).first().click({ force: true }); else await tapCenter(p); await p.waitForTimeout(300); await p.locator(".asheet .arow", { hasText: label }).click(); await p.waitForSelector(".lib-sheet"); await p.waitForTimeout(300); };
 const dl = async (p, id) => { if ((await p.locator(".lib-sheet .lib-allbtn").getAttribute("aria-expanded")) !== "true") await p.locator(".lib-sheet .lib-allbtn").click();
   await p.locator(`.lib-sheet .lib-opt[data-id="${id}"] .lib-dl`).click(); await body(p, id); for (let i = 0; i < 300 && !(await p.locator(`.lib-sheet .lib-body[data-id="${id}"]`).count()); i++) await p.waitForTimeout(200);
@@ -25,13 +25,13 @@ const mz = file("tr/az.musayev.json").v;
   const p = await start("en", 2);
   await open(p, "Translation", [2, 3]); await dl(p, "az.musayev");
   for (const [want, pg] of [["2:2", 2], ["2:1", 2], ["1:7", 1]]) {
-    await p.locator(".lib-sheet .lib-prev").click(); await p.waitForTimeout(400);
+    { const before = await ref(p); await p.locator(".lib-sheet .lib-prev").click(); for (let k = 0; k < 150 && (await ref(p)) === before; k++) await p.waitForTimeout(20); } await p.waitForTimeout(300);
     if ((await ref(p)) !== want) bad("prev ref " + (await ref(p)) + " want " + want);
     const [s, a] = want.split(":").map(Number);
     if ((await body(p, "az.musayev")) !== mz[s - 1][a - 1].trim()) bad("text at " + want);
     const shown = await p.locator(L).first().getAttribute("data-page"); if (Number(shown) !== pg) bad(`page ${shown} for ${want}`);
   }
-  for (let i = 0; i < 6; i++) await p.locator(".lib-sheet .lib-prev").click();
+  for (let i = 0; i < 6; i++) { const before = await ref(p); await p.locator(".lib-sheet .lib-prev").click(); for (let k = 0; k < 150 && (await ref(p)) === before; k++) await p.waitForTimeout(20); }
   await p.waitForTimeout(300);
   if ((await ref(p)) !== "1:1" || !(await p.locator(".lib-sheet .lib-prev").isDisabled())) bad("1:1 prev not disabled (" + (await ref(p)) + ")");
   await p.locator(".lib-sheet .lib-next").click(); await p.waitForTimeout(300);
@@ -56,7 +56,7 @@ const mz = file("tr/az.musayev.json").v;
   const p = await start("ar", 604);
   await p.locator(`${L} .w.ayah`).nth(3).click({ force: true }); await p.waitForTimeout(300);
   await p.locator(".asheet .arow", { hasText: "الترجمة" }).click(); await p.waitForSelector(".lib-sheet"); await dl(p, "az.musayev");
-  for (let i = 0; i < 80 && !(await p.locator(".lib-sheet .lib-next").isDisabled()); i++) { await p.locator(".lib-sheet .lib-next").click(); await p.waitForTimeout(200); }
+  for (let i = 0; i < 80 && !(await p.locator(".lib-sheet .lib-next").isDisabled()); i++) { const before = await ref(p); await p.locator(".lib-sheet .lib-next").click(); for (let k = 0; k < 100 && (await ref(p)) === before; k++) await p.waitForTimeout(20); }
   if ((await ref(p)) !== "114:6" || !(await p.locator(".lib-sheet .lib-next").isDisabled())) bad("114:6 next not disabled (" + (await ref(p)) + ")");
   if (!(await p.locator('.lib-sheet .lib-body[data-id="az.musayev"]').count())) bad("ticks lost");
   const nb = await p.locator(".lib-sheet .lib-next").boundingBox(), pb = await p.locator(".lib-sheet .lib-prev").boundingBox();
