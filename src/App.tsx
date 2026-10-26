@@ -124,16 +124,29 @@ export function App() {
   // hifz view: the first word of each ayah stays visible, revealed ayahs show in full
   const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
   const hifzV = !!st.prefs.hifzView;
+  // word-by-word cursor: the selected ayah shows its first n words; "Continue" adds one, then moves on to the next ayah (and page)
+  const [hz, setHz] = useState<{ s: number; a: number; n: number } | null>(null);
   useEffect(() => {
+    const cur = hz ? hz.s + ":" + hz.a : "";
     document.querySelectorAll<HTMLElement>(".page").forEach((pg) => {
-      const seen = new Set<string>();
+      const cnt = new Map<string, number>();
       pg.querySelectorAll<HTMLElement>(".w.ayah").forEach((el) => {
-        const k = el.dataset.s + ":" + el.dataset.a;
-        el.classList.toggle("hf", !seen.has(k)); seen.add(k);
-        el.classList.toggle("rv", revealed.has(k));
+        const k = el.dataset.s + ":" + el.dataset.a; const i = cnt.get(k) ?? 0; cnt.set(k, i + 1);
+        el.classList.toggle("hf", i === 0);
+        el.classList.toggle("rv", revealed.has(k) || (k === cur && i < hz!.n));
+        el.classList.toggle("hz-cur", hifzV && k === cur);
       });
     });
   });
+  const ayahWords = (s: number, a: number) => ayahs[indexOf(s, a)].t.split(/\s+/).filter((w) => /[\u0621-\u064A\u0671]/.test(w)).length;
+  function hifzNext() {
+    if (!hz) return;
+    if (hz.n < ayahWords(hz.s, hz.a)) { setHz({ ...hz, n: hz.n + 1 }); return; }
+    setRevealed((r) => new Set(r).add(hz.s + ":" + hz.a));
+    const nx = ayahs[indexOf(hz.s, hz.a) + 1]; if (!nx) { setHz(null); return; }
+    setHz({ s: nx.s, a: nx.a, n: 1 });
+    const pg = pageOfAyah(nx.s, nx.a); if (!document.querySelector(`.layer:not(.pre):not(.over) .page .w.ayah[data-s="${nx.s}"][data-a="${nx.a}"], .spread .page .w.ayah[data-s="${nx.s}"][data-a="${nx.a}"]`)) setPage(pg);
+  }
   // bookmark marks on the DOM (fitted text is not re-laid out)
   useEffect(() => {
     document.querySelectorAll<HTMLElement>(".ayah").forEach((el) => {
@@ -255,7 +268,7 @@ export function App() {
         <button className="ib" aria-label={t.searchTab} onClick={() => setMenu("search")}><Ic n="search" /></button>
         <button className="ib" aria-label={t.settings} onClick={() => setMenu("settings")}><Ic n="sliders" /></button>
       </div>
-      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), onHifz: () => { const v = !hifzV; update((x) => ({ ...x, prefs: { ...x.prefs, hifzView: v } })); setRevealed(new Set()); say(v ? xl.hifzOn : xl.hifzOff); }, hifzOn: hifzV, hifzLabel: xl.hifzView, onNight: () => { if (theme === "dark") setTheme(((localStorage.getItem("qt.dayTheme") as Theme) || "light")); else { localStorage.setItem("qt.dayTheme", theme); setTheme("dark"); } }, nightOn: theme === "dark", nightLabel: xl.night, onList: () => { setSel(null); setListView(true); localStorage.setItem("qt.list", "1"); }, listLabel: ({ az: "Siyahı görünüşü", ar: "عرض القائمة", en: "List view" } as Record<string, string>)[lang] || "List view", backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (hifzV && a && !revealed.has(a.s + ":" + a.a)) { setRevealed((r) => new Set(r).add(a.s + ":" + a.a)); return; } if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
+      {void setPageSound(st.prefs.pageSound !== false)}<PageChrome.Provider value={{ tajweed: !!st.prefs.tajweed, lang, juzLabel: T[lang].juz, onBack: goHome, onSettings: () => setMenu("settings"), onHifz: () => { const v = !hifzV; update((x) => ({ ...x, prefs: { ...x.prefs, hifzView: v } })); setRevealed(new Set()); setHz(null); say(v ? xl.hifzOn : xl.hifzOff); }, hifzOn: hifzV, hifzLabel: xl.hifzView, onNight: () => { if (theme === "dark") setTheme(((localStorage.getItem("qt.dayTheme") as Theme) || "light")); else { localStorage.setItem("qt.dayTheme", theme); setTheme("dark"); } }, nightOn: theme === "dark", nightLabel: xl.night, onList: () => { setSel(null); setListView(true); localStorage.setItem("qt.list", "1"); }, listLabel: ({ az: "Siyahı görünüşü", ar: "عرض القائمة", en: "List view" } as Record<string, string>)[lang] || "List view", backLabel: t.hHome, settingsLabel: t.settings }}><Reader scale={st.prefs.fontScale} animate={st.prefs.flip === "flip"} page={page} setPage={setPage} onTap={(a, pg) => { setMist(false); if (hifzV && a) { setHz({ s: a.s, a: a.a, n: 1 }); return; } if (a && pg && pg !== page) { setPageState(pg); localStorage.setItem("page", String(pg)); setSel(a); return; } if (a) setSel(sel && sel.s === a.s && sel.a === a.a ? null : a); else { setSel(null); setBars((b) => !b); } }} /></PageChrome.Provider>
       {rc.mode !== "off" && (
         <div className="rstrip" role="region" aria-label={t.reciteMic}>
           <div className="rinfo" aria-live="polite">
@@ -315,6 +328,7 @@ export function App() {
           </div>
         </div>
       )}
+      {hifzV && hz && !home && !listView && <button type="button" className="hz-next" onClick={hifzNext}>{xl.hzNext} <small>{hz.s}:{hz.a}</small></button>}
       {listView && !home && <ListView page={page} lang={lang} hifz={hifzV} onClose={(p) => { setListView(false); localStorage.setItem("qt.list", "0"); setPage(p); }} />}
       {lib && <AyahLib lang={lang} kind={lib.kind} s={lib.s} a={lib.a} onClose={() => setLib(null)} onNav={(ns, na) => { setLib({ kind: lib.kind, s: ns, a: na }); const p = pageOfAyah(ns, na); if (p !== page) setPage(p); setSel({ s: ns, a: na }); }} onSettings={() => { setLib(null); setSel(null); setMenu("settings"); }} />}
       {toast && <div className="toast" role="status">{toast}</div>}

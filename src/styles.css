@@ -714,3 +714,7 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .hifz-v .page .w.ayah:not(.hf):not(.rv) { background:repeating-linear-gradient(0deg, transparent 0 46%, color-mix(in srgb, var(--fg, #14110b) 10%, transparent) 46% 54%, transparent 54% 100%); border-radius:3px; }
 .lv.hifz-v .lv-ar:not(.rv) .lv-rest { color:transparent; background:color-mix(in srgb, currentColor 6%, transparent); border-radius:4px; }
 .lv.hifz-v .lv-ar:not(.rv) .lv-rest { color:transparent; } .lv.hifz-v .lv-ar { cursor:pointer; }
+
+.hz-next { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(18px + env(safe-area-inset-bottom)); z-index:40; padding:12px 26px; border-radius:24px; border:0; background:var(--accent, #1d5a45); color:#fff; font-size:16px; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+.hz-next small { opacity:.75; font-weight:400; margin-inline-start:6px; }
+.hifz-v .w.ayah.hz-cur.rv { background:color-mix(in srgb, var(--accent, #1d5a45) 14%, transparent); border-radius:4px; }
