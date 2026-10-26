@@ -5,7 +5,9 @@ import { readFileSync } from "fs";
 const BASE = process.env.URL || "http://127.0.0.1:4180/";
 const file = (p) => JSON.parse(readFileSync(new URL("../../public/" + p, import.meta.url), "utf8"));
 const b = await chromium.launch({ executablePath: process.env.CHROME || "/usr/bin/google-chrome", args: ["--no-sandbox"] });
-let fail = 0; const bad = (m) => { fail++; console.log("FAIL", m); };
+let fail = 0; const bad = (m) => { fail++; console.log("FAIL", m); if (process.env.CI) console.log("::error title=ayahnav::" + m); };
+process.on("uncaughtException", (e) => { console.log("::error title=ayahnav crash::" + String(e.message).split("\n").slice(0, 3).join(" | ")); process.exit(1); });
+process.on("unhandledRejection", (e) => { console.log("::error title=ayahnav crash::" + String(e?.message || e).split("\n").slice(0, 3).join(" | ")); process.exit(1); });
 const L = ".layer:not(.pre):not(.over) .page";
 async function start(lang, page, w = 412, h = 860) {
   const p = await (await b.newContext({ viewport: { width: w, height: h } })).newPage();
