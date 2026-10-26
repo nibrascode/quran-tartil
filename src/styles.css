@@ -661,3 +661,4 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 /* ayah medallion with its neighbouring words: tight, print-like spacing on both sides */
 .mushaf .wk { display:inline-flex; align-items:center; gap:.14em; white-space:nowrap; direction:rtl; }
 .mushaf .wk > .end { margin:0; }
+.lib-none .lib-go { margin-top:10px; } .lib-none .lib-row { padding:6px 0; }

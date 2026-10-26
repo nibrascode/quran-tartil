@@ -40,7 +40,7 @@ The app has no accounts and collects nothing, so there is nothing to sell or sha
 
 ### Translations and tafsirs
 
-Translations and tafsirs are downloaded only when you tap Download in Settings, then stored on your device and can be deleted there. Translations come from this app's own site (GitHub Pages, texts from Tanzil.net). Tafsir downloads connect to api.quran.com (Quran.com), which receives the usual request data such as your IP address under its own privacy policy. Nothing about you or your reading is sent.
+Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from Tanzil.net, tafsir texts from Quran.com). Nothing about you or your reading is sent.
 
 ### Contact and changes
 
@@ -84,7 +84,7 @@ Tətbiqdə hesab yoxdur və heç nə toplanmır, ona görə satılacaq və ya pa
 
 ### Tərcümə və təfsirlər
 
-Tərcümə və təfsirlər yalnız Ayarlarda “Endir” düyməsinə toxunanda endirilir, cihazınızda saxlanır və orada silinə bilər. Tərcümələr tətbiqin öz saytından (GitHub Pages, mətnlər Tanzil.net-dən) gəlir. Təfsir endirmələri api.quran.com (Quran.com) ünvanına qoşulur; o, IP ünvanı kimi adi sorğu məlumatlarını öz məxfilik siyasəti ilə alır. Sizin və ya oxumağınız haqqında heç nə göndərilmir.
+Tərcümə və təfsirlər yalnız “Endir” düyməsinə (Ayarlarda və ya ayə panelində) toxunanda endirilir, cihazınızda saxlanır və orada silinə bilər. Hamısı tətbiqin öz saytından gəlir (GitHub Pages; tərcümə mətnləri Tanzil.net-dən, təfsir mətnləri Quran.com-dan). Sizin və ya oxumağınız haqqında heç nə göndərilmir.
 
 ### Əlaqə və dəyişikliklər
 
@@ -128,7 +128,7 @@ Uygulamada hesap yoktur ve hiçbir şey toplanmaz, bu yüzden satılacak veya pa
 
 ### Translations and tafsirs
 
-Translations and tafsirs are downloaded only when you tap Download in Settings, then stored on your device and can be deleted there. Translations come from this app's own site (GitHub Pages, texts from Tanzil.net). Tafsir downloads connect to api.quran.com (Quran.com), which receives the usual request data such as your IP address under its own privacy policy. Nothing about you or your reading is sent.
+Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from Tanzil.net, tafsir texts from Quran.com). Nothing about you or your reading is sent.
 
 ### İletişim ve değişiklikler
 
@@ -172,7 +172,7 @@ Sorular: nibrascode@gmail.com. Politika değişirse yeni sürüm ve tarih uygula
 
 ### الترجمات والتفاسير
 
-تُنزَّل الترجمات والتفاسير فقط عند الضغط على «تنزيل» في الإعدادات، وتُحفظ على جهازك ويمكن حذفها من هناك. تأتي الترجمات من موقع التطبيق نفسه (GitHub Pages، والنصوص من Tanzil.net). أما تنزيل التفاسير فيتصل بـ api.quran.com (Quran.com) الذي يتلقى بيانات الطلب المعتادة مثل عنوان IP وفق سياسة الخصوصية الخاصة به. لا يُرسل أي شيء عنك أو عن قراءتك.
+تُنزَّل الترجمات والتفاسير فقط عند الضغط على «تنزيل» (في الإعدادات أو في لوحة الآية)، وتُحفظ على جهازك ويمكن حذفها من هناك. وكلها من موقع التطبيق نفسه (GitHub Pages؛ نصوص الترجمات من Tanzil.net ونصوص التفاسير من Quran.com). لا يُرسل أي شيء عنك أو عن قراءتك.
 
 ### التواصل والتغييرات
 
@@ -216,7 +216,7 @@ Quran Tartil работает офлайн. Нет аккаунтов, рекл�
 
 ### Translations and tafsirs
 
-Translations and tafsirs are downloaded only when you tap Download in Settings, then stored on your device and can be deleted there. Translations come from this app's own site (GitHub Pages, texts from Tanzil.net). Tafsir downloads connect to api.quran.com (Quran.com), which receives the usual request data such as your IP address under its own privacy policy. Nothing about you or your reading is sent.
+Translations and tafsirs are downloaded only when you tap Download (in Settings or in the ayah panel), then stored on your device and can be deleted there. They come from this app's own site (GitHub Pages; translation texts from Tanzil.net, tafsir texts from Quran.com). Nothing about you or your reading is sent.
 
 ### Контакты и изменения
 

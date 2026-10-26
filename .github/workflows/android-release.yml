@@ -19,6 +19,7 @@ jobs:
       - run: npm run build
       - run: npx cap add android
       - run: bash scripts/android-setup.sh
+      - run: rm -rf dist/tf # tafsirs are downloaded on demand from the site, not bundled
       - run: npx cap sync android
       - name: Restore keystore
         env:

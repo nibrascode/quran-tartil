@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 // On-device translations and tafsirs, downloaded only when the user taps "Download" in Settings.
 // Stored in IndexedDB per surah (resumable, deletable). Nothing is bundled into the reader.
 import { suras } from "./quran";
@@ -6,11 +7,13 @@ export type Res = { id: string; kind: "tr" | "tf"; name: string; by: string; lan
 export const RESOURCES: Res[] = [
   { id: "az.musayev", kind: "tr", name: "Azərbaycanca", by: "Əlixan Musayev", lang: "az", size: "≈ 0.9 MB", src: "Tanzil.net (az.musayev)" },
   { id: "ru.kuliev", kind: "tr", name: "Русский", by: "Эльмир Кулиев", lang: "ru", size: "≈ 1.4 MB", src: "Tanzil.net (ru.kuliev)" },
-  { id: "saadi", kind: "tf", name: "تيسير الكريم الرحمن", by: "السعدي", lang: "ar", size: "≈ 8 MB", src: "Quran.com API (tafsir 91)", qc: 91 },
-  { id: "muyassar", kind: "tf", name: "التفسير الميسر", by: "مجمع الملك فهد", lang: "ar", size: "≈ 2 MB", src: "Quran.com API (tafsir 16)", qc: 16 },
-  { id: "ibnkathir", kind: "tf", name: "تفسير ابن كثير", by: "ابن كثير", lang: "ar", size: "≈ 45 MB", src: "Quran.com API (tafsir 14)", qc: 14 },
+  { id: "saadi", kind: "tf", name: "تيسير الكريم الرحمن", by: "السعدي", lang: "ar", size: "≈ 6 MB", src: "Quran.com (tafsir 91), hosted on our site", qc: 91 },
+  { id: "muyassar", kind: "tf", name: "التفسير الميسر", by: "مجمع الملك فهد", lang: "ar", size: "≈ 2 MB", src: "Quran.com (tafsir 16), hosted on our site", qc: 16 },
+  { id: "ibnkathir", kind: "tf", name: "تفسير ابن كثير", by: "ابن كثير", lang: "ar", size: "≈ 15 MB", src: "Quran.com (tafsir 14), hosted on our site", qc: 14 },
 ];
 
+/** files are served by our own site (GitHub Pages); the Android app fetches them from there too (tafsirs are not bundled in the APK) */
+const SITE = Capacitor.isNativePlatform() ? "https://nibrascode.github.io/quran-tartil/" : new URL(".", document.baseURI).href;
 let dbp: Promise<IDBDatabase> | null = null;
 const db = () => (dbp ||= new Promise((ok, no) => { const r = indexedDB.open("qt-lib", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }));
 async function tx<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<T> | void): Promise<T | undefined> {
@@ -34,7 +37,7 @@ export async function download(r: Res, onProgress: (n: number) => void): Promise
   const ctl = { stop: false }; running.set(r.id, ctl);
   try {
     if (r.kind === "tr") {
-      const res = await fetch(new URL("tr/" + r.id + ".json", document.baseURI).href);
+      const res = await fetch(SITE + "tr/" + r.id + ".json");
       if (!res.ok) throw new Error("HTTP " + res.status);
       const j = (await res.json()) as { v: string[][] };
       for (let s = 1; s <= 114; s++) await put(r.id + ":" + s, j.v[s - 1]);
@@ -43,14 +46,10 @@ export async function download(r: Res, onProgress: (n: number) => void): Promise
     let n = await status(r.id);
     for (let s = n + 1; s <= 114; s++) {
       if (ctl.stop) throw new Error("stopped");
-      const out: string[] = new Array(suras[s - 1].ayas).fill("");
-      for (let p = 1, last = 1; p <= last; p++) {
-        const res = await fetch(`https://api.quran.com/api/v4/tafsirs/${r.qc}/by_chapter/${s}?per_page=50&page=${p}`);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const j = await res.json() as { tafsirs: { verse_key: string; text: string }[]; pagination: { total_pages: number } };
-        last = j.pagination.total_pages || 1;
-        for (const t of j.tafsirs) { const a = +t.verse_key.split(":")[1]; if (a >= 1 && a <= out.length) out[a - 1] = toText(t.text || ""); }
-      }
+      const res = await fetch(SITE + "tf/" + r.id + "/" + s + ".json");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const out = (await res.json()) as string[];
+      if (!Array.isArray(out) || out.length !== suras[s - 1].ayas) throw new Error("bad file " + r.id + "/" + s);
       await put(r.id + ":" + s, out); await put(r.id + ":n", s); n = s; onProgress(s);
     }
   } finally { running.delete(r.id); }
