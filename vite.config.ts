@@ -8,8 +8,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: false, // registered in src/main.tsx: checks for a new deploy on start, on focus and every 30 min, then reloads
       includeAssets: ["icon-192.png", "apple-touch-icon.png", "favicon.ico", "favicon-32.png", "OFL-AmiriQuran.txt"],
       workbox: {
+        skipWaiting: true, clientsClaim: true, cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,woff2,svg,png,txt}"], globIgnores: ["**/worker-*.js", "ort/**"], maximumFileSizeToCacheInBytes: 6_000_000,
         // the Whisper worker and its WASM runtime are cached when the user installs the Precise model (not for every visitor)
         runtimeCaching: [{ urlPattern: /\/(ort\/|assets\/worker-)/, handler: "CacheFirst", options: { cacheName: "qt-precise-ort", expiration: { maxEntries: 8 } } }],

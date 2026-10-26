@@ -40,6 +40,9 @@ jobs:
       - name: Rendered Quran text on all 604 pages equals the audited data (tajweed spans reassemble exactly)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/domtext.mjs
+      - name: Panels list downloads in place (no Settings empty state), ar/az/en, phone + spread
+        env: { CHROME: /usr/bin/google-chrome }
+        run: node scripts/e2e/panels.mjs
       - name: Translation / tafsir panels download in place (Ibn Kathir, all 114 surahs from our site)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/library.mjs

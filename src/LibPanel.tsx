@@ -45,7 +45,7 @@ const SL = {
   en: { all_tr: "Translations", all_tf: "Tafsirs", show: "Show", cur: "Selected", tr: "Translation", tf: "Tafsir", close: "Close", noTr: "No translation downloaded yet.", noTf: "No tafsir downloaded yet.", hint: "Download one in Settings › Translation & tafsir.", here: "Download one here:", go: "Open Settings", ay: "Ayahs" },
   ar: { all_tr: "الترجمات", all_tf: "التفاسير", show: "عرض", cur: "المختار", tr: "الترجمة", tf: "التفسير", close: "إغلاق", noTr: "لم تُنزَّل أي ترجمة بعد.", noTf: "لم يُنزَّل أي تفسير بعد.", hint: "نزّلها من الإعدادات › الترجمة والتفسير.", here: "نزّل واحدًا من هنا:", go: "فتح الإعدادات", ay: "الآيات" },
 };
-export function AyahLib({ kind, s, a, onClose, onSettings, lang = "az" }: { kind: "tr" | "tf"; s: number; a: number; onClose: () => void; onSettings: () => void; lang?: string }) {
+export function AyahLib({ kind, s, a, onClose, lang = "az" }: { kind: "tr" | "tf"; s: number; a: number; onClose: () => void; onSettings: () => void; lang?: string }) {
   const u = SL[(lang as "az") in SL ? (lang as "az") : "en"];
   const list = RESOURCES.filter((r) => r.kind === kind);
   const [have, setHave] = useState<Res[] | null>(null);
@@ -68,7 +68,7 @@ export function AyahLib({ kind, s, a, onClose, onSettings, lang = "az" }: { kind
           ? <div className="lib-row" data-id={r.id} key={r.id}><div className="lib-tx"><b dir="auto">{r.name}</b><small dir="auto">{r.by} · {r.size}</small></div>
               {r.id === cur?.id ? <small className="lib-ok">✓ {u.cur}</small> : <button className="ib" onClick={() => choose(r.id)}>{u.show}</button>}</div>
           : <Row key={r.id} r={r} t={lt} onDone={() => { choose(r.id); setTick((x) => x + 1); }} />)}
-        <button className="ib lib-go" onClick={onSettings}>{u.go}</button></div>}
+</div>}
       {have && have.length > 1 && <div className="lib-tabs" role="tablist">{have.map((r) => <button key={r.id} role="tab" aria-selected={r.id === cur?.id} className={r.id === cur?.id ? "on" : ""} onClick={() => { setPick(r.id); localStorage.setItem("qt.lib." + kind, r.id); }} dir="auto">{r.name}</button>)}</div>}
       {cur && !all && <div className={"lib-body" + (cur.lang === "ar" ? " ar" : "")} dir={cur.lang === "ar" ? "rtl" : "ltr"} lang={cur.lang}>
         {e === undefined ? <p>…</p> : !e || !e.text ? <p>—</p> : <>
