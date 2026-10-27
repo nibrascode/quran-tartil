@@ -25,10 +25,11 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
       await p.locator(".lib-sheet .x").click(); await p.waitForTimeout(200);
     }
   }
-  const btn = p.locator(`.page .ph-list[aria-label="${LBL[lang]}"]`).first();
-  if (!(await btn.count())) { bad(lang + ": no list icon"); continue; }
   if (await p.locator(".asheet").count()) await p.locator(".asheet .x").click();
-  await p.locator(`${L.split(",")[0]} .ph-list, .spread .page .ph-list`).first().click(); await p.waitForSelector(".lv .lv-card");
+  await p.locator(".ph-set:visible").first().click(); await p.waitForSelector(".ph-pop");
+  const btn = p.locator(`.page .ph-pop .ph-list[aria-label="${LBL[lang]}"]`).first();
+  if (!(await btn.count())) { bad(lang + ": no list icon"); continue; }
+  await btn.click(); await p.waitForSelector(".lv .lv-card");
   await p.waitForTimeout(500);
   const cards = () => p.locator(".lv .lv-card").evaluateAll((e) => e.map((x) => x.dataset.s + ":" + x.dataset.a).join(","));
   const lvPage = async () => Number(await p.locator(".lv").getAttribute("data-page"));

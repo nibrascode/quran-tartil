@@ -18,6 +18,7 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
   await p.addInitScript((l) => { if (!localStorage.getItem("e2e.home")) sessionStorage.setItem("qt.home", "0"); localStorage.setItem("lang", l); if (!sessionStorage.getItem("x")) { localStorage.setItem("page", "2"); sessionStorage.setItem("x", "1");
     const v = JSON.parse(localStorage.getItem("qt.v2") || "{}"); v.onboarded = true; v.bookmarks = []; v.prefs = { ...(v.prefs || {}), hifzView: false }; localStorage.setItem("qt.v2", JSON.stringify(v)); localStorage.setItem("theme", "light"); localStorage.setItem("qt.list", "0"); } }, lang);
   await p.goto(BASE, { waitUntil: "networkidle" }); await p.waitForTimeout(1200);
+  const menu = async (c) => { await p.locator(".ph-set:visible").first().click(); await p.waitForSelector(".ph-pop"); await p.locator(".ph-pop " + c).first().click(); };
   const tapAyah = async (a) => { await p.locator(`${L.split(",")[0]} .w.ayah[data-s="2"][data-a="${a}"], .spread .page .w.ayah[data-s="2"][data-a="${a}"]`).first().click({ force: true }); await p.waitForSelector(".asheet", { timeout: 8000 }).catch(async (e) => { await p.screenshot({ path: "/tmp/feat-" + lang + ".png" }); throw e; }); };
   if (lang === "en") { // translation on the device (ticked automatically)
     await tapAyah(2); await p.locator(".asheet .arow", { hasText: "Translation" }).click(); await p.waitForSelector(".lib-sheet .lib-dd, .lib-sheet .lib-body, .lib-sheet .lib-hint");
@@ -40,7 +41,7 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
   if (!sh[1] || !/^image\/png:\d{4,}/.test(sh[1].files[0] || "")) bad(lang + ": share image " + JSON.stringify(sh[1]));
   await p.locator(".asheet .x").click(); await p.waitForTimeout(200);
   // menu: bookmarks list with note -> jump
-  await p.locator(".ph-set:visible").first().click(); await p.waitForTimeout(400);
+  await menu(".ph-settings"); await p.waitForTimeout(400);
   const tabs = await p.evaluate(() => [...document.querySelectorAll(".menu .tab, .sheet .tab, [role=tab]")].map((x) => x.textContent.trim()));
   for (const t of X[lang].tab) if (!tabs.includes(t)) bad(`${lang}: tab label ${t} missing (${tabs.join("|")})`);
   await p.locator("button", { hasText: X[lang].tab[1] }).first().click(); await p.waitForTimeout(300);
@@ -58,15 +59,16 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
     if ((await p.evaluate(() => localStorage.getItem("page"))) === before && (await hits.count())) bad(lang + ": hit did not open the ayah"); }
   await p.evaluate(() => localStorage.setItem("page", "2")); await p.reload({ waitUntil: "networkidle" }); await p.waitForTimeout(1000);
   // 6. night toggle
-  await p.locator(".ph-night:visible").first().click(); await p.waitForTimeout(300);
+  await menu(".ph-night"); await p.waitForTimeout(300);
   if ((await p.evaluate(() => document.documentElement.dataset.theme)) !== "dark") bad(lang + ": night toggle did not darken");
-  await p.locator(".ph-night:visible").first().click(); await p.waitForTimeout(300);
+  await menu(".ph-night"); await p.waitForTimeout(300);
   if ((await p.evaluate(() => document.documentElement.dataset.theme)) === "dark") bad(lang + ": night toggle did not restore");
   // 5. hifz in the Mushaf
-  await p.locator(".ph-hifz:visible").first().click(); await p.waitForTimeout(500);
+  await menu(".ph-hifz"); await p.waitForTimeout(500);
   const vis = () => p.evaluate((sel) => { const pg = [...document.querySelectorAll(sel)].find((x) => x.querySelector('.w.ayah[data-s="2"][data-a="4"]')); const ws = !pg ? [] : [...pg.querySelectorAll('.w.ayah[data-s="2"][data-a="4"]')]; return ws.map((w) => getComputedStyle(w).color === "rgba(0, 0, 0, 0)" ? 0 : 1).join(""); }, L.split(",")[0].trim() + ", .spread .page");
   const v0 = await vis(); if (!/^10+$/.test(v0)) bad(lang + ": hifz not first-word-only " + v0);
-  if (await p.locator(".ph-hifz:visible circle").count()) bad(lang + ": hifz icon is still an eye");
+  { await p.locator(".ph-set:visible").first().click(); await p.waitForSelector(".ph-pop"); if (await p.locator(".ph-pop .ph-hifz circle").count()) bad(lang + ": hifz icon is still an eye"); await p.locator(".ph-set:visible").first().click(); await p.waitForTimeout(150); }
+  { const hb = await p.evaluate(() => [...document.querySelectorAll(".page .page-head")].filter((h) => h.getBoundingClientRect().width > 0).map((h) => [...h.querySelectorAll(":scope > button")].map((b) => b.className.split(" ")[0]).join(","))); if (hb.some((x) => x !== "ph-back,ph-set")) bad(lang + ": top bar has extra buttons " + hb.join(" / ")); }
   await p.locator(`.w.ayah[data-s="2"][data-a="4"]`).first().click({ force: true }); await p.waitForTimeout(300);
   const nx = p.locator(".hz-next"); const NX = { en: "Continue", az: "Davam", ar: "متابعة" }[lang];
   if (!(await nx.count()) || !(await nx.textContent()).includes(NX)) bad(lang + ": no Continue button");
@@ -84,7 +86,7 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
   await p.evaluate(() => localStorage.setItem("page", "2")); await p.reload({ waitUntil: "networkidle" }); await p.waitForTimeout(1000);
   // hifz in the list view
   if (await p.locator(".asheet").count()) await p.locator(".asheet .x").click();
-  await p.locator(".ph-list:visible").first().click(); await p.waitForSelector(".lv .lv-card");
+  await menu(".ph-list"); await p.waitForSelector(".lv .lv-card");
   const rest = p.locator('.lv-card[data-a="4"] .lv-rest'); if (!(await rest.count()) || (await rest.evaluate((e) => getComputedStyle(e).color)) !== "rgba(0, 0, 0, 0)") bad(lang + ": list hifz not hiding");
   await p.locator('.lv-card[data-a="4"] .lv-ar').click(); await p.waitForTimeout(200);
   if ((await rest.count()) && (await rest.evaluate((e) => getComputedStyle(e).color)) === "rgba(0, 0, 0, 0)") bad(lang + ": list tap did not reveal");
