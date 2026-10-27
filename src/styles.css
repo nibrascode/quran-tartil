@@ -790,3 +790,9 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .page .sura-head .cart::before, .page .sura-head .cart::after { width:46%; height:118%; }
 .page .page-foot::before { opacity:.28; }
 .page .page-foot .page-no { background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath d='M14 4 H86 Q92 4 95 12 Q97 18 99 20 Q97 22 95 28 Q92 36 86 36 H14 Q8 36 5 28 Q3 22 1 20 Q3 18 5 12 Q8 4 14 4Z' fill='%23f4eedb' stroke='%23c9a24a' stroke-width='1.6'/%3E%3Cpath d='M16 8 H84 Q89 8 91 14 Q92.5 18 94 20 Q92.5 22 91 26 Q89 32 84 32 H16 Q11 32 9 26 Q7.5 22 6 20 Q7.5 18 9 14 Q11 8 16 8Z' fill='none' stroke='%23c9a24a' stroke-width='.7'/%3E%3Cpath d='M50 0 L53 4 L50 6 L47 4Z M50 34 L53 36 L50 40 L47 36Z' fill='%23c9a24a'/%3E%3C/svg%3E") center/100% 100% no-repeat; box-shadow:none; border-radius:0; min-width:64px; padding:6px 18px; }
+/* margins measured on the reference (461px wide: text 43..425 => ~8.7% each side; ~33px under the top bar, ~25px above the bottom band); proportional on tablet / spread */
+.page { --pad:8.7vw; }
+.spread .page { --pad:4.35vw; }
+.page .frame { padding:0 var(--pad) 0 !important; }
+.page .page-head { margin:0 calc(-1 * var(--pad)) calc(var(--pad) * .82) !important; padding-left:calc(var(--pad) - 4px) !important; padding-right:calc(var(--pad) - 10px) !important; }
+.page .page-foot { margin:calc(var(--pad) * .62) calc(-1 * var(--pad)) 0 !important; }
