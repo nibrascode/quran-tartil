@@ -57,7 +57,8 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
   const box = useRef<HTMLDivElement>(null);
   const share = useContext(SpreadFit); const shareRef = useRef(share); shareRef.current = share;
   const meas = useRef<HTMLDivElement>(null);
-  const [fit, setFit] = useState<{ page: number; f: number; short: boolean[]; tallH: number } | null>(null);
+  const [fit, setFit] = useState<{ page: number; f: number; short: boolean[]; tallH: number; grow?: number[] } | null>(null);
+  const psQc = useContext(PageChrome).pageStyle === "qc";
   const sura = firstSuraOfPage(page);
   const n = page <= 2 ? 8 : 15;
 
@@ -80,7 +81,9 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
       // the printed mushaf justifies every line; only the opening pages and a surah's short closing line are centred
       const endsSura = (r: Row) => { if (isHead(r) || !r.length) return false; const [ss, aa, t] = r[r.length - 1]; return aa === suras[ss - 1].ayas && isEnd(t.trim().split(/\s+/).pop() || ""); };
       const short = ws.map((w, i) => page <= 2 || (endsSura(rows[i]) && w > 0 && w * f < W * 0.62));
-      setFit({ page, f, short, tallH });
+      // quran.com style: each line is scaled up a little to fill its width (small word gaps, like per-line glyph fonts) instead of wide justified gaps
+      const grow = psQc && page > 2 ? ws.map((w, i) => (short[i] || !(w > 0) ? 1 : Math.max(1, Math.min(1.2, (W * 0.995) / (w * f))))) : undefined;
+      setFit({ page, f, short, tallH, grow });
       shareRef.current?.set(page, f);
     };
     run();
@@ -88,7 +91,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
     ro.observe(b);
     document.fonts?.ready.then(run);
     return () => ro.disconnect();
-  }, [page, rows, n]);
+  }, [page, rows, n, psQc]);
 
   const ch = useContext(PageChrome);
   const og = useOpeningGeom(page);
@@ -129,6 +132,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
           {ch.onHifz && <button type="button" className={"ph-hifz" + (ch.hifzOn ? " on" : "")} aria-pressed={!!ch.hifzOn} aria-label={ch.hifzLabel} title={ch.hifzLabel} onPointerDown={stop} onPointerUp={stop} onClick={() => { setPop(false); ch.onHifz?.(); }}><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><rect x="7" y="3.5" width="13" height="10" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" /><rect x="4" y="7" width="13" height="10" rx="2" fill="var(--bg, #fff)" stroke="currentColor" strokeWidth="1.7" /><rect x="1.5" y="10.5" width="13" height="10" rx="2" fill={ch.hifzOn ? "currentColor" : "var(--bg, #fff)"} stroke="currentColor" strokeWidth="1.7" /></svg><span>{ch.hifzLabel}</span></button>}
           {ch.onNight && <button type="button" className={"ph-night" + (ch.nightOn ? " on" : "")} aria-pressed={!!ch.nightOn} aria-label={ch.nightLabel} title={ch.nightLabel} onPointerDown={stop} onPointerUp={stop} onClick={() => { setPop(false); ch.onNight?.(); }}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill={ch.nightOn ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg><span>{ch.nightLabel}</span></button>}
           {ch.onList && <button type="button" className="ph-list" aria-label={ch.listLabel || "List view"} title={ch.listLabel} onPointerDown={stop} onPointerUp={stop} onClick={() => { setPop(false); ch.onList?.(); }}><ListIcon /><span>{ch.listLabel}</span></button>}
+          {ch.onStyle && <button type="button" className={"ph-style" + (ch.styleOn ? " on" : "")} aria-pressed={!!ch.styleOn} onClick={() => { setPop(false); ch.onStyle?.(); }}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.6" /></svg><span>{ch.styleLabel}</span></button>}
           <button type="button" className="ph-settings" onClick={() => { setPop(false); ch.onSettings?.(); }}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2.5l2.2 2.6 3.4-.4.4 3.4 2.6 2.2-2.6 2.2-.4 3.4-3.4-.4L12 21.5l-2.2-2.6-3.4.4-.4-3.4L3.4 13.7 6 11.5l.4-3.4 3.4.4z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg><span>{ch.settingsLabel}</span></button>
           </div>}
 
@@ -151,7 +155,7 @@ export const Page = memo(function Page({ page, scale = 1 }: { page: number; scal
               ? r[0] === "h"
                 ? <div className="sura-head orn" key={i}><span className="cart"><span>سُورَةُ {suras[r[1] - 1].name}</span></span><i className="sh-div" aria-hidden="true" /></div>
                 : <div className="bism" key={i}><span>{BASMALA}</span></div>
-              : <div className={"ln" + (fit?.short[i] ? " c" : "")} key={i}><Line r={r} tj={ch.tajweed} /></div>)}
+              : <div className={"ln" + (fit?.short[i] ? " c" : "")} key={i} style={fit?.grow && fit.grow[i] > 1 ? { fontSize: fit.grow[i].toFixed(4) + "em" } : undefined}><Line r={r} tj={ch.tajweed} /></div>)}
           </div>
           <div className="meas mushaf" ref={meas} aria-hidden="true">{rows?.map((r, i) => <div key={i}>{isHead(r) ? null : <Line r={r} />}</div>)}</div>
         </div>}

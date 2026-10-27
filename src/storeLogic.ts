@@ -19,7 +19,9 @@ export type Settings = {
   mig?: number;
 };
 export type Prefs = {
-  hifzView?: boolean; // hifz view: only the first word of each ayah is shown, tap to reveal
+  hifzView?: boolean;
+  /** Mushaf page look: "classic" (ornate, default) or "qc" (quran.com-style: tight, plain) */
+  pageStyle?: "classic" | "qc"; // hifz view: only the first word of each ayah is shown, tap to reveal
   fontScale: number; // 0.8 .. 1 (1 = fill the page as much as possible)
   flip: "flip" | "none";
   keepAwake: boolean;

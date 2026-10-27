@@ -1,3 +1,4 @@
+import { xt } from "./i18nExtra";
 import { RECITE } from "./features";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -156,6 +157,11 @@ export function SettingsView({ lang, setLang, theme, setTheme, st, update, apply
           ))}
         </div>
         <small className="desc">{t.themeDesc}</small>
+      </Card>
+      <Card id="pstyle" icon="theme" tone="p" title={xt(lang).psTitle} value={st.prefs.pageStyle === "qc" ? xt(lang).psQc : xt(lang).psClassic} open={open === "pstyle"} toggle={toggle}>
+        <div className="seg ps-seg" role="radiogroup" aria-label={xt(lang).psTitle}>
+          {(["classic", "qc"] as const).map((x) => <button key={x} role="radio" className="tab ps-opt" data-ps={x} aria-checked={(st.prefs.pageStyle || "classic") === x} aria-selected={(st.prefs.pageStyle || "classic") === x} onClick={() => update((s) => ({ ...s, prefs: { ...s.prefs, pageStyle: x } }))}>{x === "qc" ? xt(lang).psQc : xt(lang).psClassic}</button>)}
+        </div>
       </Card>
       <Card id="fs" icon="turn" tone="g" title={t.fontSize} value={fsName} open={open === "fs"} toggle={toggle}>
         <div className="fprev" dir="rtl" lang="ar"><span style={{ fontSize: 26 * p.fontScale }}>{sample}</span></div>

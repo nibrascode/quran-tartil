@@ -1,5 +1,6 @@
 /** labels for notes, translation search, goal units, hifz view, night mode, image share (az / en / ar; other UI languages use English) */
 const en = {
+  psTitle: "Page style", psClassic: "Current", psQc: "Quran.com style",
   hzNext: "Continue",
   note: "Note", noteAdd: "Add note", noteEdit: "Edit note", notePh: "Your note for this ayah…", save: "Save", cancel: "Cancel", del: "Delete",
   notesTab: "Bookmarks & notes", trHits: "In translations", trSearching: "Searching translations…",
@@ -9,6 +10,7 @@ const en = {
   cont: "Continue where you left off",
 };
 const az: typeof en = {
+  psTitle: "Səhifə üslubu", psClassic: "Hazırkı", psQc: "Quran.com üslubu",
   hzNext: "Davam",
   note: "Qeyd", noteAdd: "Qeyd əlavə et", noteEdit: "Qeydi dəyiş", notePh: "Bu ayə üçün qeydiniz…", save: "Saxla", cancel: "Ləğv et", del: "Sil",
   notesTab: "Əlfəcinlər və qeydlər", trHits: "Tərcümələrdə", trSearching: "Tərcümələrdə axtarılır…",
@@ -18,6 +20,7 @@ const az: typeof en = {
   cont: "Qaldığınız yerdən davam edin",
 };
 const ar: typeof en = {
+  psTitle: "نمط الصفحة", psClassic: "الحالي", psQc: "نمط Quran.com",
   hzNext: "متابعة",
   note: "ملاحظة", noteAdd: "إضافة ملاحظة", noteEdit: "تعديل الملاحظة", notePh: "ملاحظتك على هذه الآية…", save: "حفظ", cancel: "إلغاء", del: "حذف",
   notesTab: "العلامات والملاحظات", trHits: "في الترجمات", trSearching: "جارٍ البحث في الترجمات…",
