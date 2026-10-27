@@ -807,3 +807,26 @@ html.land.land-ui .page-foot { position:fixed; bottom:0; left:0; right:0; z-inde
 .meas.mushaf .end, .meas .end { width:2.2em; min-width:2.2em; }
 .page .page-foot { height:44px; }
 .page .page-foot .page-no { font-size:16px; padding:7px 20px; }
+/* ===== Quran.com-style page (html.ps-qc): plain white page, narrow margins, tight lines, font's own ayah markers ===== */
+html.ps-qc .page { --pad:2.6vw; --m-paper:#ffffff; --m-paper2:#ffffff; }
+html.ps-qc .spread .page { --pad:1.4vw; }
+html.ps-qc:not([data-theme="dark"]) .page, html.ps-qc:not([data-theme="dark"]) .page .frame { background:#fff !important; }
+html.ps-qc .page .mtext { -webkit-text-stroke:.012em currentColor; color:#000; }
+html.ps-qc .side-orn { display:none; }
+html.ps-qc .page .page-head { background:#fff; color:#1a1a1a; box-shadow:0 1px 0 #e6e6e6; border-radius:0; }
+html.ps-qc .page .page-head .ph-title, html.ps-qc .page .page-head .ph-juz { color:#1a1a1a; font-family:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size:15px; }
+html.ps-qc .page .page-head .ph-set { color:#1a1a1a; }
+html.ps-qc .page .page-foot { background:#fff; box-shadow:0 -1px 0 #e6e6e6; border-radius:0; }
+html.ps-qc .page .page-foot::before, html.ps-qc .pf-l, html.ps-qc .pf-r { display:none; }
+html.ps-qc .page .page-foot .page-no { background:none; box-shadow:none; color:#666; font-family:system-ui, sans-serif; font-size:14px; }
+html.ps-qc .page .sura-head .cart { background:none !important; filter:none; border:1px solid #d9d9d9 !important; border-radius:12px !important; }
+html.ps-qc .page .sura-head .cart::before, html.ps-qc .page .sura-head .cart::after, html.ps-qc .sh-div { display:none !important; }
+html.ps-qc .page .sura-head .cart > span { color:#111 !important; text-shadow:none; -webkit-text-stroke:0; }
+html.ps-qc .mtext.mushaf .bism::before, html.ps-qc .mtext.mushaf .bism::after { display:none; }
+html.ps-qc .page .end, html.ps-qc .page .mushaf .end { background:none !important; font-family:"UthmanicHafs", serif !important; font-size:.82em; width:auto; min-width:1.2em; height:auto; margin:0 .04em; -webkit-text-stroke:0; color:#000; }
+html.ps-qc .meas.mushaf .end, html.ps-qc .meas .end { font-family:"UthmanicHafs", serif !important; font-size:.82em; width:auto; min-width:1.2em; margin:0 .04em; }
+html.ps-qc[data-theme="dark"] .page .page-head, html.ps-qc[data-theme="dark"] .page .page-foot { background:#121212; color:#eee; box-shadow:none; }
+html.ps-qc[data-theme="dark"] .page .page-head .ph-title, html.ps-qc[data-theme="dark"] .page .page-head .ph-juz, html.ps-qc[data-theme="dark"] .page .page-head .ph-set, html.ps-qc[data-theme="dark"] .page .end, html.ps-qc[data-theme="dark"] .page .sura-head .cart > span { color:#eee !important; }
+html.ps-qc .page .end, html.ps-qc .page .mushaf .end, html.ps-qc .meas.mushaf .end, html.ps-qc .meas .end { font-size:.9em !important; min-width:0; padding:0 !important; display:inline !important; }
+html.ps-qc .page .frame::before, html.ps-qc .page .frame::after { display:none !important; }
+html.ps-qc .page .end, html.ps-qc .page .mushaf .end { font-weight:400 !important; -webkit-text-stroke:0 !important; }
