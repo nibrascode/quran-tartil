@@ -63,6 +63,22 @@ for (const [lang, w, h] of [["en", 412, 860], ["az", 1280, 800], ["ar", 412, 860
   if ((await p.evaluate(() => document.documentElement.dataset.theme)) !== "dark") bad(lang + ": night toggle did not darken");
   await menu(".ph-night"); await p.waitForTimeout(300);
   if ((await p.evaluate(() => document.documentElement.dataset.theme)) === "dark") bad(lang + ": night toggle did not restore");
+  // page style: Current <-> Quran.com style from the ornament menu and from Settings, saved
+  { const PSL = { en: "Quran.com style", az: "Quran.com üslubu", ar: "نمط Quran.com" }[lang];
+    await p.locator(".ph-set:visible").first().click(); await p.waitForSelector(".ph-pop");
+    if (!(await p.locator(".ph-pop .ph-style").textContent()).includes(PSL)) bad(lang + ": style menu label");
+    await p.locator(".ph-pop .ph-style").first().click(); await p.waitForTimeout(700);
+    const st1 = await p.evaluate(() => [document.documentElement.classList.contains("ps-qc"), JSON.parse(localStorage.getItem("qt.v2")).prefs.pageStyle]);
+    if (!st1[0] || st1[1] !== "qc") bad(lang + ": qc style not applied/saved " + st1);
+    const ov = await p.evaluate(() => [...document.querySelectorAll(".page")].filter((g) => g.getBoundingClientRect().width > 0).flatMap((g) => { const fr = g.getBoundingClientRect(); return [...g.querySelectorAll(".mtext .ln")].map((l) => l.getBoundingClientRect()).filter((r) => r.left < fr.left - 1 || r.right > fr.right + 1); }).length);
+    if (ov) bad(lang + ": qc lines overflow " + ov);
+    await p.reload({ waitUntil: "networkidle" }); await p.waitForTimeout(900);
+    if (!(await p.evaluate(() => document.documentElement.classList.contains("ps-qc")))) bad(lang + ": qc style not kept after reload");
+    await menu(".ph-settings"); await p.waitForTimeout(300);
+    await p.locator('.scard-h[aria-controls="c-pstyle"]').click(); await p.waitForTimeout(200);
+    await p.locator('.ps-opt[data-ps="classic"]').click(); await p.waitForTimeout(300);
+    if (await p.evaluate(() => document.documentElement.classList.contains("ps-qc"))) bad(lang + ": Settings did not switch back to Current");
+    await p.keyboard.press("Escape"); await p.evaluate(() => localStorage.setItem("page", "2")); await p.reload({ waitUntil: "networkidle" }); await p.waitForTimeout(900); }
   // 5. hifz in the Mushaf
   await menu(".ph-hifz"); await p.waitForTimeout(500);
   const vis = () => p.evaluate((sel) => { const pg = [...document.querySelectorAll(sel)].find((x) => x.querySelector('.w.ayah[data-s="2"][data-a="4"]')); const ws = !pg ? [] : [...pg.querySelectorAll('.w.ayah[data-s="2"][data-a="4"]')]; return ws.map((w) => getComputedStyle(w).color === "rgba(0, 0, 0, 0)" ? 0 : 1).join(""); }, L.split(",")[0].trim() + ", .spread .page");
