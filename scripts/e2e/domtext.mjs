@@ -14,7 +14,7 @@ for (const tajweed of [true, false]) {
   await p.goto(process.env.URL || "http://127.0.0.1:4180/", { waitUntil: "networkidle" });
   for (let n = 1; n <= 604; n += tajweed ? step : Math.max(step, 25)) {
     await p.evaluate((n) => localStorage.setItem("page", n), n); await p.reload({ waitUntil: "load" });
-    await p.waitForSelector(".layer:not(.pre):not(.over) .page .ayah");
+    await p.waitForSelector(".layer:not(.pre):not(.over) .page .ayah").catch(async (e) => { console.log("page", n, "url", p.url(), "body", (await p.evaluate(() => document.body.innerText.slice(0, 300)))); throw e; });
     const got = await p.evaluate(() => { const pg = document.querySelector(".layer:not(.pre):not(.over) .page"); return { w: [...pg.querySelectorAll(".mtext .ayah")].map((e) => e.dataset.s + ":" + e.dataset.a + " " + e.textContent), tj: pg.querySelectorAll(".mtext .tj").length }; });
     const exp = want(n); pages++; words += exp.length; tj += got.tj;
     if (got.w.length !== exp.length || got.w.some((w, i) => w !== exp[i])) { bad++; const i = got.w.findIndex((w, i) => w !== exp[i]); console.log("MISMATCH page", n, "tajweed", tajweed, "at", i, JSON.stringify(got.w[i]), JSON.stringify(exp[i])); }
