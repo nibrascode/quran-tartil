@@ -67,7 +67,7 @@ export function Menu({ tab, setTab, lang: readerLang, uiLang, setLang, theme, se
   return (
     <div className="scrim" onClick={onClose}>
       <div className="sheet" dir={ui && lang === "ar" ? "rtl" : "ltr"} ref={root} role="dialog" aria-modal="true" aria-label={t.app} onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-head"><h2>{t.app}</h2><button className="ib" onClick={onClose} aria-label={t.close}><Ic n="close" size={18} /></button></div>
+        <div className="sheet-head"><h2>{t.app}</h2><a className="ib" href="./" data-testid="main-view" style={{ marginInlineStart: "auto", textDecoration: "none", fontSize: 13 }}>← Əsas görünüş</a><button className="ib" onClick={onClose} aria-label={t.close}><Ic n="close" size={18} /></button></div>
         {sub ? (
           <div className="tabs"><button className="tab" onClick={() => setTab("settings")}>← {t.back}</button></div>
         ) : (

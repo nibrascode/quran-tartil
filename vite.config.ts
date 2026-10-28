@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -31,6 +32,8 @@ export default defineConfig({
       },
     }),
   ],
-  build: { target: "es2022" },
+  // "@/..." imports belong to the main Mushaf view (src/mushaf)
+  resolve: { alias: { "@": fileURLToPath(new URL("./src/mushaf", import.meta.url)) } },
+  build: { target: "es2022", rollupOptions: { input: { main: fileURLToPath(new URL("./index.html", import.meta.url)), classic: fileURLToPath(new URL("./classic.html", import.meta.url)) } } },
   worker: { format: "es" },
 });

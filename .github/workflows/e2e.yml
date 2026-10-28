@@ -4,6 +4,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+# the earlier app (and its page styles) is on classic.html; the main view at / is checked by scripts/e2e/mainview.mjs
+env: { URL: "http://127.0.0.1:4180/classic.html" }
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -86,3 +88,6 @@ jobs:
         if: ${{ false }} # mic-heavy sweep; re-enable with RECITE (src/features.ts)
         env: { CHROME: /usr/bin/google-chrome }
         run: node scripts/e2e/qa.mjs
+      - name: Main view (first open shows the uploaded Mushaf view; old app reachable)
+        env: { CHROME: /usr/bin/google-chrome, URL: "http://127.0.0.1:4180/" }
+        run: node scripts/e2e/mainview.mjs

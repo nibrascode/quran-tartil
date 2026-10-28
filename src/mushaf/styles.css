@@ -1,0 +1,1047 @@
+@import "@fontsource/scheherazade-new/arabic-400.css";
+@import "@fontsource/scheherazade-new/arabic-600.css";
+@import "@fontsource/noto-sans/latin-400.css";
+@import "@fontsource/noto-sans/latin-500.css";
+@import "@fontsource/noto-sans/latin-600.css";
+@import "@fontsource/noto-sans/latin-ext-400.css";
+@import "@fontsource/noto-sans/latin-ext-500.css";
+@import "@fontsource/noto-sans/latin-ext-600.css";
+@import "@fontsource/noto-sans/cyrillic-400.css";
+@import "@fontsource/noto-sans/cyrillic-500.css";
+@import "@fontsource/noto-sans/cyrillic-600.css";
+/* minimal reset (the original used Tailwind preflight) */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;border:0 solid}
+button,input,select{font:inherit;color:inherit;background:transparent}
+svg{display:block}
+
+:root {
+  --color-ink: #161310;
+  --color-paper: #f6f1e4;
+  --color-paper-2: #fbf6ec;
+  --color-green: #1a3330;
+  --color-green-deep: #102220;
+  --color-green-soft: #24584e;
+  --color-gold: #c4a56e;
+  --color-gold-soft: #f3e7d0;
+  --color-seal: #16382f;
+  --color-muted: #5c675f;
+  --font-ui: "Noto Sans", "Segoe UI", sans-serif;
+  --font-quran: "Scheherazade New", "Noto Naskh Arabic", serif;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body {
+    height: 100%;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-ui);
+  }
+
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  #root,
+  body > div {
+    height: 100%;
+  }
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.stage {
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  background: var(--color-paper);
+}
+
+.book {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  overflow: hidden;
+}
+
+.book:not(.chrome) .topbar .icon-btn,
+.book:not(.chrome) .topbar::before,
+.book:not(.chrome) .topbar::after,
+.book:not(.chrome) .foot-shape {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.book:not(.chrome) .medal-row {
+  top: auto;
+  bottom: 0.15rem;
+  transform: translate(-50%, 0);
+}
+
+.book:not(.chrome) .medal {
+  width: auto;
+  height: auto;
+  color: var(--color-green);
+  font-size: 0.95rem;
+}
+
+.book:not(.chrome) .medal svg {
+  display: none;
+}
+
+.book:not(.chrome) .topbar {
+  background: transparent;
+  background-image: none;
+}
+
+.book:not(.chrome) .topbar-title strong,
+.book:not(.chrome) .topbar-title span {
+  color: var(--color-green);
+}
+
+.topbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.75rem 1fr 2.75rem;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 3.55rem;
+  padding: calc(0.45rem + env(safe-area-inset-top)) 0.7rem 0.7rem;
+  background-color: var(--color-green);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><g fill='none' stroke='%23f0e6d2' stroke-opacity='0.09' stroke-width='1'><path d='M60 18c12 10 18 18 12 30-10-6-16-14-12-30z'/><path d='M60 72c12 10 18 18 12 30-10-6-16-14-12-30z'/><path d='M18 60c10-12 18-18 30-12-6 10-14 16-30 12z'/><path d='M72 60c10-12 18-18 30-12-6 10-14 16-30 12z'/><circle cx='60' cy='60' r='4'/></g></svg>");
+  color: var(--color-gold-soft);
+  border-radius: 0 0 1.7rem 1.7rem;
+  z-index: 3;
+}
+
+.topbar::before,
+.topbar::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.topbar::before {
+  inset: 0;
+  border: 1.5px solid var(--color-gold);
+  border-top: 0;
+}
+
+.topbar::after {
+  inset: 4px 5px 4px 5px;
+  border-radius: 0 0 1.35rem 1.35rem;
+  border: 1px solid color-mix(in oklab, var(--color-gold) 80%, transparent);
+  border-top: 0;
+}
+
+.topbar-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.topbar-title strong {
+  min-width: 0;
+  flex: 1;
+  font-weight: 500;
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
+  color: #e4c98a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-title span,
+.topbar-side {
+  flex: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #e4c98a;
+  white-space: nowrap;
+}
+
+.icon-btn,
+.edge {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-gold-soft);
+  border-radius: 999px;
+}
+
+.icon-btn svg,
+.edge svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.icon-btn.gold {
+  color: var(--color-gold);
+}
+
+.icon-btn:focus-visible,
+.edge:focus-visible,
+.medal:focus-visible,
+.index-row:focus-visible,
+.go:focus-visible,
+.tab:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-paper);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  overscroll-behavior: none;
+}
+
+.body:active {
+  cursor: grabbing;
+}
+
+.track {
+  display: flex;
+  height: 100%;
+  width: 300%;
+  background: var(--color-paper);
+  will-change: transform;
+}
+
+@keyframes turn-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.turn {
+  width: 33.333333%;
+  flex: none;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper);
+}
+
+.sheet {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet.loading {
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
+.frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0.4rem 0.16rem 0;
+  padding: 0.15rem 3.75rem 0.15rem;
+  display: flex;
+  flex-direction: column;
+  border: 0;
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 1.15rem 0;
+  border: 1px solid color-mix(in oklab, var(--color-gold) 88%, #8d7d5c);
+  border-top: 0;
+  border-bottom: 0;
+  pointer-events: none;
+}
+
+.surah-banner {
+  position: relative;
+  flex: none;
+  margin: 0.15rem -0.15rem 0.1rem;
+}
+
+.surah-art {
+  display: block;
+  width: 100%;
+  height: 4.55rem;
+  color: var(--color-gold);
+}
+
+.surah-art .shield,
+.surah-art .cap {
+  fill: var(--color-green);
+  stroke: var(--color-gold);
+  stroke-width: 1.7;
+}
+
+.surah-art .shield-line,
+.surah-art .cap-line {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 0.85;
+}
+
+.surah-art .spray,
+.surah-art .vine {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.surah-art .cap-gem {
+  fill: var(--color-gold);
+}
+
+.surah-banner h1 {
+  position: absolute;
+  left: 50%;
+  top: 2.05rem;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  max-width: 46%;
+  color: #e4c98a;
+  font-family: var(--font-quran);
+  font-weight: 600;
+  font-size: 1.16rem;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rule-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.05rem auto 0.05rem;
+  width: min(72%, 16.5rem);
+  color: var(--color-gold);
+}
+
+.rule-row span {
+  flex: 1;
+  height: 1.5px;
+  min-width: 2.2rem;
+  background: var(--color-gold);
+}
+
+.mini-gem,
+.flare {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: none;
+  color: var(--color-gold);
+}
+
+.basmala {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0.28rem;
+  margin: 0.05rem 0 0.05rem;
+  color: var(--color-gold);
+  font-family: var(--font-quran);
+}
+
+.basmala-text {
+  flex: none;
+  white-space: nowrap;
+  font-size: clamp(1.15rem, 4.5vw, 1.6rem);
+  line-height: 1;
+  color: var(--color-ink);
+}
+
+.basmala .rule {
+  width: 0.85rem;
+  height: 1px;
+  flex: none;
+  background: var(--color-gold);
+}
+
+.basmala .mini-gem {
+  width: 0.58rem;
+  height: 0.58rem;
+}
+
+.lines {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.15rem 0.15rem 0.2rem;
+  font-family: var(--font-quran);
+  font-weight: 400;
+  color: #1a1612;
+}
+
+.lines[data-pack="center"] {
+  justify-content: center;
+  gap: 0.15em;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35em;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  line-height: 1;
+}
+
+.lines[data-pack="center"] .line {
+  flex: 0 0 auto;
+  min-height: 1.7em;
+}
+
+.lines[data-pack="opening"] {
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.lines[data-pack="opening"] .line {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.sheet.opening .line {
+  justify-content: center;
+  gap: 0.4em;
+}
+
+.sheet.fatiha .line {
+  justify-content: center;
+  gap: 0.42em;
+}
+
+.lines[data-pack="opening"] .basmala-line span {
+  font-size: 1.14em;
+}
+
+.lines[data-pack="scroll"] {
+  flex: none;
+  justify-content: flex-start;
+  gap: 0.42em;
+  width: min(100%, 40rem);
+  margin-inline: auto;
+  padding-bottom: 0.8rem;
+}
+
+.lines[data-pack="scroll"] .line {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 1.75em;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .book {
+    width: 100%;
+  }
+
+  .turn {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sheet,
+  .frame {
+    flex: none;
+    height: auto;
+    min-height: 100%;
+  }
+}
+
+.line.center {
+  justify-content: center;
+}
+
+.word {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.line.head,
+.line.basmala-line {
+  justify-content: center;
+}
+
+.line.head span {
+  font-weight: 600;
+  font-size: 0.9em;
+  color: var(--color-paper-2);
+  background: var(--color-green);
+  border: 1px solid var(--color-gold);
+  border-radius: 999px;
+  padding: 0.02em 0.85em 0.08em;
+  line-height: 1.45;
+}
+
+.line.basmala-line {
+  gap: 0.45em;
+  color: var(--color-ink);
+}
+
+.line.basmala-line .mini-gem {
+  color: var(--color-gold);
+  width: 0.72em;
+  height: 0.72em;
+}
+
+.aya {
+  display: inline-block;
+  flex: none;
+  font-family: var(--font-quran);
+  font-size: 1.52em;
+  line-height: 0.8;
+  color: var(--color-seal);
+  vertical-align: middle;
+}
+
+.aya-wide {
+  font-size: 1.32em;
+}
+
+.side-gem {
+  position: absolute;
+  top: 50%;
+  width: 1.15rem;
+  height: 1.65rem;
+  display: grid;
+  place-items: center;
+  color: var(--color-gold);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.side-gem .side-flower {
+  width: 1.15rem;
+  height: 1.65rem;
+}
+
+.side-gem.left {
+  left: 0.02rem;
+}
+.side-gem.right {
+  right: 0.02rem;
+}
+
+.foot {
+  position: relative;
+  height: 6.75rem;
+  flex: none;
+  margin-top: -1.2rem;
+  color: var(--color-gold);
+  background: transparent;
+  pointer-events: none;
+}
+
+.girih {
+  color: #e4d3a8;
+  opacity: 0.9;
+}
+
+.foot-orn {
+  fill: var(--color-green);
+  stroke: var(--color-gold);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+}
+
+.foot-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.foot-fill {
+  fill: var(--color-green);
+}
+
+.foot-gold {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.lobe {
+  position: absolute;
+  bottom: 0;
+  width: 48%;
+  height: 72%;
+  color: #c5d5c8;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lobe svg {
+  width: 140%;
+  height: 140%;
+  opacity: 0.85;
+}
+
+.lobe.left {
+  left: 0;
+  mask-image: linear-gradient(90deg, #000 30%, transparent 88%);
+}
+
+.lobe.right {
+  right: 0;
+  mask-image: linear-gradient(270deg, #000 30%, transparent 88%);
+}
+
+.lobe.right svg {
+  margin-left: -40%;
+}
+
+.medal-row {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.medal {
+  position: relative;
+  width: 4.15rem;
+  height: 1.65rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-gold-soft);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  pointer-events: auto;
+}
+
+.medal svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--color-green);
+  stroke: var(--color-gold);
+  stroke-width: 1.4;
+}
+
+.medal svg path:last-child {
+  fill: none;
+  stroke-width: 0.8;
+}
+
+.medal span {
+  position: relative;
+}
+
+.edge {
+  position: absolute;
+  top: 46%;
+  z-index: 2;
+  width: 2.25rem;
+  height: 3.25rem;
+  color: var(--color-green);
+  background: color-mix(in oklab, var(--color-paper) 72%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-gold) 65%, transparent);
+  opacity: 0;
+}
+
+@media (pointer: coarse) {
+  .edge {
+    display: none;
+  }
+}
+
+.edge.prev {
+  right: 0;
+  border-radius: 999px 0 0 999px;
+}
+.edge.next {
+  left: 0;
+  border-radius: 0 999px 999px 0;
+}
+
+.edge:hover,
+.edge:focus-visible {
+  opacity: 1;
+}
+
+.edge:disabled {
+  opacity: 0;
+}
+
+.banner {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.5rem;
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background: var(--color-green);
+  color: var(--color-paper);
+  border-radius: 0.6rem;
+  font-size: 0.88rem;
+}
+
+.catalog {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper);
+  animation: turn-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  padding: 0.7rem 0.8rem 0.35rem;
+}
+
+.tab {
+  height: 2.4rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--color-green) 18%, transparent);
+  background: transparent;
+  color: var(--color-green);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.tab.on {
+  background: var(--color-green);
+  color: var(--color-paper);
+  border-color: var(--color-green);
+}
+
+.search {
+  display: block;
+  padding: 0.35rem 0.8rem 0.2rem;
+}
+
+.search input,
+.jump-field input {
+  width: 100%;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--color-green) 22%, transparent);
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 1rem;
+}
+
+.index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0.45rem 0.5rem;
+  overflow: auto;
+  flex: 1;
+}
+
+.index-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  text-align: left;
+  padding: 0.55rem 0.45rem;
+  border: 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-green) 10%, transparent);
+  background: transparent;
+  color: inherit;
+  min-height: 3.1rem;
+}
+
+.idx {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-green);
+  color: var(--color-paper);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.index-names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.index-names .az {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.index-names .ar {
+  color: var(--color-muted);
+  font-family: var(--font-quran);
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.pg {
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.empty,
+.hint,
+.credit {
+  color: var(--color-muted);
+  font-size: 0.84rem;
+  padding: 0.8rem 1rem 1rem;
+  margin: 0;
+}
+
+.page-jump {
+  padding: 0.8rem 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow: auto;
+  flex: 1;
+}
+
+.jump-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-green);
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--color-green);
+}
+
+.go {
+  height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-green);
+  color: var(--color-paper);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.page-jump h2 {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.page-jump .index-list {
+  padding: 0;
+  overflow: visible;
+}
+
+.home-title {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+}
+
+.home-title strong,
+.home-title span {
+  flex: none;
+  max-width: 100%;
+  text-align: center;
+}
+
+.quran-name,
+.home-ar,
+.search input[dir="rtl"] {
+  font-family: var(--font-quran);
+}
+
+.quran-name {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.home-ar {
+  font-size: 1.28rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.home-ar-sub {
+  font-family: var(--font-quran);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.search input[dir="rtl"] {
+  font-size: 1.25rem;
+}
+
+.settings-back {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: color-mix(in oklab, #102220 46%, transparent);
+}
+
+.settings-sheet {
+  width: min(100%, 32rem);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-gold);
+  border-bottom: 0;
+  border-radius: 1.35rem 1.35rem 0 0;
+  padding: 0.85rem 0.85rem calc(0.9rem + env(safe-area-inset-bottom));
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.15rem 0.35rem 0.55rem;
+}
+
+.settings-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-green);
+}
+
+.sheet-close {
+  border: 0;
+  background: transparent;
+  color: var(--color-green-soft);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 0.35rem 0.2rem;
+}
+
+.lang-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lang-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.6rem 1fr 1.2rem;
+  gap: 0.7rem;
+  align-items: center;
+  min-height: 3.15rem;
+  padding: 0.35rem 0.45rem;
+  border: 0;
+  border-top: 1px solid color-mix(in oklab, var(--color-green) 12%, transparent);
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  font: inherit;
+}
+
+.lang-row.on {
+  background: color-mix(in oklab, var(--color-gold) 22%, var(--color-paper));
+}
+
+.lang-code {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-green);
+  color: #e4c98a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.lang-native {
+  font-weight: 600;
+  font-size: 1.02rem;
+}
+
+.lang-mark {
+  color: var(--color-green);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.credit {
+  border-top: 1px solid color-mix(in oklab, var(--color-green) 12%, transparent);
+}
+
+.other-views{display:flex;margin-top:12px;text-decoration:none;color:inherit}
