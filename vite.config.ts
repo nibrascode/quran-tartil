@@ -34,6 +34,6 @@ export default defineConfig({
   ],
   // "@/..." imports belong to the main Mushaf view (src/mushaf)
   resolve: { alias: { "@": fileURLToPath(new URL("./src/mushaf", import.meta.url)) } },
-  build: { target: "es2022", rollupOptions: { input: { main: fileURLToPath(new URL("./index.html", import.meta.url)), classic: fileURLToPath(new URL("./classic.html", import.meta.url)) } } },
+  build: { target: "es2022", rollupOptions: { input: { main: fileURLToPath(new URL("./index.html", import.meta.url)), classic: fileURLToPath(new URL("./classic.html", import.meta.url)), medine: fileURLToPath(new URL("./medine.html", import.meta.url)) } } },
   worker: { format: "es" },
 });
