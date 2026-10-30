@@ -297,6 +297,22 @@ svg{display:block}
   pointer-events: none;
 }
 
+@media (max-width: 520px) {
+  .frame {
+    padding-inline: 1.85rem;
+    padding-bottom: 1.15rem;
+  }
+
+  .aya {
+    font-size: 1.28em;
+  }
+
+  .foot {
+    height: 5.15rem;
+    margin-top: -0.55rem;
+  }
+}
+
 .surah-banner {
   position: relative;
   flex: none;

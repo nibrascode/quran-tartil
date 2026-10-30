@@ -79,12 +79,13 @@ export function MushafPage({ data }: { data: PageData }) {
         const at40 = measure(40);
         const byW = at40 > 0 ? 40 * ((root.clientWidth - 4) / at40) : 40;
         const byH = slot / 1.72;
-        let size = Math.max(12, Math.min(byW, byH, 36));
-        for (let i = 0; i < 6; i++) {
+        let size = Math.min(byW, byH, 36);
+        for (let i = 0; i < 8; i++) {
           const widest = measure(size);
           if (widest <= root.clientWidth - 1) break;
-          size = Math.max(11, size * ((root.clientWidth - 4) / Math.max(widest, 1)));
+          size *= (root.clientWidth - 6) / Math.max(widest, 1);
         }
+        size = Math.max(8, size);
         clearMeasure();
         root.style.fontSize = `${size}px`;
         const h = root.clientHeight / 15;
@@ -102,12 +103,13 @@ export function MushafPage({ data }: { data: PageData }) {
       const at40 = measure(40);
       const byW = at40 > 0 ? 40 * ((root.clientWidth - 4) / at40) : 40;
       const byH = few ? 52 : slot / 1.72;
-      let size = Math.max(13, Math.min(byW, byH, few ? 48 : 34));
-      for (let i = 0; i < 6; i++) {
+      let size = Math.min(byW, byH, few ? 48 : 34);
+      for (let i = 0; i < 10; i++) {
         const widest = measure(size);
         if (widest <= root.clientWidth - 1) break;
-        size = Math.max(12, size * ((root.clientWidth - 4) / widest));
+        size *= (root.clientWidth - 6) / Math.max(widest, 1);
       }
+      size = Math.max(8, size);
       clearMeasure();
       root.style.fontSize = `${size}px`;
     };
