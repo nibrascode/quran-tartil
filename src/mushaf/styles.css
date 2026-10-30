@@ -420,6 +420,7 @@ svg{display:block}
   padding: 0.15rem 0.15rem 0.2rem;
   font-family: var(--font-quran);
   font-weight: 400;
+  font-synthesis: none;
   color: #1a1612;
 }
 
@@ -517,8 +518,8 @@ svg{display:block}
 }
 
 .line.head span {
-  font-weight: 600;
-  font-size: 0.9em;
+  font-weight: 500;
+  font-size: 0.92em;
   color: var(--color-paper-2);
   background: var(--color-green);
   border: 1px solid var(--color-gold);
