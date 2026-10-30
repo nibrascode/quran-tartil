@@ -66,6 +66,10 @@ export function MushafPage({ data }: { data: PageData }) {
         measure(size);
         clearMeasure();
         root.style.fontSize = `${size}px`;
+        if (isOpening) {
+          root.dataset.pack = "opening";
+          return;
+        }
         const box = root.clientWidth - 2;
         for (const line of lines) {
           line.style.width = "max-content";
@@ -76,15 +80,6 @@ export function MushafPage({ data }: { data: PageData }) {
           } else {
             line.style.width = "";
           }
-        }
-        if (isOpening) {
-          root.dataset.pack = "opening";
-          const h = root.clientHeight / 15;
-          for (const line of lines) {
-            line.style.flex = "0 0 auto";
-            line.style.height = `${h}px`;
-          }
-          return;
         }
         root.dataset.pack = lines.length < 12 ? "center" : "fill";
         return;
@@ -123,11 +118,6 @@ export function MushafPage({ data }: { data: PageData }) {
         }
         clearMeasure();
         root.style.fontSize = `${size}px`;
-        const h = root.clientHeight / 15;
-        for (const line of lines) {
-          line.style.flex = "0 0 auto";
-          line.style.height = `${h}px`;
-        }
         return;
       }
 
@@ -177,9 +167,7 @@ export function MushafPage({ data }: { data: PageData }) {
         >
           {opening && data.s === 2 && (
             <div className="line basmala-line" data-line data-kind="basmala">
-              <MiniGem />
               <span>{BASMALA}</span>
-              <MiniGem />
             </div>
           )}
           {data.lines.map((line, i) => (

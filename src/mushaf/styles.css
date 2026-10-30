@@ -445,12 +445,18 @@ svg{display:block}
 }
 
 .lines[data-pack="opening"] {
+  flex: none;
   justify-content: flex-start;
-  gap: 0;
+  align-items: center;
+  gap: 0.95em;
+  margin-top: 0.45rem;
 }
 
 .lines[data-pack="opening"] .line {
   flex: 0 0 auto;
+  width: auto;
+  max-width: 100%;
+  height: auto;
   min-height: 0;
 }
 
@@ -465,7 +471,7 @@ svg{display:block}
 }
 
 .lines[data-pack="opening"] .basmala-line span {
-  font-size: 1.14em;
+  font-size: 1.22em;
 }
 
 .lines[data-pack="scroll"] {
