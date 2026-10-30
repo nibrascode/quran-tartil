@@ -297,22 +297,6 @@ svg{display:block}
   pointer-events: none;
 }
 
-@media (max-width: 520px) {
-  .frame {
-    padding-inline: 1.85rem;
-    padding-bottom: 1.15rem;
-  }
-
-  .aya {
-    font-size: 1.28em;
-  }
-
-  .foot {
-    height: 5.15rem;
-    margin-top: -0.55rem;
-  }
-}
-
 .surah-banner {
   position: relative;
   flex: none;
@@ -1106,3 +1090,67 @@ svg{display:block}
 }
 
 .other-views{display:flex;margin-top:12px;text-decoration:none;color:inherit}
+
+@media (max-width: 520px) {
+  .topbar {
+    grid-template-columns: 2.05rem 1fr 2.05rem;
+    min-height: 2.65rem;
+    padding: calc(0.18rem + env(safe-area-inset-top)) 0.4rem 0.38rem;
+    border-radius: 0 0 1.15rem 1.15rem;
+  }
+
+  .topbar-title {
+    gap: 0.4rem;
+  }
+
+  .topbar-title strong {
+    font-size: 0.78rem;
+  }
+
+  .topbar-title span,
+  .topbar-side {
+    font-size: 0.66rem;
+  }
+
+  .icon-btn,
+  .edge {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .icon-btn svg,
+  .edge svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .frame {
+    margin-top: 0.12rem;
+    padding: 0.05rem 1.55rem 0.2rem;
+  }
+
+  .side-gem,
+  .side-gem .side-flower {
+    width: 0.72rem;
+    height: 1.05rem;
+  }
+
+  .aya {
+    font-size: 1.22em;
+  }
+
+  .foot {
+    height: 3.55rem;
+    margin-top: -0.15rem;
+  }
+
+  .medal {
+    width: 3.05rem;
+    height: 1.22rem;
+    font-size: 0.7rem;
+  }
+
+  .book:not(.chrome) .medal {
+    font-size: 0.74rem;
+  }
+}
