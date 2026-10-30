@@ -484,8 +484,23 @@ svg{display:block}
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
+  .book.reader .topbar,
+  .book.reader .foot,
+  .book.reader .edge,
+  .book.reader .side-gem,
+  .book.reader .surah-banner,
+  .book.reader .basmala,
+  .book.reader .frame::before {
+    display: none;
+  }
+
   .book {
     width: 100%;
+  }
+
+  .book .frame {
+    margin: 0;
+    padding: 0.4rem max(0.65rem, env(safe-area-inset-right)) 0.55rem max(0.65rem, env(safe-area-inset-left));
   }
 
   .turn {

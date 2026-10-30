@@ -233,7 +233,7 @@ export function Reader({ initialPage, onHome }: { initialPage: number; onHome: (
 
   return (
     <div className="stage">
-      <div className={chrome ? "book chrome" : "book"}>
+      <div className={chrome ? "book reader chrome" : "book reader"}>
         <header className="topbar">
           <button type="button" className="icon-btn" onClick={onHome} aria-label="Ana səhifə">
             <svg viewBox="0 0 24 24" aria-hidden="true">
