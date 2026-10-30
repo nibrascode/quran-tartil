@@ -1091,7 +1091,26 @@ svg{display:block}
 
 .other-views{display:flex;margin-top:12px;text-decoration:none;color:inherit}
 
+@media (min-width: 521px) {
+  .frame {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+
 @media (max-width: 520px) {
+  .icon-btn,
+  .edge {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .icon-btn svg,
+  .edge svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
   .frame {
     padding-right: 1.05rem;
     padding-left: 1.05rem;

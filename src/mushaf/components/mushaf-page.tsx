@@ -56,32 +56,73 @@ export function MushafPage({ data }: { data: PageData }) {
 
       clearMeasure();
       const phoneLand = window.matchMedia("(orientation: landscape) and (max-height: 560px)").matches;
-      const slot = root.clientHeight / 15;
-      let size = (root.clientWidth - 4) / 19.5;
-      if (!phoneLand) size = Math.min(size, slot / 1.72);
-      size = Math.max(13, Math.min(size, 34));
-      measure(size);
-      clearMeasure();
-      root.style.fontSize = `${size}px`;
-      const box = root.clientWidth - 2;
-      for (const line of lines) {
-        line.style.width = "max-content";
-        const w = line.getBoundingClientRect().width;
-        if (w > box) {
-          line.style.transform = `scaleX(${(box - 2) / w})`;
-          line.style.transformOrigin = "right center";
-        } else {
-          line.style.width = "";
+      const phone = window.matchMedia("(max-width: 520px)").matches;
+
+      if (phone && !phoneLand) {
+        const slot = root.clientHeight / 15;
+        let size = (root.clientWidth - 4) / 19.5;
+        size = Math.min(size, slot / 1.72);
+        size = Math.max(13, Math.min(size, 34));
+        measure(size);
+        clearMeasure();
+        root.style.fontSize = `${size}px`;
+        const box = root.clientWidth - 2;
+        for (const line of lines) {
+          line.style.width = "max-content";
+          const w = line.getBoundingClientRect().width;
+          if (w > box) {
+            line.style.transform = `scaleX(${(box - 2) / w})`;
+            line.style.transformOrigin = "right center";
+          } else {
+            line.style.width = "";
+          }
         }
+        if (isOpening) {
+          root.dataset.pack = "opening";
+          const h = root.clientHeight / 15;
+          for (const line of lines) {
+            line.style.flex = "0 0 auto";
+            line.style.height = `${h}px`;
+          }
+          return;
+        }
+        root.dataset.pack = lines.length < 12 ? "center" : "fill";
+        return;
       }
 
       if (phoneLand) {
         root.dataset.pack = "scroll";
+        const at40 = measure(40);
+        const byW = at40 > 0 ? 40 * ((root.clientWidth - 8) / at40) : 32;
+        let size = Math.max(26, Math.min(byW, 40));
+        for (let i = 0; i < 6; i++) {
+          const widest = measure(size);
+          if (widest <= root.clientWidth - 2) break;
+          size = Math.max(20, size * ((root.clientWidth - 8) / Math.max(widest, 1)));
+        }
+        const natural = measure(size);
+        clearMeasure();
+        root.style.fontSize = `${size}px`;
+        if (natural > 0 && natural < root.clientWidth - 6) {
+          root.style.width = `${Math.ceil(natural)}px`;
+        }
         return;
       }
 
       if (isOpening) {
         root.dataset.pack = "opening";
+        const slot = root.clientHeight / 15;
+        const at40 = measure(40);
+        const byW = at40 > 0 ? 40 * ((root.clientWidth - 4) / at40) : 40;
+        const byH = slot / 1.72;
+        let size = Math.max(12, Math.min(byW, byH, 36));
+        for (let i = 0; i < 6; i++) {
+          const widest = measure(size);
+          if (widest <= root.clientWidth - 1) break;
+          size = Math.max(11, size * ((root.clientWidth - 4) / Math.max(widest, 1)));
+        }
+        clearMeasure();
+        root.style.fontSize = `${size}px`;
         const h = root.clientHeight / 15;
         for (const line of lines) {
           line.style.flex = "0 0 auto";
@@ -90,7 +131,20 @@ export function MushafPage({ data }: { data: PageData }) {
         return;
       }
 
-      root.dataset.pack = lines.length < 12 ? "center" : "fill";
+      const few = lines.length < 12;
+      root.dataset.pack = few ? "center" : "fill";
+      const slot = root.clientHeight / lines.length;
+      const at40 = measure(40);
+      const byW = at40 > 0 ? 40 * ((root.clientWidth - 4) / at40) : 40;
+      const byH = few ? 52 : slot / 1.72;
+      let size = Math.max(13, Math.min(byW, byH, few ? 48 : 34));
+      for (let i = 0; i < 6; i++) {
+        const widest = measure(size);
+        if (widest <= root.clientWidth - 1) break;
+        size = Math.max(12, size * ((root.clientWidth - 4) / widest));
+      }
+      clearMeasure();
+      root.style.fontSize = `${size}px`;
     };
 
     fit();
