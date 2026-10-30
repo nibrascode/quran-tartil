@@ -37,6 +37,8 @@ export function MushafPage({ data }: { data: PageData }) {
           line.style.width = "";
           line.style.height = "";
           line.style.justifyContent = "";
+          line.style.transform = "";
+          line.style.marginInline = "";
         }
       };
 
@@ -48,6 +50,7 @@ export function MushafPage({ data }: { data: PageData }) {
           line.style.width = "max-content";
           line.style.height = "auto";
           line.style.justifyContent = "flex-start";
+          line.style.transform = "";
           widest = Math.max(widest, line.getBoundingClientRect().width);
         }
         return widest;
@@ -55,16 +58,23 @@ export function MushafPage({ data }: { data: PageData }) {
 
       const phoneLand = window.matchMedia("(orientation: landscape) and (max-height: 560px)").matches;
       const slot = root.clientHeight / 15;
-      let size = (root.clientWidth - 8) / 26;
-      if (!phoneLand) size = Math.min(size, slot / 1.62);
-      size = Math.max(8, Math.min(size, phoneLand ? 42 : 36));
-      for (let i = 0; i < 6; i++) {
-        const widest = measure(size);
-        if (widest <= root.clientWidth - 1) break;
-        size *= (root.clientWidth - 6) / Math.max(widest, 1);
-      }
+      let size = (root.clientWidth - 4) / 23;
+      if (!phoneLand) size = Math.min(size, slot / 1.48);
+      size = Math.max(8, Math.min(size, phoneLand ? 44 : 38));
+      const box = root.clientWidth - 6;
+      measure(size);
       clearMeasure();
       root.style.fontSize = `${size}px`;
+      for (const line of lines) {
+        line.style.width = "max-content";
+        const w = line.getBoundingClientRect().width;
+        if (w > box) {
+          line.style.transform = `scaleX(${(box - 4) / w})`;
+          line.style.transformOrigin = "right center";
+        } else {
+          line.style.width = "";
+        }
+      }
 
       if (phoneLand) {
         root.dataset.pack = "scroll";
