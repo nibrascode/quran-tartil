@@ -420,24 +420,12 @@ svg{display:block}
   padding: 0.15rem 0.15rem 0.2rem;
   font-family: var(--font-quran);
   font-weight: 400;
-  font-synthesis: none;
   color: #1a1612;
 }
 
 .lines[data-pack="center"] {
-  justify-content: flex-start;
-  gap: 0.22em;
-  margin-top: 1.15rem;
-}
-
-.lines[data-pack="opening"] {
-  justify-content: flex-start;
-  gap: 0.22em;
-  margin-top: 0.35rem;
-}
-
-.sheet.opening .frame {
-  padding-top: 1.75rem;
+  justify-content: center;
+  gap: 0.15em;
 }
 
 .line {
@@ -451,11 +439,19 @@ svg{display:block}
   line-height: 1;
 }
 
-.lines[data-pack="center"] .line,
+.lines[data-pack="center"] .line {
+  flex: 0 0 auto;
+  min-height: 1.7em;
+}
+
+.lines[data-pack="opening"] {
+  justify-content: flex-start;
+  gap: 0;
+}
+
 .lines[data-pack="opening"] .line {
   flex: 0 0 auto;
-  height: auto;
-  min-height: 1.72em;
+  min-height: 0;
 }
 
 .sheet.opening .line {
@@ -521,8 +517,8 @@ svg{display:block}
 }
 
 .line.head span {
-  font-weight: 500;
-  font-size: 0.92em;
+  font-weight: 600;
+  font-size: 0.9em;
   color: var(--color-paper-2);
   background: var(--color-green);
   border: 1px solid var(--color-gold);
@@ -1096,69 +1092,9 @@ svg{display:block}
 .other-views{display:flex;margin-top:12px;text-decoration:none;color:inherit}
 
 @media (max-width: 520px) {
-  .topbar {
-    grid-template-columns: 2.05rem 1fr 2.05rem;
-    min-height: 2.65rem;
-    padding: calc(0.18rem + env(safe-area-inset-top)) 0.4rem 0.38rem;
-    border-radius: 0 0 1.15rem 1.15rem;
-  }
-
-  .topbar-title {
-    gap: 0.4rem;
-  }
-
-  .topbar-title strong {
-    font-size: 0.78rem;
-  }
-
-  .topbar-title span,
-  .topbar-side {
-    font-size: 0.66rem;
-  }
-
-  .icon-btn,
-  .edge {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  .icon-btn svg,
-  .edge svg {
-    width: 0.95rem;
-    height: 0.95rem;
-  }
-
   .frame {
-    margin-top: 0.12rem;
-    padding: 0.05rem 1.05rem 0.2rem;
-  }
-
-  .side-gem,
-  .side-gem .side-flower {
-    width: 0.72rem;
-    height: 1.05rem;
-  }
-
-  .aya {
-    font-size: 1.22em;
-  }
-
-  .foot {
-    height: 3.55rem;
-    margin-top: -0.15rem;
-  }
-
-  .medal {
-    width: 3.05rem;
-    height: 1.22rem;
-    font-size: 0.7rem;
-  }
-
-  .book:not(.chrome) .medal {
-    font-size: 0.74rem;
-  }
-
-  .sheet.opening .frame {
-    padding-top: 1.75rem;
+    padding-right: 1.05rem;
+    padding-left: 1.05rem;
+    padding-top: 0.85rem;
   }
 }

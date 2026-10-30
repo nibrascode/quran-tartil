@@ -38,7 +38,6 @@ export function MushafPage({ data }: { data: PageData }) {
           line.style.height = "";
           line.style.justifyContent = "";
           line.style.transform = "";
-          line.style.marginInline = "";
         }
       };
 
@@ -50,26 +49,26 @@ export function MushafPage({ data }: { data: PageData }) {
           line.style.width = "max-content";
           line.style.height = "auto";
           line.style.justifyContent = "flex-start";
-          line.style.transform = "";
           widest = Math.max(widest, line.getBoundingClientRect().width);
         }
         return widest;
       };
 
+      clearMeasure();
       const phoneLand = window.matchMedia("(orientation: landscape) and (max-height: 560px)").matches;
       const slot = root.clientHeight / 15;
-      let size = (root.clientWidth - 4) / 23;
-      if (!phoneLand) size = Math.min(size, slot / 1.48);
-      size = Math.max(8, Math.min(size, phoneLand ? 44 : 38));
-      const box = root.clientWidth - 6;
+      let size = (root.clientWidth - 4) / 19.5;
+      if (!phoneLand) size = Math.min(size, slot / 1.72);
+      size = Math.max(13, Math.min(size, 34));
       measure(size);
       clearMeasure();
       root.style.fontSize = `${size}px`;
+      const box = root.clientWidth - 2;
       for (const line of lines) {
         line.style.width = "max-content";
         const w = line.getBoundingClientRect().width;
         if (w > box) {
-          line.style.transform = `scaleX(${(box - 4) / w})`;
+          line.style.transform = `scaleX(${(box - 2) / w})`;
           line.style.transformOrigin = "right center";
         } else {
           line.style.width = "";
@@ -83,6 +82,11 @@ export function MushafPage({ data }: { data: PageData }) {
 
       if (isOpening) {
         root.dataset.pack = "opening";
+        const h = root.clientHeight / 15;
+        for (const line of lines) {
+          line.style.flex = "0 0 auto";
+          line.style.height = `${h}px`;
+        }
         return;
       }
 
