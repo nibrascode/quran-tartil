@@ -1101,14 +1101,25 @@ svg{display:block}
 @media (max-width: 520px) {
   .icon-btn,
   .edge {
-    width: 2rem;
-    height: 2rem;
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .edge {
+    width: 0.85rem;
+    height: 1.45rem;
   }
 
   .icon-btn svg,
   .edge svg {
     width: 0.95rem;
     height: 0.95rem;
+  }
+
+  .side-gem,
+  .side-gem .side-flower {
+    width: 0.55rem;
+    height: 0.78rem;
   }
 
   .frame {
