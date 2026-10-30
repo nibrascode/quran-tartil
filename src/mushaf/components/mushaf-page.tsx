@@ -73,11 +73,6 @@ export function MushafPage({ data }: { data: PageData }) {
 
       if (isOpening) {
         root.dataset.pack = "opening";
-        const h = root.clientHeight / 15;
-        for (const line of lines) {
-          line.style.flex = "0 0 auto";
-          line.style.height = `${h}px`;
-        }
         return;
       }
 

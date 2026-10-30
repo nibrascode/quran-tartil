@@ -425,8 +425,19 @@ svg{display:block}
 }
 
 .lines[data-pack="center"] {
-  justify-content: center;
-  gap: 0.15em;
+  justify-content: flex-start;
+  gap: 0.22em;
+  margin-top: 1.15rem;
+}
+
+.lines[data-pack="opening"] {
+  justify-content: flex-start;
+  gap: 0.22em;
+  margin-top: 0.35rem;
+}
+
+.sheet.opening .frame {
+  padding-top: 1.75rem;
 }
 
 .line {
@@ -440,19 +451,11 @@ svg{display:block}
   line-height: 1;
 }
 
-.lines[data-pack="center"] .line {
-  flex: 0 0 auto;
-  min-height: 1.7em;
-}
-
-.lines[data-pack="opening"] {
-  justify-content: flex-start;
-  gap: 0;
-}
-
+.lines[data-pack="center"] .line,
 .lines[data-pack="opening"] .line {
   flex: 0 0 auto;
-  min-height: 0;
+  height: auto;
+  min-height: 1.72em;
 }
 
 .sheet.opening .line {
@@ -1153,5 +1156,9 @@ svg{display:block}
 
   .book:not(.chrome) .medal {
     font-size: 0.74rem;
+  }
+
+  .sheet.opening .frame {
+    padding-top: 1.75rem;
   }
 }
