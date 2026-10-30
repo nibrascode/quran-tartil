@@ -67,6 +67,9 @@ type Copy = {
   langTitle: string;
   close: string;
   empty: string;
+  juz: (n: number) => string;
+  meccan: string;
+  medinan: string;
   ayah: (n: number) => string;
 };
 
@@ -79,6 +82,9 @@ export const UI: Record<Lang, Copy> = {
     langTitle: "Dil",
     close: "Bağla",
     empty: "Uyğun surə yoxdur",
+    juz: (n) => `Cüz ${n}`,
+    meccan: "Məkkə",
+    medinan: "Mədinə",
     ayah: (n) => `${n} ayə`,
   },
   tr: {
@@ -89,6 +95,9 @@ export const UI: Record<Lang, Copy> = {
     langTitle: "Dil",
     close: "Kapat",
     empty: "Sure bulunamadı",
+    juz: (n) => `Cüz ${n}`,
+    meccan: "Mekkî",
+    medinan: "Medenî",
     ayah: (n) => `${n} ayet`,
   },
   en: {
@@ -99,6 +108,9 @@ export const UI: Record<Lang, Copy> = {
     langTitle: "Language",
     close: "Close",
     empty: "No surah found",
+    juz: (n) => `Juz ${n}`,
+    meccan: "Meccan",
+    medinan: "Medinan",
     ayah: (n) => `${n} verses`,
   },
   ar: {
@@ -109,6 +121,9 @@ export const UI: Record<Lang, Copy> = {
     langTitle: "اللغة",
     close: "إغلاق",
     empty: "لا توجد سورة",
+    juz: (n) => `الجزء ${n}`,
+    meccan: "مكية",
+    medinan: "مدنية",
     ayah: (n) => `${n} آية`,
   },
   ru: {
@@ -119,6 +134,9 @@ export const UI: Record<Lang, Copy> = {
     langTitle: "Язык",
     close: "Закрыть",
     empty: "Сура не найдена",
+    juz: (n) => `Джуз ${n}`,
+    meccan: "Мекканская",
+    medinan: "Мединская",
     ayah: (n) => `${n} аятов`,
   },
 };

@@ -25,6 +25,14 @@ export const SURAHS = meta.surahs as SurahMeta[];
 export const JUZ_PAGES = meta.juzPages as number[];
 export const PAGE_COUNT = 604;
 
+const MADANI = new Set([
+  2, 3, 4, 5, 8, 9, 13, 22, 24, 33, 47, 48, 49, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 76, 98, 99, 110,
+]);
+
+export function isMadani(n: number): boolean {
+  return MADANI.has(n);
+}
+
 const EAST = "٠١٢٣٤٥٦٧٨٩";
 
 export function eastern(n: number): string {

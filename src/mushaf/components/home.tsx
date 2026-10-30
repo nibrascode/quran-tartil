@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { fold, SURAHS } from "@/lib/quran";
-import { LANG_META, UI, arabicName, surahLabel, surahSearchBlob, useLocale } from "@/lib/i18n";
+import { fold, isMadani, JUZ_PAGES, SURAHS, type SurahMeta } from "@/lib/quran";
+import { LANG_META, UI, surahLabel, surahSearchBlob, useLocale } from "@/lib/i18n";
 
 export function Home({ onOpen }: { onOpen: (page: number) => void }) {
   const { lang, setLang } = useLocale();
@@ -14,10 +14,11 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
     if (!needle) return SURAHS;
     return SURAHS.filter((s) => fold(surahSearchBlob(s)).includes(needle) || String(s.n) === needle);
   }, [q]);
+  const rows = useMemo(() => listRows(filtered, q.trim() !== ""), [filtered, q]);
 
   return (
     <div className="stage">
-      <div className="book chrome">
+      <div className="book">
         <header className="topbar">
           <span className="topbar-side" />
           <div className="topbar-title home-title" dir={arUi ? "rtl" : "ltr"}>
@@ -41,21 +42,32 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
         </label>
 
         <ul className="index-list home-list">
-          {filtered.map((s) => (
-            <li key={s.n}>
-              <button type="button" className="index-row" onClick={() => onOpen(s.page)}>
-                <span className="idx">{s.n}</span>
-                <span className="index-names" dir={arUi ? "rtl" : "ltr"}>
-                  <span className={arUi ? "az quran-name" : "az"}>{surahLabel(s.n, lang)}</span>
-                  <span className="ar" dir="rtl" lang="ar">
-                    {arUi ? t.ayah(s.ayahs) : arabicName(s)}
+          {rows.map((row) =>
+            row.k === "juz" ? (
+              <li key={`j${row.n}`}>
+                <button type="button" className="juz-row" onClick={() => onOpen(row.page)}>
+                  <span>{t.juz(row.n)}</span>
+                  <span className="pg">{row.page}</span>
+                </button>
+              </li>
+            ) : (
+              <li key={row.s.n}>
+                <button type="button" className="index-row" onClick={() => onOpen(row.s.page)}>
+                  <span className="idx">{row.s.n}</span>
+                  <span className="index-names" dir={arUi ? "rtl" : "ltr"}>
+                    <span className={arUi ? "az quran-name" : "az"}>{surahLabel(row.s.n, lang)}</span>
+                    <span className="place">
+                      {isMadani(row.s.n) ? t.medinan : t.meccan}
+                      {" — "}
+                      {t.ayah(row.s.ayahs)}
+                    </span>
                   </span>
-                </span>
-                <span className="pg">{s.page}</span>
-              </button>
-            </li>
-          ))}
-          {filtered.length === 0 && <li className="empty">{t.empty}</li>}
+                  <span className="pg">{row.s.page}</span>
+                </button>
+              </li>
+            ),
+          )}
+          {rows.length === 0 && <li className="empty">{t.empty}</li>}
         </ul>
 
         {settings && (
@@ -110,6 +122,25 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
       </div>
     </div>
   );
+}
+
+type Row =
+  | { k: "juz"; n: number; page: number }
+  | { k: "surah"; s: SurahMeta };
+
+function listRows(surahs: SurahMeta[], searching: boolean): Row[] {
+  if (searching) return surahs.map((s) => ({ k: "surah", s }));
+  const rows: Row[] = [
+    ...JUZ_PAGES.map((page, i) => ({ k: "juz" as const, n: i + 1, page })),
+    ...surahs.map((s) => ({ k: "surah" as const, s })),
+  ];
+  rows.sort((a, b) => {
+    const pa = a.k === "juz" ? a.page : a.s.page;
+    const pb = b.k === "juz" ? b.page : b.s.page;
+    if (pa !== pb) return pa - pb;
+    return a.k === "juz" ? -1 : 1;
+  });
+  return rows;
 }
 
 function Gear() {
