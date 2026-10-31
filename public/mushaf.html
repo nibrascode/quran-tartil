@@ -42,6 +42,8 @@
         user-select: none;
         margin-bottom: calc(0.45rem + env(safe-area-inset-bottom));
       }
+      .page.mid { justify-content: center; }
+      .page.mid .line { flex: 0 0 calc(100% / 15); }
       .line {
         flex: 1 1 0;
         min-height: 0;
@@ -151,8 +153,14 @@
             delete marks[i];
           }
         }
+        board.classList.toggle("mid", pageNo === 1 || pageNo === 2);
         board.replaceChildren();
-        pages[String(pageNo)].forEach((text, i) => {
+        let last = pageLines.length - 1;
+        if (pageNo === 1 || pageNo === 2) {
+          while (last > 0 && !pageLines[last] && !marks[last]) last--;
+        }
+        pageLines.forEach((text, i) => {
+          if (i > last) return;
           const row = document.createElement("div");
           row.className = marks[i] ? "line surah" : "line";
           if (marks[i]) {
