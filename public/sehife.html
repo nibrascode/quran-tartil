@@ -2,7 +2,6 @@
 <html lang="az">
   <head>
     <meta charset="UTF-8" />
-    <script>if (!/[?&]p=([1-9]\d{0,2})(?:&|$)/.test(location.search)) location.replace("./giris.html");</script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#fffaf0" />
     <title>Yazı formaları</title>
@@ -198,7 +197,7 @@
       <div id="rows"></div>
     </div>
     <header>
-      <a href="./giris.html" id="back" aria-label="Geri">‹</a>
+      <a href="#" id="back" aria-label="Geri">‹</a>
       <h1 id="sure">Fatihə surəsi</h1>
     </header>
     <main class="page" id="page"></main>
@@ -408,6 +407,10 @@
         gate.hidden = true;
         show(n);
       }
+      document.getElementById("back").addEventListener("click", (e) => {
+        e.preventDefault();
+        gate.hidden = false;
+      });
       (function buildIndex() {
         const items = [];
         for (let i = 0; i < 30; i++) items.push({ k: "j", n: i + 1, page: JUZ[i] });
@@ -428,7 +431,7 @@
           rows.appendChild(btn);
         }
       })();
-      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames().then(() => { const p = Number(new URLSearchParams(location.search).get("p")); if (p >= 1 && p <= LAST) { gate.hidden = true; show(p); } }); });
+      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames(); });
     </script>
   </body>
 </html>
