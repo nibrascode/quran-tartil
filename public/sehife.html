@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="az">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fffaf0" />
+    <title>Yazı formaları</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: #fffaf0;
+        color: #1a1612;
+        font-family: "Segoe UI", sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
+      }
+      header {
+        background: #fffaf0;
+        color: #6a5e4c;
+        padding: calc(0.28rem + env(safe-area-inset-top)) 0.75rem 0.05rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.35rem;
+      }
+      header a {
+        color: #8a7d68;
+        text-decoration: none;
+        font-size: 1rem;
+        line-height: 1;
+      }
+      header h1 { margin: 0; font-size: 0.72rem; font-weight: 500; }
+      .num {
+        text-align: center;
+        color: #8a7d68;
+        font-size: 0.68rem;
+        padding: 0.05rem 0 calc(0.22rem + env(safe-area-inset-bottom));
+        background: #fffaf0;
+      }
+      .page {
+        flex: 1;
+        min-height: 0;
+        margin: 0;
+        background: #fffaf0;
+        border: none;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        touch-action: none;
+        user-select: none;
+      }
+      .page.mid { justify-content: center; position: relative; }
+      .page.mid .line { flex: 0 0 calc(100% / 15); }
+      .page.mid .line:not(.surah) { transform: translateY(calc(var(--up, 0px) * -1)); }
+      .page.mid .line.surah {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: calc(100% / 15);
+        flex: none;
+        top: calc(50% - var(--up, 0px) - var(--half, 3.5) * 100% / 15 - 155% / 15);
+      }
+      .line {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .line.surah { color: #1a1612; }
+      .shead {
+        position: relative;
+        width: 96%;
+        height: 88%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shead img { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .snames {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.28em;
+        direction: rtl;
+      }
+      .sname {
+        font-family: surahnames, serif;
+        line-height: 1;
+        color: #1a1612;
+      }
+      .basmala {
+        font-family: QCF1, serif;
+        font-size: 1em;
+        line-height: 1;
+        direction: rtl;
+        color: #1a1612;
+      }
+      .line.stack { flex: 1.75 1 0; flex-direction: column; justify-content: center; }
+      .line.stack .shead { height: 52%; width: 90%; }
+      .line.stack .basmala { font-size: 0.72em; }
+      @media (orientation: landscape) and (max-height: 520px) {
+        header { display: none; }
+        .num { display: none; }
+        .page {
+          margin: 0;
+          border: none;
+          border-radius: 0;
+          overflow: auto;
+          touch-action: pan-y;
+          justify-content: flex-start;
+          padding: 0.55em 0 0.8em;
+        }
+        .page.mid { justify-content: flex-start; }
+        .page .line,
+        .page.mid .line,
+        .page.mid .line.surah,
+        .page.mid .line:not(.surah) {
+          flex: 0 0 auto;
+          position: static;
+          top: auto;
+          height: auto;
+          min-height: 2.45em;
+          transform: none;
+        }
+        .shead { height: 1.45em; width: 94%; }
+      }
+      @media (orientation: landscape) and (min-height: 521px) {
+        header, .num { display: none; }
+        .page { margin: 0; border: none; border-radius: 0; overflow: hidden; }
+      }
+      #gate {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        background: #f6f1e4;
+        color: #161310;
+        display: flex;
+        flex-direction: column;
+        font-family: "Segoe UI", sans-serif;
+      }
+      #gate[hidden] { display: none; }
+      .idx-head {
+        text-align: center;
+        padding: calc(0.7rem + env(safe-area-inset-top)) 1rem 0.55rem;
+        color: #1a3330;
+      }
+      .idx-head strong { display: block; font-size: 1.15rem; font-weight: 600; }
+      .idx-head span { display: block; margin-top: 0.12rem; font-size: 0.92rem; font-weight: 500; }
+      #rows { flex: 1; overflow: auto; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); }
+      .srow, .jrow {
+        width: 100%;
+        border: 0;
+        font: inherit;
+        text-align: start;
+        color: inherit;
+      }
+      .srow {
+        display: grid;
+        grid-template-columns: 2.2rem 1fr auto;
+        gap: 0.55rem;
+        align-items: center;
+        min-height: 3.15rem;
+        padding: 0.4rem 0.95rem;
+        background: transparent;
+        border-bottom: 1px solid rgba(26, 51, 48, 0.1);
+      }
+      .srow b { display: block; color: #1a3330; font-size: 1.02rem; font-weight: 650; }
+      .srow small { display: block; color: #5c675f; font-size: 0.8rem; font-weight: 500; }
+      .srow .no, .srow .pg, .jrow .pg { color: #5c675f; font-variant-numeric: tabular-nums; }
+      .srow .no { font-size: 1.05rem; }
+      .srow .pg, .jrow .pg { font-size: 0.85rem; }
+      .jrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 2.35rem;
+        padding: 0.4rem 0.95rem;
+        background: #e7e4d8;
+        color: #1a3330;
+        font-weight: 650;
+        font-size: 0.92rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gate">
+      <div class="idx-head"><strong>Qurani-Kərim</strong><span>Mədinə məshəfi</span></div>
+      <div id="rows"></div>
+    </div>
+    <header>
+      <a href="#" id="back" aria-label="Geri">‹</a>
+      <h1 id="sure">Fatihə surəsi</h1>
+    </header>
+    <main class="page" id="page"></main>
+    <div class="num" id="pos">1</div>
+    <script>
+      const NAMES = "Fatihə,Bəqərə,Ali-İmran,Nisa,Maidə,Ənam,Əraf,Ənfal,Tövbə,Yunus,Hud,Yusuf,Rəd,İbrahim,Hicr,Nəhl,İsra,Kəhf,Məryəm,Taha,Ənbiya,Həcc,Muminun,Nur,Furqan,Şuəra,Nəml,Qəsəs,Ankəbut,Rum,Loğman,Səcdə,Əhzab,Səba,Fatir,Yasin,Saffat,Sad,Zumər,Ğafir,Fussilət,Şura,Zuxruf,Duxan,Casiyə,Əhqaf,Muhəmməd,Fəth,Hucurat,Qaf,Zariyat,Tur,Nəcm,Qəmər,Rəhman,Vaqiə,Hədid,Mucadələ,Həşr,Mumtəhinə,Saff,Cumə,Munafiqun,Təğabun,Talaq,Təhrim,Mulk,Qələm,Haqqə,Məaric,Nuh,Cin,Muzzəmmil,Muddəssir,Qiyamə,İnsan,Mursəlat,Nəbə,Naziat,Əbəsə,Təkvir,İnfitar,Mutəffifin,İnşiqaq,Buruc,Tariq,Əla,Ğaşiyə,Fəcr,Bələd,Şəms,Leyl,Duha,İnşirah,Tin,Ələq,Qədr,Bəyyinə,Zəlzələ,Adiyat,Qariə,Təkasur,Əsr,Huməzə,Fil,Qureyş,Maun,Kövsər,Kafirun,Nəsr,Məsəd,İxlas,Fələq,Nas".split(",");
+      const sure = document.getElementById("sure");
+      function surahTitle(page) {
+        const starts = STARTS.split(",").map((item) => item.split(":").map(Number));
+        const lines = pages[String(page)] || [];
+        let prev = 1;
+        for (const [sid, sp, line] of starts) {
+          if (sp < page) { prev = sid; continue; }
+          if (sp > page) break;
+          let before = false;
+          for (let i = 0; i < line - 1; i++) if (lines[i]) before = true;
+          return NAMES[(before ? prev : sid) - 1] + " surəsi";
+        }
+        return NAMES[prev - 1] + " surəsi";
+      }
+      const LAST = 604;
+      const STARTS = "1:1:2,2:2:3,3:50:3,4:77:2,5:106:8,6:128:3,7:151:3,8:177:3,9:187:2,10:208:2,11:221:9,12:235:11,13:249:3,14:255:5,15:262:3,16:267:9,17:282:3,18:293:12,19:305:3,20:312:7,21:322:3,22:332:2,23:342:2,24:350:2,25:359:13,26:367:2,27:377:2,28:385:10,29:396:10,30:404:12,31:411:3,32:415:2,33:418:2,34:428:3,35:434:10,36:440:6,37:446:2,38:453:2,39:458:6,40:467:5,41:477:3,42:483:3,43:489:7,44:496:3,45:499:2,46:502:9,47:507:2,48:511:3,49:515:9,50:518:3,51:520:14,52:523:10,53:526:2,54:528:12,55:531:7,56:534:9,57:537:13,58:542:3,59:545:9,60:549:2,61:551:9,62:553:3,63:554:9,64:556:2,65:558:2,66:560:3,67:562:3,68:564:8,69:566:12,70:568:11,71:570:7,72:572:3,73:574:3,74:575:10,75:577:8,76:578:12,77:580:9,78:582:3,79:583:10,80:585:2,81:586:4,82:587:3,83:587:14,84:589:5,85:590:4,86:591:3,87:591:12,88:592:7,89:593:5,90:594:8,91:595:4,92:595:13,93:596:8,94:596:15,95:597:5,96:597:11,97:598:6,98:598:11,99:599:8,100:599:14,101:600:6,102:600:13,103:601:3,104:601:7,105:601:13,106:602:3,107:602:8,108:602:14,109:603:3,110:603:8,111:603:13,112:604:3,113:604:7,114:604:12";
+      const heads = {};
+      const bisLines = {};
+      const stackLines = {};
+      for (const item of STARTS.split(",")) {
+        const [id, page, line] = item.split(":").map(Number);
+        if (id === 1 || id === 9) {
+          (heads[page] ||= {})[Math.max(0, line - 2)] = id;
+        } else if (line >= 3) {
+          (heads[page] ||= {})[line - 3] = id;
+          (bisLines[page] ||= {})[line - 2] = true;
+        } else {
+          (heads[page] ||= {})[0] = id;
+          (stackLines[page] ||= {})[0] = true;
+        }
+      }
+      const BISM = "\uFC41\uFC42\uFC43\uFC44";
+      let namesReady = null;
+      function loadNames() {
+        if (!namesReady) {
+          namesReady = Promise.all([
+            new FontFace("surahnames", "url(./yazi-fonts/sura_names.woff2)").load(),
+            new FontFace("QCF1", "url(./yazi-fonts/qcf/p1.woff2)").load(),
+          ]).then((faces) => {
+            faces.forEach((face) => document.fonts.add(face));
+            loaded.add(1);
+          });
+        }
+        return namesReady;
+      }
+      let pageNo = 1;
+      let pages = null;
+      const loaded = new Set();
+      const board = document.getElementById("page");
+      const pos = document.getElementById("pos");
+
+      function textWidth(line) {
+        const range = document.createRange();
+        range.selectNodeContents(line);
+        return range.getBoundingClientRect().width;
+      }
+      function fit() {
+        const phoneLand = matchMedia("(orientation: landscape) and (max-height: 520px)").matches;
+        const h = board.clientHeight;
+        if (!phoneLand) {
+          const w = board.clientWidth - 16;
+          let size = h / 15;
+          for (let i = 0; i < 3; i++) {
+            board.style.fontSize = size + "px";
+            let widest = 0;
+            for (const line of board.querySelectorAll(".line:not(.surah):not(.basmala)")) widest = Math.max(widest, line.scrollWidth);
+            if (widest <= w || widest === 0) break;
+            size *= (w / widest) * 0.94;
+          }
+          board.style.fontSize = size * 0.9 + "px";
+        } else {
+          const w = board.clientWidth - 22;
+          let size = w / 8;
+          for (let i = 0; i < 5; i++) {
+            board.style.fontSize = size + "px";
+            let widest = 0;
+            for (const line of board.querySelectorAll(".line:not(.surah):not(.basmala)")) widest = Math.max(widest, textWidth(line));
+            if (widest <= w || widest === 0) break;
+            size *= (w / widest) * 0.98;
+          }
+          board.style.fontSize = size + "px";
+        }
+        let ink = 0;
+        for (const line of board.querySelectorAll(".line:not(.surah):not(.basmala)")) ink = Math.max(ink, textWidth(line));
+        const card = Math.min(Math.max(ink, 0), board.clientWidth * 0.92);
+        for (const head of board.querySelectorAll(".shead")) if (card > 0) head.style.width = card + "px";
+        for (const row of board.querySelectorAll(".snames")) {
+          const head = row.parentElement;
+          const maxW = head.clientWidth * 0.62;
+          let sizeName = head.clientHeight * 0.46;
+          row.style.fontSize = sizeName + "px";
+          if (row.scrollWidth > maxW && row.scrollWidth > 0) row.style.fontSize = sizeName * (maxW / row.scrollWidth) + "px";
+        }
+      }
+
+      let job = 0;
+      async function show(n) {
+        const id = ++job;
+        pageNo = Math.max(1, Math.min(LAST, n));
+        const name = "QCF" + pageNo;
+        if (!loaded.has(pageNo)) {
+          try {
+            const face = new FontFace(name, "url(./yazi-fonts/qcf/p" + pageNo + ".woff2)");
+            await face.load();
+            if (id !== job) return;
+            document.fonts.add(face);
+            loaded.add(pageNo);
+          } catch (err) {
+            if (id !== job) return;
+          }
+        }
+        if (id !== job) return;
+        board.style.fontFamily = name + ", serif";
+        const marks = { ...(heads[pageNo] || {}) };
+        const bis = bisLines[pageNo] || {};
+        const stack = stackLines[pageNo] || {};
+        const pageLines = pages[String(pageNo)];
+        board.classList.toggle("mid", pageNo === 1 || pageNo === 2);
+        board.replaceChildren();
+        let last = pageLines.length - 1;
+        if (pageNo === 1 || pageNo === 2) {
+          while (last > 0 && !pageLines[last] && !marks[last] && !bis[last]) last--;
+        }
+        const addBasmala = (parent) => {
+          const b = document.createElement("span");
+          b.className = "basmala";
+          b.textContent = BISM;
+          parent.appendChild(b);
+        };
+        pageLines.forEach((text, i) => {
+          if (i > last) return;
+          if ((pageNo === 1 || pageNo === 2) && !text && !marks[i] && !bis[i]) return;
+          const row = document.createElement("div");
+          row.className = marks[i] ? "line surah" + (stack[i] ? " stack" : "") : bis[i] ? "line basmala" : "line";
+          if (marks[i]) {
+            const head = document.createElement("div");
+            head.className = "shead";
+            const frame = document.createElement("img");
+            frame.src = "./surah-banner.png";
+            frame.alt = "";
+            const names = document.createElement("span");
+            names.className = "snames";
+            const word = document.createElement("span");
+            word.className = "sname";
+            word.textContent = "\uE000";
+            const name = document.createElement("span");
+            name.className = "sname";
+            name.textContent = String.fromCharCode(0xe000 + marks[i]);
+            names.append(word, name);
+            head.append(frame, names);
+            row.appendChild(head);
+            if (stack[i]) addBasmala(row);
+          } else if (bis[i]) addBasmala(row);
+          else row.textContent = text;
+          board.appendChild(row);
+        });
+        pos.textContent = String(pageNo);
+        sure.textContent = surahTitle(pageNo);
+        if (pageNo === 1 || pageNo === 2) {
+          const n = board.querySelectorAll(".line:not(.surah)").length;
+          const box = board.getBoundingClientRect();
+          const shift = box.top + box.height / 2 - window.innerHeight / 2;
+          board.style.setProperty("--half", String(n / 2));
+          board.style.setProperty("--up", shift + "px");
+        }
+        fit();
+        const ahead = pageNo + 1;
+        if (ahead <= LAST && !loaded.has(ahead)) {
+          const nextFace = new FontFace("QCF" + ahead, "url(./yazi-fonts/qcf/p" + ahead + ".woff2)");
+          nextFace.load().then(() => { document.fonts.add(nextFace); loaded.add(ahead); }).catch(() => {});
+        }
+      }
+
+      let startX = null;
+      board.addEventListener("pointerdown", (e) => {
+        startX = e.clientX;
+        try { board.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      board.addEventListener("pointerup", (e) => {
+        if (startX == null) return;
+        const dx = e.clientX - startX;
+        startX = null;
+        if (dx > 36) show(pageNo + 1);
+        else if (dx < -36) show(pageNo - 1);
+      });
+      board.addEventListener("pointercancel", () => { startX = null; });
+      window.addEventListener("resize", fit);
+      const AYAHS = "7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6".split(",").map(Number);
+      const MADANI = new Set([2, 3, 4, 5, 8, 9, 13, 22, 24, 33, 47, 48, 49, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 76, 98, 99, 110]);
+      const JUZ = [1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
+      function surahPage(n) {
+        for (const item of STARTS.split(",")) {
+          const [id, page] = item.split(":").map(Number);
+          if (id === n) return page;
+        }
+        return 1;
+      }
+      const gate = document.getElementById("gate");
+      const rows = document.getElementById("rows");
+      function openAt(n) {
+        gate.hidden = true;
+        show(n);
+      }
+      document.getElementById("back").addEventListener("click", (e) => {
+        e.preventDefault();
+        gate.hidden = false;
+      });
+      (function buildIndex() {
+        const items = [];
+        for (let i = 0; i < 30; i++) items.push({ k: "j", n: i + 1, page: JUZ[i] });
+        NAMES.forEach((name, i) => items.push({ k: "s", n: i + 1, name, page: surahPage(i + 1), ayahs: AYAHS[i] }));
+        items.sort((a, b) => a.page - b.page || (a.k === "j" ? -1 : 1));
+        for (const item of items) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          if (item.k === "j") {
+            btn.className = "jrow";
+            btn.innerHTML = "<span>Cüz " + item.n + "</span><span class='pg'>" + item.page + "</span>";
+          } else {
+            btn.className = "srow";
+            const where = MADANI.has(item.n) ? "Mədinə" : "Məkkə";
+            btn.innerHTML = "<span class='no'>" + item.n + "</span><span><b>" + item.name + "</b><small>" + where + " — " + item.ayahs + " ayə</small></span><span class='pg'>" + item.page + "</span>";
+          }
+          btn.addEventListener("click", () => openAt(item.page));
+          rows.appendChild(btn);
+        }
+      })();
+      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames(); });
+    </script>
+  </body>
+</html>
