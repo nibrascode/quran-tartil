@@ -74,17 +74,17 @@
       <a href="./index.html" aria-label="Geri">‹</a>
       <div>
         <h1>Mədinə səhifəsi</h1>
-        <p>Quran.com səhifə yazısı</p>
+        <p>Bütün Quran, sağdan sola</p>
       </div>
     </header>
     <main class="page" id="page"></main>
     <footer>
-      <button type="button" id="prev">Əvvəlki</button>
-      <span id="pos"></span>
       <button type="button" id="next">Növbəti</button>
+      <span id="pos"></span>
+      <button type="button" id="prev">Əvvəlki</button>
     </footer>
     <script>
-      const LAST = 49;
+      const LAST = 604;
       let pageNo = 1;
       let pages = null;
       const loaded = new Set();
@@ -138,8 +138,8 @@
       board.addEventListener("pointerdown", (e) => { startX = e.clientX; });
       board.addEventListener("pointerup", (e) => {
         const dx = e.clientX - startX;
-        if (dx > 50) show(pageNo - 1);
-        else if (dx < -50) show(pageNo + 1);
+        if (dx > 50) show(pageNo + 1);
+        else if (dx < -50) show(pageNo - 1);
       });
       window.addEventListener("resize", fit);
       fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; show(1); });
