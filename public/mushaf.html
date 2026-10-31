@@ -107,7 +107,7 @@
       .line.stack { flex: 1.75 1 0; flex-direction: column; justify-content: center; }
       .line.stack .shead { height: 52%; width: 90%; }
       .line.stack .basmala { font-size: 0.58em; }
-      @media (orientation: landscape) {
+      @media (orientation: landscape) and (max-height: 520px) {
         header { display: none; }
         .num { display: none; }
         .page {
@@ -132,6 +132,15 @@
           transform: none;
         }
         .shead { height: 1.45em; width: 94%; }
+      }
+      @media (orientation: landscape) and (min-height: 521px) {
+        header, .num { display: none; }
+        .page {
+          margin: 0;
+          border: none;
+          border-radius: 0;
+          overflow: hidden;
+        }
       }
     </style>
   </head>
@@ -198,9 +207,9 @@
         return range.getBoundingClientRect().width;
       }
       function fit() {
-        const land = matchMedia("(orientation: landscape)").matches;
+        const phoneLand = matchMedia("(orientation: landscape) and (max-height: 520px)").matches;
         const h = board.clientHeight;
-        if (!land) {
+        if (!phoneLand) {
           const w = board.clientWidth - 16;
           let size = h / 15;
           for (let i = 0; i < 3; i++) {
