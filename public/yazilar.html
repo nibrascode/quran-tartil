@@ -218,6 +218,10 @@
           }
           board.style.fontSize = size + "px";
         }
+        let ink = 0;
+        for (const line of board.querySelectorAll(".line:not(.surah):not(.basmala)")) ink = Math.max(ink, textWidth(line));
+        const card = Math.min(Math.max(ink, 0), board.clientWidth * 0.92);
+        for (const head of board.querySelectorAll(".shead")) if (card > 0) head.style.width = card + "px";
         for (const row of board.querySelectorAll(".snames")) {
           const head = row.parentElement;
           const maxW = head.clientWidth * 0.62;
