@@ -4,7 +4,7 @@ import "./styles.css";
 import { Home } from "./Home";
 import { Menu, type Tab } from "./Menu";
 import { useSettings } from "./store";
-import { detectLang, type Lang } from "./i18n";
+import { type Lang } from "./i18n";
 import { PAGES } from "./quran";
 
 type Theme = "light" | "dark" | "sepia";
@@ -14,8 +14,16 @@ function go(p: number) {
   location.href = "./sehife.html?p=" + p;
 }
 
+function pickLang(): Lang {
+  const saved = localStorage.getItem("lang") as Lang | null;
+  if (saved === "az" || saved === "en" || saved === "tr" || saved === "ar" || saved === "ru") return saved;
+  const n = (navigator.language || "az").slice(0, 2).toLowerCase();
+  if (n === "az" || n === "tr" || n === "ar" || n === "ru") return n;
+  return "az";
+}
+
 function Giris() {
-  const [lang, setLang] = useState<Lang>(detectLang);
+  const [lang, setLang] = useState<Lang>(pickLang);
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("theme") as Theme) || "dark");
   const [st, update] = useSettings();
   const [page] = useState(() => {
@@ -34,6 +42,7 @@ function Giris() {
         lang={lang}
         st={st}
         page={page}
+        plain
         onResume={() => go(page)}
         onOpen={go}
         onMic={() => go(page)}

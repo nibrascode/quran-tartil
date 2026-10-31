@@ -35,7 +35,7 @@ function ayahOfDay(day: string) {
   return { s: x.s, a: x.a, text: x.a === 1 ? stripBasmala(x.t) : x.t };
 }
 
-export function Home({ lang, st, page, onResume, onOpen, onMic, onAyah, onTab }: Props) {
+export function Home({ lang, st, page, onResume, onOpen, onMic, onAyah, onTab, plain }: Props & { plain?: boolean }) {
   const [more, setMore] = useState(() => localStorage.getItem("qt.hmore") === "1");
   const [tab, setTabS] = useState<HT>(() => (localStorage.getItem("qt.htab") as HT) || "s");
   const L = HL[lang] || HL.en;
@@ -60,6 +60,59 @@ export function Home({ lang, st, page, onResume, onOpen, onMic, onAyah, onTab }:
   const setTab = (x: HT) => { setTabS(x); localStorage.setItem("qt.htab", x); };
   const toggleMore = () => { const v = !more; setMore(v); localStorage.setItem("qt.hmore", v ? "1" : "0"); };
   const nm = (i: number) => (lang === "az" ? AZ_NAMES[i - 1] : ar ? suras[i - 1].name : suras[i - 1].tname);
+  const dash = (
+    <>
+      <button className="hcont" style={{ ["--i" as string]: 1 }} onClick={onResume}>
+        <span className="hc-k">{t.hContinue}</span>
+        <span className="hc-t" lang="ar" dir="rtl">{sura.name}</span>
+        <span className="hc-s">{lang === "ar" ? "" : sura.tname + " · "}{t.juz} {juzOfPage(page)} · {fmt(t.hPageOf, { p: page, n: PAGES })}</span>
+        <span className="hbar" role="progressbar" aria-valuenow={khatmPct} aria-valuemin={0} aria-valuemax={100}><i style={{ width: khatmPct + "%" }} /></span>
+        <span className="hc-f"><small>{fmt(t.hKhatmBar, { n: khatmPct })}</small><em>{t.hResume}<Ic n="chev" size={18} /></em></span>
+      </button>
+      <button className="hayah" id="h-ayah" style={{ ["--i" as string]: 2 }} onClick={() => onAyah(pageOfAyah(ad.s, ad.a), { s: ad.s, a: ad.a })} aria-label={t.hAyahDay + ": " + suraLabel(ad.s, true) + " " + ad.a}>
+        <span className="ha-k"><Ic n="spark" size={16} />{t.hAyahDay}</span>
+        <span className="ha-t" lang="ar" dir="rtl">﴿{ad.text}﴾</span>
+        <span className="ha-f"><span lang="ar" dir="rtl">{suraLabel(ad.s, true)} : {ad.a}</span><em>{t.hTapOpen}</em></span>
+      </button>
+      <div className="hrow" style={{ ["--i" as string]: 3 }}>
+        <button className="hcard" id="h-goal" onClick={() => onTab("progress")}>
+          <Ring value={goalPct} size={84}><b>{donePages}<small>/{st.goal}</small></b></Ring>
+          <span className="hc-l"><b>{t.hGoal}</b><small>{goalPct >= 100 ? t.hGoalDone : fmt(t.hGoalOf, { n: donePages, g: st.goal })}</small>
+            <span className={"hstreak" + (sk ? " on" : "")}><Ic n="flame" size={16} fill={sk > 0} />{sk ? fmt(t.hStreak, { n: sk }) : t.hStreakNone}</span></span>
+        </button>
+        <button className="hcard hk" id="h-khatm" onClick={() => onTab("progress")}>
+          <Ring value={khatmPct} size={84}><b>{khatmPct}<small>%</small></b></Ring>
+          <span className="hc-l"><b>{t.hKhatm}</b><small>{fmt(t.hPagesLeft, { n: PAGES - st.visited.length })}</small><small>{fmt(t.hKhatmSub, { k: st.khatms })}</small></span>
+        </button>
+      </div>
+      <h2 className="hsec" style={{ ["--i" as string]: 4 }}>{t.hQuick}</h2>
+      <div className="hgrid" style={{ ["--i" as string]: 5 }}>
+        {RECITE && <button className="hq hq-main" id="h-mic" onClick={onMic}><span className="hq-i"><Ic n="mic" size={26} /></span><span className="hq-tx"><b>{t.hStart}</b><small>{t.hStartSub}</small></span></button>}
+        {RECITE && act("p", "layers", t.hPractice, due ? fmt(t.hDue, { n: due }) : t.hNoDue, () => onTab("practice"), "h-practice")}
+        {act("sr", "book", t.surah, t.hJump, () => onTab("surah"), "h-surah")}
+        {act("pg", "compass", t.page, t.hJump, () => onTab("page"), "h-page")}
+        {act("jz", "flag", t.juz, t.hJump, () => onTab("juz"), "h-juz")}
+        {act("bm", "bookmark", t.bookmarks, String(st.bookmarks.length), () => onTab("bookmarks"), "h-bookmarks")}
+        {RECITE && act("ms", "warn", t.hMistakes, weak ? fmt(t.hWeak, { n: weak }) : t.hNoWeak, () => onTab("practice"), "h-mistakes")}
+        {act("se", "search", t.searchTab, "", () => onTab("search"), "h-search")}
+        {act("st", "sliders", t.settings, t.theme + " · " + t.language, () => onTab("settings"), "h-settings")}
+      </div>
+    </>
+  );
+  if (plain) {
+    return (
+      <main className="home" aria-label={t.hHome} dir={ar ? "rtl" : "ltr"}>
+        <div className="home-in">
+          <header className="hhead" style={{ ["--i" as string]: 0 }}>
+            <img src={icon} width="52" height="52" alt="" />
+            <div><h1>{greet}</h1><small lang="ar" dir="rtl">{t.hSalaam}</small></div>
+            <button className="hset" type="button" aria-label={t.settings} onClick={() => onTab("settings")}><Ic n="sliders" size={22} /></button>
+          </header>
+          {dash}
+        </div>
+      </main>
+    );
+  }
   return (
     <main className="home home2" aria-label={t.hHome} dir={ar ? "rtl" : "ltr"}>
       <header className="h2bar">
@@ -74,47 +127,7 @@ export function Home({ lang, st, page, onResume, onOpen, onMic, onAyah, onTab }:
         {RECITE && <button className="h2mic" id="h-mic" aria-label={t.hStart} onClick={onMic}><Ic n="mic" size={24} /></button>}
         <button className={"h2more" + (more ? " on" : "")} aria-expanded={more} onClick={toggleMore}>{L.more}<Ic n="chev" size={16} /></button>
       </div>
-      {more && <div className="home-in h2dash">
-        <button className="hcont" style={{ ["--i" as string]: 1 }} onClick={onResume}>
-          <span className="hc-k">{t.hContinue}</span>
-          <span className="hc-t" lang="ar" dir="rtl">{sura.name}</span>
-          <span className="hc-s">{lang === "ar" ? "" : sura.tname + " · "}{t.juz} {juzOfPage(page)} · {fmt(t.hPageOf, { p: page, n: PAGES })}</span>
-          <span className="hbar" role="progressbar" aria-valuenow={khatmPct} aria-valuemin={0} aria-valuemax={100}><i style={{ width: khatmPct + "%" }} /></span>
-          <span className="hc-f"><small>{fmt(t.hKhatmBar, { n: khatmPct })}</small><em>{t.hResume}<Ic n="chev" size={18} /></em></span>
-        </button>
-
-        <button className="hayah" id="h-ayah" style={{ ["--i" as string]: 2 }} onClick={() => onAyah(pageOfAyah(ad.s, ad.a), { s: ad.s, a: ad.a })} aria-label={t.hAyahDay + ": " + suraLabel(ad.s, true) + " " + ad.a}>
-          <span className="ha-k"><Ic n="spark" size={16} />{t.hAyahDay}</span>
-          <span className="ha-t" lang="ar" dir="rtl">﴿{ad.text}﴾</span>
-          <span className="ha-f"><span lang="ar" dir="rtl">{suraLabel(ad.s, true)} : {ad.a}</span><em>{t.hTapOpen}</em></span>
-        </button>
-
-        <div className="hrow" style={{ ["--i" as string]: 3 }}>
-          <button className="hcard" id="h-goal" onClick={() => onTab("progress")}>
-            <Ring value={goalPct} size={84}><b>{donePages}<small>/{st.goal}</small></b></Ring>
-            <span className="hc-l"><b>{t.hGoal}</b><small>{goalPct >= 100 ? t.hGoalDone : fmt(t.hGoalOf, { n: donePages, g: st.goal })}</small>
-              <span className={"hstreak" + (sk ? " on" : "")}><Ic n="flame" size={16} fill={sk > 0} />{sk ? fmt(t.hStreak, { n: sk }) : t.hStreakNone}</span></span>
-          </button>
-          <button className="hcard hk" id="h-khatm" onClick={() => onTab("progress")}>
-            <Ring value={khatmPct} size={84}><b>{khatmPct}<small>%</small></b></Ring>
-            <span className="hc-l"><b>{t.hKhatm}</b><small>{fmt(t.hPagesLeft, { n: PAGES - st.visited.length })}</small><small>{fmt(t.hKhatmSub, { k: st.khatms })}</small></span>
-          </button>
-        </div>
-
-        <h2 className="hsec" style={{ ["--i" as string]: 4 }}>{t.hQuick}</h2>
-        <div className="hgrid" style={{ ["--i" as string]: 5 }}>
-          {RECITE && <button className="hq hq-main" id="h-mic" onClick={onMic}><span className="hq-i"><Ic n="mic" size={26} /></span><span className="hq-tx"><b>{t.hStart}</b><small>{t.hStartSub}</small></span></button>}
-          {RECITE && act("p", "layers", t.hPractice, due ? fmt(t.hDue, { n: due }) : t.hNoDue, () => onTab("practice"), "h-practice")}
-          {act("sr", "book", t.surah, t.hJump, () => onTab("surah"), "h-surah")}
-          {act("pg", "compass", t.page, t.hJump, () => onTab("page"), "h-page")}
-          {act("jz", "flag", t.juz, t.hJump, () => onTab("juz"), "h-juz")}
-          {act("bm", "bookmark", t.bookmarks, String(st.bookmarks.length), () => onTab("bookmarks"), "h-bookmarks")}
-          {RECITE && act("ms", "warn", t.hMistakes, weak ? fmt(t.hWeak, { n: weak }) : t.hNoWeak, () => onTab("practice"), "h-mistakes")}
-          {act("se", "search", t.searchTab, "", () => onTab("search"), "h-search")}
-          {act("st", "sliders", t.settings, t.theme + " · " + t.language, () => onTab("settings"), "h-settings")}
-        </div>
-        <p className="hfoot">{t.by}</p>
-      </div>}
+      {more && <div className="home-in h2dash">{dash}<p className="hfoot">{t.by}</p></div>}
       <nav className="h2tabs" role="tablist">
         {(["s", "j", "p"] as HT[]).map((x) => <button key={x} role="tab" aria-selected={tab === x} className={"h2tab" + (tab === x ? " on" : "")} onClick={() => setTab(x)}>{L.tabs[x]}</button>)}
         <span className="h2ul" style={{ ["--x" as string]: ["s", "j", "p"].indexOf(tab) }} aria-hidden="true"><i /></span>
