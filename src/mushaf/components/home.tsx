@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { fold, isMadani, JUZ_PAGES, SURAHS, type SurahMeta } from "@/lib/quran";
 import { LANG_META, UI, surahLabel, surahSearchBlob, useLocale } from "@/lib/i18n";
 
-export function Home({ onOpen }: { onOpen: (page: number) => void }) {
+export function Home({ onOpen }: { onOpen?: (page: number) => void }) {
   const { lang, setLang } = useLocale();
   const t = UI[lang];
   const [q, setQ] = useState("");
@@ -60,14 +60,14 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
           {rows.map((row) =>
             row.k === "juz" ? (
               <li key={`j${row.n}`}>
-                <button type="button" className="juz-row" onClick={() => onOpen(row.page)}>
+                <button type="button" className="juz-row" onClick={() => (onOpen ? onOpen(row.page) : (location.href = `./yazilar.html?p=${row.page}`))}>
                   <span>{t.juz(row.n)}</span>
                   <span className="pg">{row.page}</span>
                 </button>
               </li>
             ) : (
               <li key={row.s.n}>
-                <button type="button" className="index-row" onClick={() => onOpen(row.s.page)}>
+                <button type="button" className="index-row" onClick={() => (onOpen ? onOpen(row.s.page) : (location.href = `./yazilar.html?s=${row.s.n}`))}>
                   <span className="idx">{row.s.n}</span>
                   <span className="index-names" dir={arUi ? "rtl" : "ltr"}>
                     <span className={arUi ? "az quran-name" : "az"}>{surahLabel(row.s.n, lang)}</span>
@@ -127,8 +127,8 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
                   );
                 })}
               </ul>
-              <a className="other-views" href="./yazilar.html">
-                Yazı formaları
+              <a className="other-views" href={onOpen ? "./classic.html" : "./evvelki.html"}>
+                {onOpen ? "Köhnə tətbiq" : "Əvvəlki görünüş"}
               </a>
             </div>
           </div>
