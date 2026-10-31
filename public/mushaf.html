@@ -135,18 +135,69 @@
       }
       @media (orientation: landscape) and (min-height: 521px) {
         header, .num { display: none; }
-        .page {
-          margin: 0;
-          border: none;
-          border-radius: 0;
-          overflow: hidden;
-        }
+        .page { margin: 0; border: none; border-radius: 0; overflow: hidden; }
+      }
+      #gate {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        background: #f6f1e4;
+        color: #161310;
+        display: flex;
+        flex-direction: column;
+        font-family: "Segoe UI", sans-serif;
+      }
+      #gate[hidden] { display: none; }
+      .idx-head {
+        text-align: center;
+        padding: calc(0.7rem + env(safe-area-inset-top)) 1rem 0.55rem;
+        color: #1a3330;
+      }
+      .idx-head strong { display: block; font-size: 1.15rem; font-weight: 600; }
+      .idx-head span { display: block; margin-top: 0.12rem; font-size: 0.92rem; font-weight: 500; }
+      #rows { flex: 1; overflow: auto; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); }
+      .srow, .jrow {
+        width: 100%;
+        border: 0;
+        font: inherit;
+        text-align: start;
+        color: inherit;
+      }
+      .srow {
+        display: grid;
+        grid-template-columns: 2.2rem 1fr auto;
+        gap: 0.55rem;
+        align-items: center;
+        min-height: 3.15rem;
+        padding: 0.4rem 0.95rem;
+        background: transparent;
+        border-bottom: 1px solid rgba(26, 51, 48, 0.1);
+      }
+      .srow b { display: block; color: #1a3330; font-size: 1.02rem; font-weight: 650; }
+      .srow small { display: block; color: #5c675f; font-size: 0.8rem; font-weight: 500; }
+      .srow .no, .srow .pg, .jrow .pg { color: #5c675f; font-variant-numeric: tabular-nums; }
+      .srow .no { font-size: 1.05rem; }
+      .srow .pg, .jrow .pg { font-size: 0.85rem; }
+      .jrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 2.35rem;
+        padding: 0.4rem 0.95rem;
+        background: #e7e4d8;
+        color: #1a3330;
+        font-weight: 650;
+        font-size: 0.92rem;
       }
     </style>
   </head>
   <body>
+    <div id="gate">
+      <div class="idx-head"><strong>Qurani-Kərim</strong><span>Mədinə məshəfi</span></div>
+      <div id="rows"></div>
+    </div>
     <header>
-      <a href="./index.html" aria-label="Geri">‹</a>
+      <a href="#" id="back" aria-label="Geri">‹</a>
       <h1 id="sure">Fatihə surəsi</h1>
     </header>
     <main class="page" id="page"></main>
@@ -340,7 +391,47 @@
       });
       board.addEventListener("pointercancel", () => { startX = null; });
       window.addEventListener("resize", fit);
-      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames().then(() => show(1)); });
+      const AYAHS = "7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6".split(",").map(Number);
+      const MADANI = new Set([2, 3, 4, 5, 8, 9, 13, 22, 24, 33, 47, 48, 49, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 76, 98, 99, 110]);
+      const JUZ = [1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
+      function surahPage(n) {
+        for (const item of STARTS.split(",")) {
+          const [id, page] = item.split(":").map(Number);
+          if (id === n) return page;
+        }
+        return 1;
+      }
+      const gate = document.getElementById("gate");
+      const rows = document.getElementById("rows");
+      function openAt(n) {
+        gate.hidden = true;
+        show(n);
+      }
+      document.getElementById("back").addEventListener("click", (e) => {
+        e.preventDefault();
+        gate.hidden = false;
+      });
+      (function buildIndex() {
+        const items = [];
+        for (let i = 0; i < 30; i++) items.push({ k: "j", n: i + 1, page: JUZ[i] });
+        NAMES.forEach((name, i) => items.push({ k: "s", n: i + 1, name, page: surahPage(i + 1), ayahs: AYAHS[i] }));
+        items.sort((a, b) => a.page - b.page || (a.k === "j" ? -1 : 1));
+        for (const item of items) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          if (item.k === "j") {
+            btn.className = "jrow";
+            btn.innerHTML = "<span>Cüz " + item.n + "</span><span class='pg'>" + item.page + "</span>";
+          } else {
+            btn.className = "srow";
+            const where = MADANI.has(item.n) ? "Mədinə" : "Məkkə";
+            btn.innerHTML = "<span class='no'>" + item.n + "</span><span><b>" + item.name + "</b><small>" + where + " — " + item.ayahs + " ayə</small></span><span class='pg'>" + item.page + "</span>";
+          }
+          btn.addEventListener("click", () => openAt(item.page));
+          rows.appendChild(btn);
+        }
+      })();
+      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames(); });
     </script>
   </body>
 </html>
