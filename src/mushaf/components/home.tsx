@@ -127,6 +127,9 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
                   );
                 })}
               </ul>
+              <a className="other-views" href="./yazilar.html">
+                Yazı formaları
+              </a>
             </div>
           </div>
         )}

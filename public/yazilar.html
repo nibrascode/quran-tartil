@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="az" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a3330" />
+    <title>Yazı formaları</title>
+    <style>
+      @font-face { font-family: "QC Hafs"; src: url("./yazi-fonts/uthmanic-hafs.woff2") format("woff2"); font-display: swap; }
+      @font-face { font-family: "QC MeQuran"; src: url("./yazi-fonts/me-quran.woff2") format("woff2"); font-display: swap; }
+      @font-face { font-family: "QC Indopak"; src: url("./yazi-fonts/indopak.woff2") format("woff2"); font-display: swap; }
+      @font-face { font-family: "QA Hafs"; src: url("./yazi-fonts/hafs-android.otf") format("opentype"); font-display: swap; }
+      @font-face { font-family: "QA Naskh"; src: url("./yazi-fonts/naskh-android.otf") format("opentype"); font-display: swap; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: #f6f1e4;
+        color: #1a1612;
+        font-family: "Segoe UI", sans-serif;
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+      }
+      header {
+        background: #1a3330;
+        color: #e4c98a;
+        padding: calc(0.7rem + env(safe-area-inset-top)) 0.8rem 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+      }
+      header a {
+        color: #e4c98a;
+        text-decoration: none;
+        font-size: 1.3rem;
+        line-height: 1;
+      }
+      header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+      header p { margin: 0.15rem 0 0; font-size: 0.75rem; opacity: 0.8; }
+      .forms {
+        display: flex;
+        gap: 0.45rem;
+        overflow-x: auto;
+        padding: 0.7rem 0.7rem 0.2rem;
+      }
+      .forms button {
+        flex: none;
+        border: 1px solid #c4b48a;
+        background: transparent;
+        color: #1a3330;
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        font: inherit;
+        font-size: 0.82rem;
+      }
+      .forms button.on {
+        background: #1a3330;
+        color: #f6f1e4;
+        border-color: #1a3330;
+      }
+      .forms small { display: block; opacity: 0.7; font-size: 0.68rem; }
+      .sheet {
+        flex: 1;
+        margin: 0.6rem 0.7rem 0.9rem;
+        padding: 1.1rem 0.9rem 1.4rem;
+        background: #fffaf0;
+        border: 1px solid #e4d3a8;
+        border-radius: 1rem;
+      }
+      .ayahs {
+        direction: rtl;
+        text-align: center;
+        font-size: 1.85rem;
+        line-height: 2.05;
+        margin: 0;
+      }
+      .ayahs.tall { font-size: 2.15rem; line-height: 2.45; }
+      .note {
+        margin: 0.8rem 0 0;
+        text-align: center;
+        color: #6d6456;
+        font-size: 0.78rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="./index.html" aria-label="Geri">‹</a>
+      <div>
+        <h1>Yazı formaları</h1>
+        <p>Quran.com və Quran Android</p>
+      </div>
+    </header>
+    <div class="forms" id="forms"></div>
+    <main class="sheet">
+      <p class="ayahs" id="ayahs"></p>
+      <p class="note" id="note"></p>
+    </main>
+    <script>
+      const ayahs = [
+        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+        "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
+        "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+        "مَٰلِكِ يَوْمِ ٱلدِّينِ",
+        "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+        "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+      ].join("\n");
+      const forms = [
+        { id: "hafs", name: "Osman Həfs", from: "Quran.com", family: '"QC Hafs"', tall: false },
+        { id: "me", name: "Me Quran", from: "Quran.com", family: '"QC MeQuran"', tall: false },
+        { id: "pak", name: "Hind-Pakistan", from: "Quran.com", family: '"QC Indopak"', tall: true },
+        { id: "ahafs", name: "Həfs 12", from: "Quran Android", family: '"QA Hafs"', tall: false },
+        { id: "naskh", name: "Osman Taha nəsx", from: "Quran Android", family: '"QA Naskh"', tall: false },
+      ];
+      const box = document.getElementById("forms");
+      const text = document.getElementById("ayahs");
+      const note = document.getElementById("note");
+      text.textContent = ayahs;
+      text.style.whiteSpace = "pre-wrap";
+      function show(form) {
+        text.style.fontFamily = form.family + ", serif";
+        text.classList.toggle("tall", form.tall);
+        note.textContent = form.from;
+        for (const btn of box.querySelectorAll("button")) btn.classList.toggle("on", btn.dataset.id === form.id);
+      }
+      for (const form of forms) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.id = form.id;
+        btn.innerHTML = form.name + "<small>" + form.from + "</small>";
+        btn.onclick = () => show(form);
+        box.appendChild(btn);
+      }
+      show(forms[0]);
+    </script>
+  </body>
+</html>
