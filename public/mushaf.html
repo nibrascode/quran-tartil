@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#1a3330" />
+    <meta name="theme-color" content="#fffaf0" />
     <title>Yazı formaları</title>
     <style>
       * { box-sizing: border-box; }
       html, body { margin: 0; height: 100%; }
       body {
-        background: #f6f1e4;
+        background: #fffaf0;
         color: #1a1612;
         font-family: "Segoe UI", sans-serif;
         display: flex;
@@ -18,43 +18,40 @@
         overflow: hidden;
       }
       header {
-        background: transparent;
-        color: #3d3428;
-        padding: calc(0.45rem + env(safe-area-inset-top)) 2rem 0.15rem;
+        background: #fffaf0;
+        color: #6a5e4c;
+        padding: calc(0.28rem + env(safe-area-inset-top)) 0.75rem 0.05rem;
         display: flex;
         align-items: center;
-        justify-content: center;
-        position: relative;
+        justify-content: flex-start;
+        gap: 0.35rem;
       }
       header a {
-        position: absolute;
-        left: 0.7rem;
-        color: #6d624f;
+        color: #8a7d68;
         text-decoration: none;
-        font-size: 1.35rem;
+        font-size: 1rem;
         line-height: 1;
       }
-      header h1 { margin: 0; font-size: 0.95rem; font-weight: 500; }
+      header h1 { margin: 0; font-size: 0.72rem; font-weight: 500; }
       .num {
         text-align: center;
-        color: #3d3428;
-        font-size: 0.95rem;
-        padding: 0.15rem 0 calc(0.4rem + env(safe-area-inset-bottom));
-        background: transparent;
+        color: #8a7d68;
+        font-size: 0.68rem;
+        padding: 0.05rem 0 calc(0.22rem + env(safe-area-inset-bottom));
+        background: #fffaf0;
       }
       .page {
         flex: 1;
         min-height: 0;
-        margin: 0.35rem 0.3rem 0.2rem;
+        margin: 0;
         background: #fffaf0;
-        border: 1px solid #e4d3a8;
-        border-radius: 0.7rem;
+        border: none;
+        border-radius: 0;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         touch-action: none;
         user-select: none;
-        margin-bottom: calc(0.45rem + env(safe-area-inset-bottom));
       }
       .page.mid { justify-content: center; position: relative; }
       .page.mid .line { flex: 0 0 calc(100% / 15); }
