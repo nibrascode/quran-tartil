@@ -1148,4 +1148,20 @@ svg{display:block}
     padding-left: 1.05rem;
     padding-top: 0.85rem;
   }
+
+  .book.reader .lines[data-pack="fill"],
+  .book.reader .lines[data-pack="center"] {
+    justify-content: flex-start;
+    gap: 0.08em;
+  }
+
+  .book.reader .lines[data-pack="fill"] .line,
+  .book.reader .lines[data-pack="center"] .line {
+    flex: 0 0 auto;
+    min-height: 1.72em;
+  }
+
+  .book.reader .line {
+    gap: 0.22em;
+  }
 }
