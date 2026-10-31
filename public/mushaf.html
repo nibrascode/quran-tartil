@@ -51,8 +51,23 @@
         line-height: 1;
         white-space: nowrap;
       }
-      .line.surah { font-family: surahnames, serif; color: #1a3330; }
-      .sname { font-family: surahnames, serif; line-height: 1; display: block; }
+      .line.surah { color: #1a1612; }
+      .shead {
+        position: relative;
+        width: 96%;
+        height: 88%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shead img { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .sname {
+        position: relative;
+        z-index: 1;
+        font-family: surahnames, serif;
+        line-height: 1;
+        color: #1a1612;
+      }
     </style>
   </head>
   <body>
@@ -98,10 +113,12 @@
           size *= (w / widest) * 0.94;
         }
         board.style.fontSize = size * 0.9 + "px";
-        const nameSize = board.clientHeight / 15 / 0.78;
         for (const name of board.querySelectorAll(".sname")) {
-          name.style.fontSize = nameSize + "px";
-          if (name.scrollWidth > w) name.style.fontSize = nameSize * (w / name.scrollWidth) + "px";
+          const head = name.parentElement;
+          const maxW = head.clientWidth * 0.46;
+          let sizeName = head.clientHeight * 0.5;
+          name.style.fontSize = sizeName + "px";
+          if (name.scrollWidth > maxW && name.scrollWidth > 0) name.style.fontSize = sizeName * (maxW / name.scrollWidth) + "px";
         }
       }
 
@@ -123,16 +140,32 @@
         }
         if (id !== job) return;
         board.style.fontFamily = name + ", serif";
-        const marks = heads[pageNo] || {};
+        const marks = { ...(heads[pageNo] || {}) };
+        const pageLines = pages[String(pageNo)];
+        for (const idx of Object.keys(marks)) {
+          const i = Number(idx);
+          let clear = true;
+          for (let k = 0; k < i; k++) if (pageLines[k]) clear = false;
+          if (clear && i > 0) {
+            marks[0] = marks[i];
+            delete marks[i];
+          }
+        }
         board.replaceChildren();
         pages[String(pageNo)].forEach((text, i) => {
           const row = document.createElement("div");
           row.className = marks[i] ? "line surah" : "line";
           if (marks[i]) {
+            const head = document.createElement("div");
+            head.className = "shead";
+            const frame = document.createElement("img");
+            frame.src = "./surah-banner.svg";
+            frame.alt = "";
             const name = document.createElement("span");
             name.className = "sname";
             name.textContent = String.fromCharCode(0xe000 + marks[i]);
-            row.appendChild(name);
+            head.append(frame, name);
+            row.appendChild(head);
           } else row.textContent = text;
           board.appendChild(row);
         });
