@@ -86,6 +86,30 @@
         line-height: 1;
         color: #1a1612;
       }
+      @media (orientation: landscape) {
+        header { display: none; }
+        .page {
+          margin: 0;
+          border: none;
+          border-radius: 0;
+          overflow: auto;
+          touch-action: pan-y;
+          justify-content: flex-start;
+        }
+        .page.mid { justify-content: flex-start; }
+        .page .line,
+        .page.mid .line,
+        .page.mid .line.surah,
+        .page.mid .line:not(.surah) {
+          flex: 0 0 auto;
+          position: static;
+          top: auto;
+          height: auto;
+          min-height: 1.6em;
+          transform: none;
+        }
+        .shead { height: 1.45em; width: 94%; }
+      }
     </style>
   </head>
   <body>
@@ -119,18 +143,37 @@
       const board = document.getElementById("page");
       const pos = document.getElementById("pos");
 
+      function textWidth(line) {
+        const range = document.createRange();
+        range.selectNodeContents(line);
+        return range.getBoundingClientRect().width;
+      }
       function fit() {
-        const w = board.clientWidth - 16;
+        const land = matchMedia("(orientation: landscape)").matches;
         const h = board.clientHeight;
-        let size = h / 15;
-        for (let i = 0; i < 3; i++) {
+        if (!land) {
+          const w = board.clientWidth - 16;
+          let size = h / 15;
+          for (let i = 0; i < 3; i++) {
+            board.style.fontSize = size + "px";
+            let widest = 0;
+            for (const line of board.querySelectorAll(".line:not(.surah)")) widest = Math.max(widest, line.scrollWidth);
+            if (widest <= w || widest === 0) break;
+            size *= (w / widest) * 0.94;
+          }
+          board.style.fontSize = size * 0.9 + "px";
+        } else {
+          const w = board.clientWidth - 22;
+          let size = w / 8;
+          for (let i = 0; i < 5; i++) {
+            board.style.fontSize = size + "px";
+            let widest = 0;
+            for (const line of board.querySelectorAll(".line:not(.surah)")) widest = Math.max(widest, textWidth(line));
+            if (widest <= w || widest === 0) break;
+            size *= (w / widest) * 0.98;
+          }
           board.style.fontSize = size + "px";
-          let widest = 0;
-          for (const line of board.querySelectorAll(".line:not(.surah)")) widest = Math.max(widest, line.scrollWidth);
-          if (widest <= w || widest === 0) break;
-          size *= (w / widest) * 0.94;
         }
-        board.style.fontSize = size * 0.9 + "px";
         for (const row of board.querySelectorAll(".snames")) {
           const head = row.parentElement;
           const maxW = head.clientWidth * 0.62;
