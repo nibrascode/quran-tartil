@@ -340,20 +340,7 @@
       });
       board.addEventListener("pointercancel", () => { startX = null; });
       window.addEventListener("resize", fit);
-      function startPage() {
-        const q = new URLSearchParams(location.search);
-        const s = Number(q.get("s"));
-        if (s >= 1 && s <= 114) {
-          for (const item of STARTS.split(",")) {
-            const [id, page] = item.split(":").map(Number);
-            if (id === s) return page;
-          }
-        }
-        const p = Number(q.get("p"));
-        if (p >= 1 && p <= LAST) return p;
-        return 1;
-      }
-      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames().then(() => show(startPage())); });
+      fetch("./yazi-pages.json").then((r) => r.json()).then((json) => { pages = json; loadNames().then(() => show(1)); });
     </script>
   </body>
 </html>
