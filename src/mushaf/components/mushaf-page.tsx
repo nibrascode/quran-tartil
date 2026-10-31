@@ -60,7 +60,7 @@ export function MushafPage({ data }: { data: PageData }) {
 
       if (phone && !phoneLand) {
         const slot = root.clientHeight / 15;
-        let size = (root.clientWidth - 4) / 18;
+        let size = (root.clientWidth - 4) / 19;
         size = Math.min(size, slot / 1.72);
         size = Math.max(13, Math.min(size, 34));
         measure(size);
