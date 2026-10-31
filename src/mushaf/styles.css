@@ -506,7 +506,13 @@ svg{display:block}
 
   .book .frame {
     margin: 0;
-    padding: 0.4rem max(0.65rem, env(safe-area-inset-right)) 0.55rem max(0.65rem, env(safe-area-inset-left));
+    padding: 0.35rem max(0.55rem, env(safe-area-inset-right)) 0.45rem max(0.55rem, env(safe-area-inset-left));
+  }
+
+  .lines[data-pack="scroll"] {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
   }
 
   .turn {

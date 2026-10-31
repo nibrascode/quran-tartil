@@ -88,19 +88,16 @@ export function MushafPage({ data }: { data: PageData }) {
       if (phoneLand) {
         root.dataset.pack = "scroll";
         const at40 = measure(40);
-        const byW = at40 > 0 ? 40 * ((root.clientWidth - 8) / at40) : 32;
-        let size = Math.max(26, Math.min(byW, 40));
+        const box = Math.max(0, root.clientWidth - 4);
+        let size = at40 > 0 ? 40 * (box / at40) : 32;
+        size = Math.max(18, Math.min(size, 64));
         for (let i = 0; i < 6; i++) {
           const widest = measure(size);
-          if (widest <= root.clientWidth - 2) break;
-          size = Math.max(20, size * ((root.clientWidth - 8) / Math.max(widest, 1)));
+          if (widest <= box) break;
+          size = Math.max(16, size * (box / Math.max(widest, 1)));
         }
-        const natural = measure(size);
         clearMeasure();
         root.style.fontSize = `${size}px`;
-        if (natural > 0 && natural < root.clientWidth - 6) {
-          root.style.width = `${Math.ceil(natural)}px`;
-        }
         return;
       }
 
