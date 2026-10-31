@@ -42,8 +42,17 @@
         user-select: none;
         margin-bottom: calc(0.45rem + env(safe-area-inset-bottom));
       }
-      .page.mid { justify-content: center; }
+      .page.mid { justify-content: center; position: relative; }
       .page.mid .line { flex: 0 0 calc(100% / 15); }
+      .page.mid .line:not(.surah) { transform: translateY(calc(var(--up, 0px) * -1)); }
+      .page.mid .line.surah {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: calc(100% / 15);
+        flex: none;
+        top: calc(50% - var(--up, 0px) - var(--half, 3.5) * 100% / 15 - 155% / 15);
+      }
       .line {
         flex: 1 1 0;
         min-height: 0;
@@ -192,6 +201,11 @@
           board.appendChild(row);
         });
         pos.textContent = pageNo + " / " + LAST;
+        if (pageNo === 1 || pageNo === 2) {
+          const n = board.querySelectorAll(".line:not(.surah)").length;
+          board.style.setProperty("--half", String(n / 2));
+          board.style.setProperty("--up", document.querySelector("header").offsetHeight / 2 + "px");
+        }
         fit();
         const ahead = pageNo + 1;
         if (ahead <= LAST && !loaded.has(ahead)) {
