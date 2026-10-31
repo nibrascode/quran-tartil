@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="az" dir="ltr">
+<html lang="az">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -29,58 +29,60 @@
         align-items: center;
         gap: 0.7rem;
       }
-      header a {
-        color: #e4c98a;
-        text-decoration: none;
-        font-size: 1.3rem;
-        line-height: 1;
-      }
+      header a { color: #e4c98a; text-decoration: none; font-size: 1.3rem; line-height: 1; }
       header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
       header p { margin: 0.15rem 0 0; font-size: 0.75rem; opacity: 0.8; }
-      .forms {
-        display: flex;
-        gap: 0.45rem;
-        overflow-x: auto;
-        padding: 0.7rem 0.7rem 0.2rem;
-      }
-      .forms button {
+      .forms, .surahs { display: flex; gap: 0.45rem; overflow-x: auto; padding: 0.65rem 0.7rem 0; }
+      .forms button, .surahs button {
         flex: none;
         border: 1px solid #c4b48a;
         background: transparent;
         color: #1a3330;
         border-radius: 999px;
-        padding: 0.45rem 0.8rem;
+        padding: 0.42rem 0.75rem;
         font: inherit;
         font-size: 0.82rem;
       }
-      .forms button.on {
-        background: #1a3330;
-        color: #f6f1e4;
-        border-color: #1a3330;
-      }
+      .forms button.on, .surahs button.on { background: #1a3330; color: #f6f1e4; border-color: #1a3330; }
       .forms small { display: block; opacity: 0.7; font-size: 0.68rem; }
       .sheet {
         flex: 1;
-        margin: 0.6rem 0.7rem 0.9rem;
-        padding: 1.1rem 0.9rem 1.4rem;
+        margin: 0.55rem 0.55rem 0.8rem;
+        padding: 1rem 0.7rem 1.3rem;
         background: #fffaf0;
         border: 1px solid #e4d3a8;
         border-radius: 1rem;
+        overflow: auto;
       }
-      .ayahs {
-        direction: rtl;
-        text-align: center;
-        font-size: 1.85rem;
-        line-height: 2.05;
-        margin: 0;
+      .ayahs { margin: 0; direction: rtl; }
+      .line {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4em;
+        margin: 0.42em 0;
+        font-size: 1.55rem;
+        line-height: 1.9;
+        white-space: nowrap;
       }
-      .ayahs.tall { font-size: 2.15rem; line-height: 2.45; }
-      .note {
-        margin: 0.8rem 0 0;
-        text-align: center;
-        color: #6d6456;
-        font-size: 0.78rem;
+      .ayahs.flow .line { justify-content: space-between; gap: 0.35em; font-size: 1.2rem; margin: 0.28em 0; }
+      .ayahs.tall .line { font-size: 1.85rem; line-height: 2.35; }
+      .ayahs.flow.tall .line { font-size: 1.45rem; }
+      .mark {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.35em;
+        height: 1.35em;
+        padding: 0 0.2em;
+        border: 1px solid #9a7b3c;
+        border-radius: 50%;
+        font-size: 0.48em;
+        line-height: 1;
+        color: #1a3330;
       }
+      .note { margin: 0.7rem 0 0; text-align: center; color: #6d6456; font-size: 0.78rem; }
     </style>
   </head>
   <body>
@@ -88,51 +90,86 @@
       <a href="./index.html" aria-label="Geri">‹</a>
       <div>
         <h1>Yazı formaları</h1>
-        <p>Quran.com və Quran Android</p>
+        <p>Fatihə və Bəqərə</p>
       </div>
     </header>
+    <div class="surahs" id="surahs"></div>
     <div class="forms" id="forms"></div>
     <main class="sheet">
-      <p class="ayahs" id="ayahs"></p>
+      <div class="ayahs" id="ayahs"></div>
       <p class="note" id="note"></p>
     </main>
     <script>
-      const ayahs = [
-        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
-        "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
-        "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
-        "مَٰلِكِ يَوْمِ ٱلدِّينِ",
-        "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-        "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
-        "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
-      ].join("\n");
+      const east = "٠١٢٣٤٥٦٧٨٩";
       const forms = [
-        { id: "hafs", name: "Osman Həfs", from: "Quran.com", family: '"QC Hafs"', tall: false },
-        { id: "me", name: "Me Quran", from: "Quran.com", family: '"QC MeQuran"', tall: false },
-        { id: "pak", name: "Hind-Pakistan", from: "Quran.com", family: '"QC Indopak"', tall: true },
-        { id: "ahafs", name: "Həfs 12", from: "Quran Android", family: '"QA Hafs"', tall: false },
-        { id: "naskh", name: "Osman Taha nəsx", from: "Quran Android", family: '"QA Naskh"', tall: false },
+        { id: "hafs", name: "Osman Həfs", from: "Quran.com", family: '"QC Hafs"', key: "qpc", tall: false },
+        { id: "me", name: "Me Quran", from: "Quran.com", family: '"QC MeQuran"', key: "uth", tall: false },
+        { id: "pak", name: "Hind-Pakistan", from: "Quran.com", family: '"QC Indopak"', key: "pak", tall: true },
+        { id: "ahafs", name: "Həfs 12", from: "Quran Android", family: '"QA Hafs"', key: "qpc", tall: false },
+        { id: "naskh", name: "Osman Taha nəsx", from: "Quran Android", family: '"QA Naskh"', key: "uth", tall: false },
       ];
+      const surahs = [
+        { id: "fatiha", name: "Fatihə" },
+        { id: "baqara", name: "Bəqərə" },
+      ];
+      let form = forms[0];
+      let surah = "fatiha";
+      let data = null;
       const box = document.getElementById("forms");
-      const text = document.getElementById("ayahs");
+      const surahBox = document.getElementById("surahs");
+      const root = document.getElementById("ayahs");
       const note = document.getElementById("note");
-      text.textContent = ayahs;
-      text.style.whiteSpace = "pre-wrap";
-      function show(form) {
-        text.style.fontFamily = form.family + ", serif";
-        text.classList.toggle("tall", form.tall);
-        note.textContent = form.from;
-        for (const btn of box.querySelectorAll("button")) btn.classList.toggle("on", btn.dataset.id === form.id);
+
+      function num(n) {
+        return String(n).replace(/\d/g, (d) => east[d]);
       }
-      for (const form of forms) {
+      function render() {
+        const lines = data[form.key][surah];
+        root.style.fontFamily = form.family + ", serif";
+        root.classList.toggle("tall", form.tall);
+        root.classList.toggle("flow", surah === "baqara");
+        root.replaceChildren();
+        for (const line of lines) {
+          const row = document.createElement("div");
+          row.className = "line";
+          for (const part of line) {
+            if (part && typeof part === "object") {
+              const m = document.createElement("span");
+              m.className = "mark";
+              m.textContent = num(part.n);
+              row.appendChild(m);
+            } else {
+              row.appendChild(document.createTextNode(part));
+            }
+          }
+          root.appendChild(row);
+        }
+        note.textContent = form.from + (surah === "fatiha" ? " · Fatihə sətirləri" : " · Bəqərə");
+        for (const row of root.querySelectorAll(".line")) {
+          if (row.scrollWidth > row.clientWidth + 1) row.style.fontSize = "1.02rem";
+        }
+        for (const btn of box.querySelectorAll("button")) btn.classList.toggle("on", btn.dataset.id === form.id);
+        for (const btn of surahBox.querySelectorAll("button")) btn.classList.toggle("on", btn.dataset.id === surah);
+      }
+      for (const item of surahs) {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.dataset.id = form.id;
-        btn.innerHTML = form.name + "<small>" + form.from + "</small>";
-        btn.onclick = () => show(form);
+        btn.dataset.id = item.id;
+        btn.textContent = item.name;
+        btn.onclick = () => { surah = item.id; render(); };
+        surahBox.appendChild(btn);
+      }
+      for (const item of forms) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.id = item.id;
+        btn.innerHTML = item.name + "<small>" + item.from + "</small>";
+        btn.onclick = () => { form = item; render(); };
         box.appendChild(btn);
       }
-      show(forms[0]);
+      fetch("./yazi-data.json")
+        .then((r) => r.json())
+        .then((json) => { data = json; render(); });
     </script>
   </body>
 </html>
