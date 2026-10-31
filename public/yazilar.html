@@ -63,9 +63,16 @@
         justify-content: center;
       }
       .shead img { position: absolute; inset: 0; width: 100%; height: 100%; }
-      .sname {
+      .snames {
         position: relative;
         z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.28em;
+        direction: rtl;
+      }
+      .sname {
         font-family: surahnames, serif;
         line-height: 1;
         color: #1a1612;
@@ -115,12 +122,12 @@
           size *= (w / widest) * 0.94;
         }
         board.style.fontSize = size * 0.9 + "px";
-        for (const name of board.querySelectorAll(".sname")) {
-          const head = name.parentElement;
-          const maxW = head.clientWidth * 0.46;
-          let sizeName = head.clientHeight * 0.5;
-          name.style.fontSize = sizeName + "px";
-          if (name.scrollWidth > maxW && name.scrollWidth > 0) name.style.fontSize = sizeName * (maxW / name.scrollWidth) + "px";
+        for (const row of board.querySelectorAll(".snames")) {
+          const head = row.parentElement;
+          const maxW = head.clientWidth * 0.62;
+          let sizeName = head.clientHeight * 0.46;
+          row.style.fontSize = sizeName + "px";
+          if (row.scrollWidth > maxW && row.scrollWidth > 0) row.style.fontSize = sizeName * (maxW / row.scrollWidth) + "px";
         }
       }
 
@@ -161,6 +168,7 @@
         }
         pageLines.forEach((text, i) => {
           if (i > last) return;
+          if ((pageNo === 1 || pageNo === 2) && !text && !marks[i]) return;
           const row = document.createElement("div");
           row.className = marks[i] ? "line surah" : "line";
           if (marks[i]) {
@@ -169,10 +177,16 @@
             const frame = document.createElement("img");
             frame.src = "./surah-banner.svg";
             frame.alt = "";
+            const names = document.createElement("span");
+            names.className = "snames";
+            const word = document.createElement("span");
+            word.className = "sname";
+            word.textContent = "\uE000";
             const name = document.createElement("span");
             name.className = "sname";
             name.textContent = String.fromCharCode(0xe000 + marks[i]);
-            head.append(frame, name);
+            names.append(word, name);
+            head.append(frame, names);
             row.appendChild(head);
           } else row.textContent = text;
           board.appendChild(row);
