@@ -98,15 +98,15 @@
         color: #1a1612;
       }
       .basmala {
-        font-family: uthman, serif;
-        font-size: 0.72em;
+        font-family: QCF1, serif;
+        font-size: 1em;
         line-height: 1;
         direction: rtl;
         color: #1a1612;
       }
       .line.stack { flex: 1.75 1 0; flex-direction: column; justify-content: center; }
       .line.stack .shead { height: 52%; width: 90%; }
-      .line.stack .basmala { font-size: 0.58em; }
+      .line.stack .basmala { font-size: 0.72em; }
       @media (orientation: landscape) and (max-height: 520px) {
         header { display: none; }
         .num { display: none; }
@@ -184,14 +184,17 @@
           (stackLines[page] ||= {})[0] = true;
         }
       }
-      const BISM = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+      const BISM = "\uFC41\uFC42\uFC43\uFC44";
       let namesReady = null;
       function loadNames() {
         if (!namesReady) {
           namesReady = Promise.all([
             new FontFace("surahnames", "url(./yazi-fonts/sura_names.woff2)").load(),
-            new FontFace("uthman", "url(./yazi-fonts/uthmanic-hafs.woff2)").load(),
-          ]).then((faces) => faces.forEach((face) => document.fonts.add(face)));
+            new FontFace("QCF1", "url(./yazi-fonts/qcf/p1.woff2)").load(),
+          ]).then((faces) => {
+            faces.forEach((face) => document.fonts.add(face));
+            loaded.add(1);
+          });
         }
         return namesReady;
       }
