@@ -6,6 +6,7 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
   const { lang, setLang } = useLocale();
   const t = UI[lang];
   const [q, setQ] = useState("");
+  const [find, setFind] = useState(false);
   const [settings, setSettings] = useState(false);
   const arUi = lang === "ar";
 
@@ -20,7 +21,18 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
     <div className="stage">
       <div className="book">
         <header className="topbar">
-          <span className="topbar-side" />
+          <button
+            type="button"
+            className={find ? "icon-btn gold" : "icon-btn"}
+            aria-pressed={find}
+            aria-label={t.search}
+            onClick={() => {
+              setFind((on) => !on);
+              if (find) setQ("");
+            }}
+          >
+            <SearchIcon />
+          </button>
           <div className="topbar-title home-title" dir={arUi ? "rtl" : "ltr"}>
             <strong className={arUi ? "home-ar" : undefined}>{t.title}</strong>
             <span className={arUi ? "home-ar-sub" : undefined}>{t.sub}</span>
@@ -30,16 +42,19 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
           </button>
         </header>
 
-        <label className="search">
-          <span className="sr">{t.search}</span>
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t.search}
-            enterKeyHint="search"
-            dir={arUi ? "rtl" : "ltr"}
-          />
-        </label>
+        {find && (
+          <label className="search">
+            <span className="sr">{t.search}</span>
+            <input
+              value={q}
+              autoFocus
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t.search}
+              enterKeyHint="search"
+              dir={arUi ? "rtl" : "ltr"}
+            />
+          </label>
+        )}
 
         <ul className="index-list home-list">
           {rows.map((row) =>
@@ -112,10 +127,6 @@ export function Home({ onOpen }: { onOpen: (page: number) => void }) {
                   );
                 })}
               </ul>
-              <a className="lang-row other-views" href="./classic.html" data-testid="other-views">
-                <span className="lang-native">Digər görünüşlər (köhnə tətbiq)</span>
-                <span className="lang-mark" aria-hidden="true">→</span>
-              </a>
             </div>
           </div>
         )}
@@ -141,6 +152,15 @@ function listRows(surahs: SurahMeta[], searching: boolean): Row[] {
     return a.k === "juz" ? -1 : 1;
   });
   return rows;
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M14.8 14.8 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
 }
 
 function Gear() {

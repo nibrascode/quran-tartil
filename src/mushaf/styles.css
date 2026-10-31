@@ -538,6 +538,14 @@ svg{display:block}
   line-height: 1;
 }
 
+.mim {
+  display: inline-block;
+  font-size: 0.62em;
+  line-height: 1;
+  vertical-align: 0.72em;
+  margin-inline: 0.02em;
+}
+
 .line.head,
 .line.basmala-line {
   justify-content: center;

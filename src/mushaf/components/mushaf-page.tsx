@@ -250,6 +250,20 @@ function Flourish() {
   );
 }
 
+function WordText({ text }: { text: string }) {
+  const parts = text.split(/(\u06E2|\u06ED)/);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    part === "\u06E2" || part === "\u06ED" ? (
+      <span className="mim" key={i}>
+        م
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
 function Line({ line }: { line: Chunk[] }) {
   if (line.length === 1 && isHead(line[0])) {
     return (
@@ -274,7 +288,7 @@ function Line({ line }: { line: Chunk[] }) {
         if (typeof chunk === "string") {
           return (
             <span className="word" key={i}>
-              {chunk}
+              <WordText text={chunk} />
             </span>
           );
         }
